@@ -1,0 +1,45 @@
+# Martin Růžek: fotograf akcí a sportu
+
+Portfolio a obchodní web fotografa Martina Růžka (`@ruzek.jpg`), Praha a Karlovy Vary.
+
+> **Stav:** probíhá průzkum vizuálu (fáze 3 z 5). Kód aplikace zatím neexistuje. Napíše se až po schválení konceptu a plánu.
+
+## Cíl webu
+- Získávat poptávky na **focení akcí**: firemní akce, konference, přednášky, univerzitní a spolkové akce, plesy, večírky, bary.
+- Ukázat **sport** jako vášeň a odlišení: fotbal, florbal, turnaje, závody.
+- Prodat **výběr na sociální sítě týž den** a **vertikální videa**.
+- Nabídnout jasné orientační ceny, kalkulačku a jednoduchou poptávku.
+
+## Domény
+- `martinruzek.eu`: spuštění webu (spravuje Cloudflare)
+- `martinruzek.cz`: vlastněná, využití se upřesní
+- `ruzek.photo`: plánovaný nákup v budoucnu
+
+## Plánované technologie
+Astro (statický výstup) s React islands, TypeScript, GSAP a Lenis. Na Cloudflare poběží Pages/Workers, D1, Turnstile, Stream nebo R2 a Web Analytics. Detaily a pravidla jsou v [AGENTS.md](AGENTS.md).
+
+## Dokumentace
+| Soubor | Obsah |
+|---|---|
+| [AGENTS.md](AGENTS.md) | Pravidla pro AI agenty i lidi: postup, obsahová a právní pravidla, technologie |
+| [docs/brief.md](docs/brief.md) | Zadání: služby, ceny, klienti, formulář, SEO |
+| [docs/decisions.md](docs/decisions.md) | Co je rozhodnuto a co zůstává otevřené |
+| [docs/research.md](docs/research.md) | Shrnutí rozboru konkurence a inspirací |
+| [design/opendesign-brief.md](design/opendesign-brief.md) | Zadání pro varianty designu v OpenDesignu |
+| [design/logo/](design/logo/) | Logo (černá a šedá varianta) |
+| [research/](research/) | Vzorník písma a skripty na screenshoty. Podrobné rozbory jsou jen lokálně |
+
+## Postup projektu
+1. ✅ Brainstorm
+2. ✅ Rozbor webů fotografů a inspirací (shrnutí v [docs/research.md](docs/research.md))
+3. ⏳ Průzkum vizuálu: 9 variant v OpenDesignu (skilly Taste, Impeccable, Hallmark, každý ve 3 liniích)
+4. Koncept a plán, poté schválení
+5. Implementace a nasazení na Cloudflare
+
+## Provoz webu
+Doplní se při implementaci:
+- `TODO:` jak přidat fotky a případovou studii
+- `TODO:` jak změnit ceny (jeden typovaný config)
+- `TODO:` jak rychle stáhnout fotku z webu
+- `TODO:` lokální vývoj, build a nasazení
+- `TODO:` proměnné prostředí a tajné klíče (e-mail, Turnstile)

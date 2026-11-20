@@ -1,0 +1,24 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node / Astro (for later)
+node_modules/
+dist/
+.astro/
+.wrangler/
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Private research (local only, never commit): detailed competitor reviews,
+# business strategy, screenshots of third-party sites, Fontshare fonts
+research/notes/
+research/moodboard/
+private/
