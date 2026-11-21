@@ -57,10 +57,15 @@ test('ASCII hero keeps the frame budget on a throttled phone', async ({ page }) 
   }, MEASURE_MS);
 
   await page.goto('/');
-  await page.waitForFunction('window.__probe.done === true', undefined, {
-    timeout: MEASURE_MS * 4,
-  });
-  const probe = (await page.evaluate('window.__probe')) as Probe;
+  // function form: a string expression is eval'd in the page and the CSP (script-src without unsafe-eval) refuses it
+  await page.waitForFunction(
+    () => (window as unknown as { __probe: Probe }).__probe.done,
+    undefined,
+    {
+      timeout: MEASURE_MS * 4,
+    },
+  );
+  const probe = await page.evaluate(() => (window as unknown as { __probe: Probe }).__probe);
   const sorted = [...probe.frames].sort((a, b) => a - b);
   const median = percentile(sorted, 0.5);
   const p95 = percentile(sorted, 0.95);
