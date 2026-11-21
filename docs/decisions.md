@@ -16,6 +16,13 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 
 ## Rozhodnuto
 
+### 2026-11-21: výkon, první měření Lighthouse CI
+Lab měření (`pnpm lhci`, emulace mobilu, medián z 5 běhů, zástupné fotky): výkon 0,98, přístupnost 1, LCP ≈ 1,1 s, TBT 145–160 ms, CLS 0, JS celkem ≈ 73 kB (bez scrollu, bez formuláře), fonty celé stránky 182 kB (CS) a 147 kB (EN).
+- **LCP není fotka.** Chrome nepočítá do LCP obrázek, který zabírá celý viewport, a hero fotka ho zabírá. LCP je proto úvodní odstavec. Odstavec se proto při načtení neskrývá (`opacity: 0` ho dřív odkrývalo až po načtení GSAP a po zpoždění 1,1 s, v labu LCP ≈ 4,3 s). Ostatní prvky hero (kicker, tlačítka, meta) se odkrývají jako dřív. **Martin potvrdí, že mu vzhled úvodu takhle vyhovuje.**
+- **JS pro první vykreslení je 13,8 kB, rozpočet je 10 kB.** Přebývá hlavně lightbox (≈ 3 kB, načítá se hned kvůli odkazům na fotky) a zavaděč měření (≈ 2 kB). Zatím nevyřešeno, rozpočet zůstává a `pnpm lhci` na něm končí chybou.
+- **Písma nad ohybem.** Předem se načítají 4 soubory (Notch 700 a Text 400, latin i latin-ext, 53 kB), rozpočet 70 kB platí. První obrazovka ale ve skutečnosti používá šest řezů (navíc Text 500, Geist Mono 400 a 500, Crimson Pro kurzíva), dohromady přes 100 kB. Předem načtená písma zůstávají, zbytek se načítá hned po CSS s `font-display: swap`.
+- **Posun při záměně písma:** záložní písma s upravenými metrikami od Fonts API drží jméno i odstavec na místě na 360, 480 a 1440 px v CS i EN (test `tests/e2e/font-swap.spec.ts`). Platí pro zařízení, kde existuje Arial (Windows, macOS, iOS); na zařízení bez něj (např. Android) se použije systémové písmo a drobný posun je možný.
+
 ### 2026-11-21: schválení konceptu a plánu
 - Martin schválil [koncept](concept.md) i [plán převodu do Astra](superpowers/plans/2026-11-20-rozpad-astro.md) a dal pokyn začít implementaci.
 - Implementace běží na větvi `feat/rozpad-astro`, úkol po úkolu: každý úkol píše nový agent a kontroluje ho Codex `gpt-6.2-sol`. Průběh je v [logu běhu](superpowers/plans/2026-11-20-rozpad-astro.run-log.md).

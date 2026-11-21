@@ -1,0 +1,56 @@
+{
+  "ci": {
+    "collect": {
+      "url": ["http://localhost:8787/", "http://localhost:8787/en/"],
+      "numberOfRuns": 5,
+      "settings": {
+        "chromeFlags": "--no-sandbox --ignore-certificate-errors --host-resolver-rules=\"MAP umami.test 127.0.0.1:8443, MAP static.cloudflareinsights.com 127.0.0.1:8443, MAP cloudflareinsights.com 127.0.0.1:8443\""
+      }
+    },
+    "assert": {
+      "assertions": {
+        "categories:performance": [
+          "error",
+          {
+            "minScore": 0.95
+          }
+        ],
+        "categories:accessibility": [
+          "error",
+          {
+            "minScore": 1
+          }
+        ],
+        "largest-contentful-paint": [
+          "error",
+          {
+            "maxNumericValue": 2200
+          }
+        ],
+        "total-blocking-time": [
+          "error",
+          {
+            "maxNumericValue": 200
+          }
+        ],
+        "cumulative-layout-shift": [
+          "error",
+          {
+            "maxNumericValue": 0.05
+          }
+        ],
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 153600
+          }
+        ]
+      },
+      "aggregationMethod": "median-run"
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci"
+    }
+  }
+}

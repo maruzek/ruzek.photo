@@ -35,3 +35,7 @@ playwright-report/
 
 # Generated Worker types (pnpm types:worker, run by pnpm check)
 worker-configuration.d.ts
+
+# Lighthouse CI on WSL: chrome-launcher may create a Windows-path-named profile directory in the cwd
+# (pnpm lhci runs from a temp dir, this is only a safety net)
+/C:*

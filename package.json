@@ -20,6 +20,8 @@
     "types:worker": "wrangler types",
     "check:exif": "tsx scripts/check-exif.ts",
     "check:contrast": "tsx scripts/check-contrast.ts",
+    "check:launch": "tsx --env-file-if-exists=.env scripts/check-launch.ts",
+    "lhci": "tsx scripts/lhci.ts",
     "photos:import": "tsx scripts/photos-import.ts"
   },
   "dependencies": {
@@ -43,6 +45,7 @@
     "@astrojs/check": "^0.9.12",
     "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.16.1",
     "@playwright/test": "^1.65.1",
     "eslint": "^10.15.0",
     "eslint-plugin-astro": "^3.2.1",

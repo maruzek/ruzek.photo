@@ -305,6 +305,7 @@ Dva nástroje, každý na něco jiného. Oba jsou bez cookies, takže web **nem�
 **Opatření:**
 - Hero fotka je prvek LCP: `<Picture>` s `fetchpriority="high"`, AVIF a `preload` přes `imagesrcset`. Pozor na skrývání: prvek s `opacity: 0` se do LCP nepočítá. Fotka proto zůstává viditelná a ASCII se kreslí přes ni.
 - Jméno v hero se animuje maskou, ne průhledností. Test ověří, že LCP prvkem je fotka, ne nadpis.
+- **Ověřeno měřením (2026-11-21):** fotka přes celý viewport se do LCP nepočítá (Chrome ji bere jako pozadí), LCP je tedy největší text v hero, úvodní odstavec. Ten se proto nikdy nesmí skrývat ani animovat průhledností.
 - Celý pohyb se načítá až po prvním vykreslení a při `reduce` vůbec.
 - Canvasy kreslí jen ve viewportu a jen když se mění průběh (sdílený plánovač).
 - Písma mají záložní metriky, obrázky rozměry, SplitText se spouští po `document.fonts.ready`, header je `position: fixed`. Výsledek: CLS ≈ 0.

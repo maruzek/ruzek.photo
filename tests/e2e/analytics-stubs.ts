@@ -11,7 +11,7 @@ import { ANALYTICS_TEST_ENV } from './analytics-env';
 // A collect request blocked by the CSP never reaches page.route, so a recorded collect proves that connect-src
 // allows it.
 
-const UMAMI_STUB = `(function () {
+export const UMAMI_STUB = `(function () {
   var s = document.currentScript;
   var host = (s.getAttribute('data-host-url') || new URL(s.src).origin).replace(/\\/$/, '');
   var hook = window[s.getAttribute('data-before-send') || ''];
@@ -43,7 +43,7 @@ const UMAMI_STUB = `(function () {
   send('event', base());
 })();`;
 
-const BEACON_STUB = `fetch('https://cloudflareinsights.com/cdn-cgi/rum', { method: 'POST', keepalive: true, credentials: 'omit',
+export const BEACON_STUB = `fetch('https://cloudflareinsights.com/cdn-cgi/rum', { method: 'POST', keepalive: true, credentials: 'omit',
   body: '{}' }).catch(function () {});`;
 
 export const UMAMI_COLLECT = `${new URL(ANALYTICS_TEST_ENV.PUBLIC_UMAMI_SRC).origin}/api/send`;
