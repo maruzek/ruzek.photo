@@ -54,7 +54,6 @@ export const en = {
   marquee: {
     label: 'What I shoot',
     pause: 'Pause',
-    play: 'Play',
     items: [
       'Corporate events',
       'conferences',

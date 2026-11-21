@@ -3,6 +3,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { parse } from 'yaml';
+import { PLACEMENT, TEXT_OVER_PHOTOS } from '../src/config/placement';
 
 /** `--night` from src/styles/tokens.css: the colour of the `.shade` gradient. */
 export const NIGHT = '#07080b';
@@ -23,10 +24,6 @@ export const BOTTOM_FRACTION = 0.35;
 export const SHADE_OPACITY = { normal: 0.41, strong: 0.7, hero: 0.38 } as const;
 export type ShadeName = keyof typeof SHADE_OPACITY;
 
-/** The photos with text over them (the hero and the two folds of the prototype). Pass ids to override. */
-export const TEXT_OVER_PHOTOS = ['smoke', 'ball', 'soccer-goal'] as const;
-/** Which of them is the hero (it has its own, weaker gradient). Keep in step with Home.astro. */
-export const HERO_PHOTOS: readonly string[] = ['smoke'];
 
 type Rgb = [number, number, number];
 
@@ -103,7 +100,7 @@ async function loadPhoto(dir: string, id: string): Promise<PhotoEntry> {
   return {
     id,
     image: resolve(dir, data.image),
-    shade: shade === 'normal' && HERO_PHOTOS.includes(id) ? 'hero' : shade,
+    shade: shade === 'normal' && id === PLACEMENT.hero ? 'hero' : shade,
   };
 }
 

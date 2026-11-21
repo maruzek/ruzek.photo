@@ -3,6 +3,7 @@
 // wipe into the light zone. Task 7 adds the remaining sections and the footer.
 import Base from '../layouts/Base.astro';
 import { t, type Locale } from '../i18n';
+import { PLACEMENT } from '../config/placement';
 import { getPhoto } from '../lib/photos/get';
 import DitherWipe from './DitherWipe.astro';
 import Header from './Header.astro';
@@ -10,6 +11,7 @@ import Hero from './Hero.astro';
 import HeroPreload from './HeroPreload.astro';
 import Marquee from './Marquee.astro';
 import PhotoFold from './PhotoFold.astro';
+import Todo from './Todo.astro';
 
 interface Props {
   locale: Locale;
@@ -17,22 +19,29 @@ interface Props {
 
 const { locale } = Astro.props;
 const d = t(locale);
-// Placeholder photos for now; Martin's own photos replace them by editing these ids and the YAML files
+// Which photos go where lives in config/placement.ts. A withdrawn photo comes back as `undefined` and its
+// section renders on the plain surface.
 const [hero, events, sport] = await Promise.all([
-  getPhoto('smoke'),
-  getPhoto('ball'),
-  getPhoto('soccer-goal'),
+  getPhoto(PLACEMENT.hero),
+  ...PLACEMENT.folds.map((id) => getPhoto(id)),
 ]);
 ---
 
 <Base locale={locale} route="home" title={d.meta.title} description={d.meta.description}>
   <Fragment slot="head">
-    <HeroPreload photo={hero} />
+    {hero && <HeroPreload photo={hero} />}
   </Fragment>
   <Header locale={locale} route="home" />
   <main id="main">
     <Hero locale={locale} photo={hero} />
     <Marquee locale={locale} />
+    {
+      locale === 'en' && (
+        <p class="translation-todo mono">
+          <Todo>{d.meta.translationTodo}</Todo>
+        </p>
+      )
+    }
     <PhotoFold locale={locale} photo={events} id="fold-events" {...d.folds.events} />
     <PhotoFold locale={locale} photo={sport} id="fold-sport" {...d.folds.sport} />
     <DitherWipe from="night" to="light" />

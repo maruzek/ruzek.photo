@@ -1,4 +1,9 @@
-/* Header. Source: design/final/rozpad/index.html, "Header" block and its @media rules */
+/* Header. Source: design/final/rozpad/index.html, "Header" block and its @media rules.
+   Contrast: the prototype blends the header with `mix-blend-mode: difference`. Over a photo that gives no
+   guaranteed contrast (mid-tones erase the text) and it blends the focus ring too. So the default is white
+   text on a translucent night backdrop (at least 8:1 even over a white photo, no blending). The blend is
+   opt-in: the motion layer (task 8) adds `.blend` while the header is over a flat night or light section,
+   and only with motion enabled. While a header link has keyboard focus the blend is off. */
 .top {
   position: fixed;
   inset: 0 0 auto;
@@ -7,17 +12,27 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px var(--m);
-  mix-blend-mode: difference;
+  background: rgb(7 8 11 / 80%);
+  backdrop-filter: blur(12px);
   color: #fff;
   transition: transform 0.5s var(--ease);
 }
 .top.is-hidden {
   transform: translateY(-110%);
 }
+@media (prefers-reduced-motion: no-preference) {
+  html.motion-ready .top.blend:not(:has(:focus-visible)) {
+    mix-blend-mode: difference;
+    background: none;
+    backdrop-filter: none;
+  }
+}
 .top .mark {
   display: flex;
   gap: 14px;
   align-items: center;
+  min-width: 44px; /* touch target; the logo itself stays 40 px */
+  min-height: 44px;
   color: #fff;
   text-decoration: none;
 }
@@ -46,6 +61,7 @@
   color: #fff;
   text-decoration: none;
   display: inline-block;
+  min-width: 44px; /* touch target, also for a short word like "Work" */
   padding: 12px 0;
   position: relative;
 }
@@ -67,6 +83,12 @@
 }
 /* The language switch is not in the prototype: small mono type keeps it quiet next to the links */
 .top .lang a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px; /* touch target: 44 × 44, the type stays small */
+  min-height: 44px;
+  padding: 0;
   font: 500 var(--t-xs) / 1.2 var(--f-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -84,9 +106,10 @@
     gap: 20px;
   }
 }
-/* The prototype fits name + link on one line; the language switch needs room, so below 560 px the
-   wordmark gives way and the logo (named by the link's aria-label) stays */
-@media (max-width: 560px) {
+/* The wordmark gives way only where it does not fit next to the language switch and the inquiry link
+   (measured: it needs 16 px of room from about 435 px in Czech and 457 px in English); the logo stays, named
+   by the link's aria-label */
+@media (max-width: 460px) {
   .top .mark > span:last-child {
     display: none;
   }

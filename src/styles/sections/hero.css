@@ -1,8 +1,8 @@
 /* Hero. Source: index.html "HERO" block and its @media rules */
 .hero {
   position: relative;
-  height: 100svh;
-  min-height: 640px;
+  /* at least one screen, and tall enough for the content on a short phone: no fixed height, no clipping */
+  min-height: max(100svh, 640px);
   display: grid;
   grid-template-rows: 1fr auto;
   overflow: hidden;
@@ -125,7 +125,8 @@
   width: 1px;
   height: 48px;
   background: currentcolor;
-  animation: hint 2.4s var(--ease) infinite;
+  /* two passes (4.8 s) and then a still line: no endless motion without a pause control (WCAG 2.2.2) */
+  animation: hint 2.4s var(--ease) 2;
 }
 @keyframes hint {
   0% {
@@ -160,11 +161,16 @@
     display: none;
   }
   .hero {
-    min-height: 600px;
+    min-height: max(100svh, 600px);
   }
   .hero h1 {
     white-space: normal;
     font-size: clamp(68px, 22vw, 128px);
+  }
+  /* First and last name always on two lines. Left to wrap, the name was one line in Stack Sans Notch and two
+     in the fallback around 900 px, and the block jumped when the font arrived (RZ2-11). */
+  .hero h1 span {
+    display: block;
   }
   .hero .row {
     grid-template-columns: 1fr;

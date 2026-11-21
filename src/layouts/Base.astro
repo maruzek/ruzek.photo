@@ -25,9 +25,15 @@ const bodyFace = [{ weight: 400, style: 'normal' as const }];
     <title>{title}</title>
     <meta name="description" content={description} />
     <script is:inline>
-      document.documentElement.classList.add(
-        matchMedia('(prefers-reduced-motion: reduce)').matches ? 'rm' : 'motion'
-      );
+      {
+        const root = document.documentElement;
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        root.classList.add(reduced ? 'rm' : 'motion');
+        // Safety net (base.css): if the motion layer has not set `motion-ready` after 3 s, show everything. A
+        // timer started here counts from navigation. A CSS animation would count from when the stylesheet is
+        // applied, and a late stylesheet moved the reveal to 3.9 s.
+        if (!reduced) setTimeout(() => root.classList.add('reveal-fallback'), 3000);
+      }
     </script>
     <Font cssVariable="--font-notch" preload={aboveTheFold} />
     <Font cssVariable="--font-text" preload={bodyFace} />

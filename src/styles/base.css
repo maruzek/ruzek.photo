@@ -104,6 +104,11 @@ select {
   font-weight: 400;
   text-transform: none;
 }
+.translation-todo {
+  padding: 16px var(--m);
+  background: var(--night);
+  color: var(--muted);
+}
 .ph-wrap {
   position: relative;
 }
@@ -247,22 +252,17 @@ em.s {
   outline-offset: 2px;
 }
 
-/* Motion safety net (concept.md §7): elements that scripts animate in are hidden only while
-   html.motion is set and the motion layer has not announced itself (.motion-ready).
-   If it never does, the keyframes reveal everything after 3 s. */
-html.motion:not(.motion-ready) :is([data-split], [data-rise], [data-stagger] > *) {
+/* Motion safety net (concept.md §7): elements that scripts animate in are hidden only while html.motion is set
+   and the motion layer has not announced itself (.motion-ready). If it never does, Base's inline script adds
+   .reveal-fallback after 3 s (counted from navigation) and everything shows. The motion layer (task 8) skips
+   entrance animations when it finds .reveal-fallback already set. */
+html.motion:not(.motion-ready, .reveal-fallback) :is([data-split], [data-rise], [data-stagger] > *) {
   opacity: 0;
-  animation: reveal 0s linear 3s forwards;
 }
-/* Keyboard users must never land on an invisible element: anything focused (or holding focus) shows at once.
-   The reveal animation keeps running: removing it here would restart the 3 s timer on blur. */
-html.motion:not(.motion-ready) :is([data-split], [data-rise], [data-stagger] > *):is(:focus-within, :focus-visible) {
+/* Keyboard users must never land on an invisible element: anything focused (or holding focus) shows at once */
+html.motion:not(.motion-ready, .reveal-fallback)
+  :is([data-split], [data-rise], [data-stagger] > *):is(:focus-within, :focus-visible) {
   opacity: 1;
-}
-@keyframes reveal {
-  to {
-    opacity: 1;
-  }
 }
 
 /* Reduced motion: everything is visible at once, no transitions or animations */

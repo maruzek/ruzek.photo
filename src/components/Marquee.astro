@@ -24,9 +24,7 @@ const d = t(locale).marquee;
       ))}
     </ul>
   </div>
-  <!-- WCAG 2.2.2: the choreography (task 8) reveals the button when it starts the loop and wires it up -->
-  <button class="marquee-toggle mono" type="button" aria-pressed="false" hidden>
-    <span class="when-moving">{d.pause}</span>
-    <span class="when-paused">{d.play}</span>
-  </button>
+  <!-- WCAG 2.2.2: the choreography (task 8) reveals the button when it starts the loop and wires it up.
+       The name stays "Pause"; only aria-pressed tells whether the band is stopped (toggle button pattern). -->
+  <button class="marquee-toggle mono" type="button" aria-pressed="false" hidden>{d.pause}</button>
 </div>

@@ -66,7 +66,6 @@ export const cs = {
   marquee: {
     label: 'Co fotím',
     pause: 'Pozastavit',
-    play: 'Spustit',
     items: [
       'Firemní akce',
       'konference',

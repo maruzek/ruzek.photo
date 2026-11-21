@@ -7,6 +7,14 @@
   display: grid;
   align-items: end;
   overflow: hidden;
+  background: var(--night); /* the surface the text sits on when the photo is withdrawn */
+}
+.fold .ph-tag {
+  /* top right, clear of the text strip at the bottom and of the header's logo */
+  top: 96px;
+  left: auto;
+  right: var(--m);
+  z-index: 2;
 }
 .fold .dph {
   position: absolute;
