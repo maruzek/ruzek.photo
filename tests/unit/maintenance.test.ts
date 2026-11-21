@@ -70,7 +70,7 @@ function memoryStore(rows: InquiryRecord[]): InquiryStore {
           confirmedAt: null,
           previewedAt: null,
           utmCampaign: null,
-          anonymizedAt: at,
+          anonymizedAt: at, // the raw run time the worker passed; d1Store rounds it to the month (L2-01)
         });
       }
       return hit.length;

@@ -39,6 +39,8 @@ CREATE TABLE inquiries (
   previewed_at INTEGER,
   anonymized_at INTEGER,
   CHECK (anonymized_at IS NOT NULL OR (name IS NOT NULL AND email IS NOT NULL AND submission_id IS NOT NULL))
-);
+-- WITHOUT ROWID: no hidden insertion counter, so an anonymized row does not reveal its place in the order of
+-- arrival (L2-01); rows are stored by the random id
+) WITHOUT ROWID;
 CREATE INDEX idx_inquiries_created_at ON inquiries (created_at);
 CREATE INDEX idx_inquiries_pending_mail ON inquiries (created_at) WHERE notified_at IS NULL OR confirmed_at IS NULL;

@@ -211,6 +211,8 @@ Jako varování vypíše viditelná `TODO` ve stránkách v `dist/client` (podle
 ## Nasazení
 Nasazení dělá Martin sám, nebo agent s jeho výslovným souhlasem u každého kroku, protože kroky na Cloudflare jsou nevratné nebo veřejné. Postup je v plánu, [úkol 16](docs/superpowers/plans/2026-11-20-rozpad-astro.md): D1 databáze a migrace, widget Turnstile, odesílání e-mailů (DNS záznamy SPF, DKIM, DMARC), údržbový worker, Umami a Cloudflare Web Analytics, Search Console, `pnpm check && pnpm test:e2e && pnpm check:launch`, pak `pnpm build && wrangler deploy` a kontrola na produkci.
 
+ID databáze z `wrangler d1 create ruzek-inquiries` patří do **obou** konfigurací: `wrangler.jsonc` i `workers/maintenance/wrangler.jsonc`. Teď v nich je zástupná hodnota.
+
 - `ID` D1 databáze v `wrangler.jsonc` je zatím nulový zástupný řetězec. Doplní se při nasazení.
 - Nasazuje se jen výstup `pnpm build` (ten spouští i `check:exif`). Nikdy `wrangler deploy` bez předchozího buildu.
 - `TODO:` Přesné příkazy nasazení doplní úkol 16, až se provedou.

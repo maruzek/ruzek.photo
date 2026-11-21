@@ -246,6 +246,17 @@ describe('d1Store', () => {
     });
   });
 
+  it('an anonymized row reveals neither the day it was anonymized nor its place in the order of arrival (L2-01)', async () => {
+    await store.insert(rec({ id: 'first', submissionId: 's1', createdAt: NOW - 400 * DAY, previewedAt: NOW - 10 * DAY }));
+    await store.insert(rec({ id: 'second', submissionId: 's2', createdAt: NOW - 399 * DAY, previewedAt: NOW - 10 * DAY }));
+    const at = NOW + 14 * DAY + 3 * 3_600_000; // the daily run on the 15th at 03:00 UTC
+    expect(await store.anonymizeCreatedBefore(at - 365 * DAY, at, at - 3 * DAY, 0)).toBe(2);
+    const rows = (await db.prepare('SELECT anonymized_at FROM inquiries').all<{ anonymized_at: number }>()).results;
+    expect(rows.map((r) => r.anonymized_at)).toEqual([NOW, NOW]); // the first day of the month, UTC
+    // no hidden insertion counter to sort by
+    await expect(db.prepare('SELECT rowid FROM inquiries').all()).rejects.toThrow(/rowid/);
+  });
+
   it('anonymized rows are not resent', async () => {
     await store.insert(rec({ createdAt: NOW - 400 * DAY, previewedAt: NOW - 10 * DAY }));
     await store.anonymizeCreatedBefore(NOW - 365 * DAY, NOW, NOW, 0);

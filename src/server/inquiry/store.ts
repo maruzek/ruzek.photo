@@ -86,6 +86,7 @@ const keepListed = (c: string, values: readonly string[]): string => {
 // so the row no longer matches the ID quoted in the owner's e-mail (which still holds the personal data).
 // ST-04: nothing may link the row back to that e-mail either: created_at goes down to the first day of its month
 // (UTC), the mail timestamps become NULL, the free campaign name goes, and source/medium stay only when generic.
+// L2-01: anonymized_at is rounded to the month too, because the daily run lands one year after arrival.
 const ANONYMIZE_SET = `
   id = lower(hex(randomblob(16))),
   submission_id = NULL,
@@ -98,7 +99,7 @@ const ANONYMIZE_SET = `
   utm_medium = ${keepListed('utm_medium', ANONYMOUS_UTM_MEDIUMS)},
   utm_campaign = NULL,
   notified_at = NULL, confirmed_at = NULL, previewed_at = NULL,
-  anonymized_at = ?2`;
+  anonymized_at = CAST(strftime('%s', ?2 / 1000, 'unixepoch', 'start of month') AS INTEGER) * 1000`;
 
 export function d1Store(db: D1Database): InquiryStore {
   return {

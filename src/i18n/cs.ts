@@ -344,7 +344,7 @@ export const cs = {
         paragraphs: [
           'Když z poptávky nebude zakázka, poptávku anonymizuji po {months} měsících od odeslání, nejpozději {graceDays} dní po této lhůtě. Smažu jméno, e-mail, telefon, místo, čas, poznámku, ID odeslání a název kampaně. ID poptávky nahradím novým náhodným, datum akce zkrátím na měsíc a rok, čas přijetí na první den měsíce a smažu, kdy odešly e-maily a kdy byla poptávka v přehledu.',
           'Jednou měsíčně mi před anonymizací přijde e-mail s poptávkami, na které brzy dojde: jméno, datum přijetí, typ focení a ID poptávky. Podle něj označím ty, ze kterých byla zakázka.',
-          'Po anonymizaci zůstane jen typ focení, měsíc akce, délka, počet lidí, požadované výstupy, odhad ceny, jazyk webu, verze zásad, stav poptávky, měsíc přijetí a den anonymizace. Dál stránka webu, ze které poptávka přišla, doména webu, ze kterého jste přišli, a zdroj a médium kampaně, ale jen když jde o obecný kanál, třeba instagram nebo email. Tyto údaje mi slouží ke statistice.',
+          'Po anonymizaci zůstane jen typ focení, měsíc akce, délka, počet lidí, požadované výstupy, odhad ceny, jazyk webu, verze zásad, stav poptávky, měsíc přijetí a měsíc anonymizace. Dál stránka webu, ze které poptávka přišla, doména webu, ze kterého jste přišli, a zdroj a médium kampaně, ale jen když jde o obecný kanál, třeba instagram nebo email. Tyto údaje mi slouží ke statistice.',
           'Když z poptávky bude zakázka, údaje si nechám po dobu spolupráce. Doklady uchovávám tak dlouho, jak ukládají daňové předpisy.',
           'Kopie poptávky se všemi údaji mi přijde e-mailem do schránky. Anonymizace v databázi se jí netýká.',
         ],
