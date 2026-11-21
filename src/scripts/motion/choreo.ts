@@ -54,7 +54,7 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
         }),
     });
   }
-  const heroBits = root.querySelectorAll('.hero .kick > *, .hero .row > *');
+  const heroBits = root.querySelectorAll('.hero .kick > *, .hero .row > :not(p)');
   if (heroBits.length > 0) {
     const tween = gsap.from(heroBits, {
       y: 24,
