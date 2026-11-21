@@ -254,10 +254,10 @@ html.motion:not(.motion-ready) :is([data-split], [data-rise], [data-stagger] > *
   opacity: 0;
   animation: reveal 0s linear 3s forwards;
 }
-/* Keyboard users must never land on an invisible element: anything focused (or holding focus) shows at once */
+/* Keyboard users must never land on an invisible element: anything focused (or holding focus) shows at once.
+   The reveal animation keeps running: removing it here would restart the 3 s timer on blur. */
 html.motion:not(.motion-ready) :is([data-split], [data-rise], [data-stagger] > *):is(:focus-within, :focus-visible) {
   opacity: 1;
-  animation: none;
 }
 @keyframes reveal {
   to {

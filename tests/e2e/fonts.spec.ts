@@ -2,12 +2,15 @@ import { test, expect } from '@playwright/test';
 
 test('fonts are self-hosted', async ({ page }) => {
   const fontRequests: string[] = [];
+  const googleFonts: string[] = [];
   page.on('request', (r) => {
+    if (/fonts\.(googleapis|gstatic)\.com/.test(r.url())) googleFonts.push(r.url());
     if (r.resourceType() === 'font' || /\.(woff2?|ttf|otf)(\?|$)/i.test(r.url())) fontRequests.push(r.url());
   });
   await page.goto('/');
   await page.evaluate(() => document.fonts.ready);
   // every font file comes from our own origin (no Google Fonts, jsDelivr or any other CDN)
+  expect(googleFonts).toEqual([]);
   expect(fontRequests.length).toBeGreaterThan(0);
   const origin = new URL(page.url()).origin;
   expect(fontRequests.filter((u) => new URL(u).origin !== origin)).toEqual([]);
@@ -30,7 +33,7 @@ test('Stack Sans Notch is never below 64 px in the rendered page', async ({ page
   expect(px).toBeGreaterThanOrEqual(64);
 });
 
-test('fallback faces are size-matched to the real fonts, not stretched (no layout shift on swap)', async ({
+test('fallback faces have a size-adjust close to 100 % (metrics taken from the latin variant)', async ({
   page,
 }) => {
   await page.goto('/');

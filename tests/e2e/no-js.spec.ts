@@ -33,6 +33,17 @@ test('a focused link inside a stagger group is visible at once', async ({ page }
   await expect(page.locator('[data-stagger] > li').nth(1)).toHaveCSS('opacity', '0', { timeout: 500 });
 });
 
+test('content revealed by the fallback stays visible after focus leaves it', async ({ page }) => {
+  await page.route('**/*.js', (r) => r.abort());
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const first = page.locator('[data-stagger] > li').first();
+  await expect(first).toHaveCSS('opacity', '1', { timeout: 3500 });
+  await page.locator('[data-stagger] a').first().focus();
+  await page.locator('[data-stagger] a').nth(1).focus();
+  await page.waitForTimeout(300);
+  await expect(first).toHaveCSS('opacity', '1', { timeout: 100 });
+});
+
 test('reduced motion: html.rm and everything visible at once', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
