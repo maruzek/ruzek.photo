@@ -1,0 +1,12 @@
+/* Design tokens: copied unchanged from design/final/rozpad/index.html (:root) */
+:root{
+  --night:#07080b; --night-2:#0e1015; --ink:#e9eaee; --muted:#a3a8b2; --rule-d:#23262d;
+  --light:#f2f2f3; --light-2:#e8e8ea; --light-ink:#0b0c10; --light-muted:#50545c; --rule-l:#c9cbd0; --control:#7e838c;
+  --accent:#ff7a66; --accent-hover:#ff9383; --accent-ink:#1a0703; --ok-bg:#e1eee5; --ok:#1f6b45; --err:#b3352a;
+  --f-name:"Stack Sans Notch","Stack Sans Text",system-ui,sans-serif;
+  --f-text:"Stack Sans Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-accent:"Crimson Pro",Georgia,serif; --f-mono:"Geist Mono",ui-monospace,Menlo,monospace;
+  --m:clamp(20px,3.4vw,56px); --gap:clamp(16px,2vw,32px); --sec:clamp(96px,11vw,184px);
+  --t-xs:13px; --t-s:16px; --t-m:clamp(18px,1.35vw,21px); --t-h:clamp(40px,4.8vw,80px); --t-name:clamp(76px,13.6vw,240px);
+  --ease:cubic-bezier(.16,1,.3,1);
+}

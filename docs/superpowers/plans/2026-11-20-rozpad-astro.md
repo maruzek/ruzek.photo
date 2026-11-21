@@ -111,9 +111,9 @@ test('home responds with Czech lang', async ({ page }) => {
 **Interfaces:**
 - Produces: `Base.astro` props `{ locale: 'cs' | 'en'; title: string; description: string; path: string }`, sloty `head` a `default`. Třídy na `<html>`: `motion` | `rm`, později `motion-ready`. `<Todo>{text}</Todo>` vykreslí `<span class="todo">TODO: {text}</span>`. `<Rich text="… *slovo* …" />` vykreslí `*…*` jako `<em class="s">`.
 
-- [ ] **Step 1:** `tokens.css`: zkopírovat `:root` z `design/final/rozpad/index.html:16-26` beze změny. `base.css`: reset a primitiva z `design/final/rozpad/assets/base.css` (včetně `.todo`, `.ph-tag`, `.skip`), plus `em.s`, `.mono`, `.h`, `.eyebrow`, `.btn`, `.lnk` z `index.html:29-54`.
-- [ ] **Step 2:** Písma: `pnpm add @fontsource/stack-sans-notch @fontsource/stack-sans-text @fontsource/crimson-pro @fontsource/geist-mono`. Ověřit, že každý balíček obsahuje `LICENSE` s OFL 1.1, a zapsat to do README (sekce Licence písem). Pokud zamčené Astro má stabilní Fonts API s providerem Fontsource, nakonfigurovat ho tam. Jinak `fonts.css` importuje jen řezy Notch 700, Text 400/500/600, Crimson Pro 400 italic, Geist Mono 400/500 v sadách `latin` a `latin-ext`, a v `Base.astro` dát `<link rel="preload" as="font" type="font/woff2" crossorigin>` pro Notch 700 latin-ext a Text 400 latin-ext. Záložní `@font-face` se `size-adjust` pro `system-ui`.
-- [ ] **Step 3:** `Base.astro`: `<html lang={locale}>`, inline skript v `<head>` (`is:inline`):
+- [x] **Step 1:** `tokens.css`: zkopírovat `:root` z `design/final/rozpad/index.html:16-26` beze změny. `base.css`: reset a primitiva z `design/final/rozpad/assets/base.css` (včetně `.todo`, `.ph-tag`, `.skip`), plus `em.s`, `.mono`, `.h`, `.eyebrow`, `.btn`, `.lnk` z `index.html:29-54`.
+- [x] **Step 2:** Písma: `pnpm add @fontsource/stack-sans-notch @fontsource/stack-sans-text @fontsource/crimson-pro @fontsource/geist-mono`. Ověřit, že každý balíček obsahuje `LICENSE` s OFL 1.1, a zapsat to do README (sekce Licence písem). Pokud zamčené Astro má stabilní Fonts API s providerem Fontsource, nakonfigurovat ho tam. Jinak `fonts.css` importuje jen řezy Notch 700, Text 400/500/600, Crimson Pro 400 italic, Geist Mono 400/500 v sadách `latin` a `latin-ext`, a v `Base.astro` dát `<link rel="preload" as="font" type="font/woff2" crossorigin>` pro Notch 700 latin-ext a Text 400 latin-ext. Záložní `@font-face` se `size-adjust` pro `system-ui`.
+- [x] **Step 3:** `Base.astro`: `<html lang={locale}>`, inline skript v `<head>` (`is:inline`):
 
 ```html
 <script is:inline>
@@ -133,7 +133,7 @@ html.motion:not(.motion-ready) :is([data-rise], [data-stagger] > *) {
 @keyframes reveal { to { opacity: 1; } }
 ```
 
-- [ ] **Step 4:** Napsat testy:
+- [x] **Step 4:** Napsat testy:
 
 ```ts
 // tests/e2e/fonts.spec.ts
@@ -157,8 +157,8 @@ test('content becomes visible when JS modules never load', async ({ page }) => {
 ```
 
 `tests/unit/notch-size.test.ts`: načte všechny `src/styles/**/*.css`, najde pravidla s `var(--f-name)` a ověří, že jejich `font-size` je `clamp(` s minimem ≥ 64 px. Selektory bez explicitní velikosti test odmítne.
-- [ ] **Step 5:** Spustit, očekávat FAIL (stránka zatím nemá prvky ani písma), napojit dočasnou stránku na `Base.astro` s jedním `[data-rise]` a jménem v `.name`, spustit: PASS.
-- [ ] **Step 6:** Commit `feat: design tokens, self-hosted fonts and base layout`.
+- [x] **Step 5:** Spustit, očekávat FAIL (stránka zatím nemá prvky ani písma), napojit dočasnou stránku na `Base.astro` s jedním `[data-rise]` a jménem v `.name`, spustit: PASS.
+- [x] **Step 6:** Commit `feat: design tokens, self-hosted fonts and base layout`.
 
 ---
 

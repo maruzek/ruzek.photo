@@ -1,0 +1,10 @@
+/* Font stacks. Astro's Fonts API (astro.config.ts) emits the @font-face rules and fallback faces and
+   exposes each family under a unique, hashed name through --font-notch/-text/-accent/-mono (Base.astro
+   inlines them). The prototype tokens --f-* in tokens.css name the families literally, which would not
+   match those hashed faces, so they are rebound here. Loaded right after tokens.css. */
+:root {
+  --f-name: var(--font-notch);
+  --f-text: var(--font-text);
+  --f-accent: var(--font-accent);
+  --f-mono: var(--font-mono);
+}

@@ -1,14 +1,10 @@
 ---
+import Base from '../layouts/Base.astro';
+import Todo from '../components/Todo.astro';
 ---
 
-<html lang="cs">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="generator" content={Astro.generator} />
-    <title>Martin Růžek</title>
-  </head>
-  <body>
-    <h1>Martin Růžek</h1>
-  </body>
-</html>
+<!-- Temporary page for task 2: replaced by the real home page in task 6 -->
+<Base locale="cs" title="Martin Růžek" description="TODO: popis stránky" path="/">
+  <h1 class="name" data-rise>Martin Růžek</h1>
+  <p><Todo>obsah úvodní stránky</Todo></p>
+</Base>

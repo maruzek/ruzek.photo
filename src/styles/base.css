@@ -1,0 +1,288 @@
+/* Reset and primitives. Source: design/final/rozpad/assets/base.css and index.html:29-54 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  overflow-x: clip;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: auto;
+}
+body {
+  background: var(--night);
+  color: var(--ink);
+  font: 400 var(--t-s) / 1.6 var(--f-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+img {
+  max-width: 100%;
+  display: block;
+}
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure,
+dl,
+dd {
+  margin: 0;
+}
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+a {
+  color: inherit;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+:focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: 3px;
+}
+.skip {
+  position: absolute;
+  left: 16px;
+  top: -64px;
+  padding: 8px 16px;
+  background: #000;
+  color: #fff;
+  z-index: 100;
+  text-decoration: none;
+}
+.skip:focus {
+  top: 16px;
+}
+.vh {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.roh {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Visible honesty markers */
+.todo {
+  font-family: ui-monospace, SFMono-Regular, menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0;
+  padding: 2px 8px;
+  border: 1px dashed currentcolor;
+  border-radius: 4px;
+  display: inline-block;
+  line-height: 1.5;
+  font-style: normal;
+  font-weight: 400;
+  text-transform: none;
+}
+.ph-wrap {
+  position: relative;
+}
+.ph-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font: 500 12px / 1.4 ui-monospace, SFMono-Regular, menlo, monospace;
+  background: rgb(0 0 0 / 72%);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Type primitives */
+em.s {
+  font-family: var(--f-accent);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  font-size: 1.04em;
+}
+.mono {
+  font-family: var(--f-mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.h {
+  font-family: var(--f-text);
+  font-weight: 600;
+  font-size: var(--t-h);
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.eyebrow::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 56px;
+  padding: 0 22px 0 26px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: 500 16px / 1 var(--f-text);
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 0.3s var(--ease);
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform: translateY(101%);
+  transition: transform 0.45s var(--ease);
+  z-index: -1;
+}
+.btn:hover::before {
+  transform: none;
+}
+.btn .tile {
+  width: 12px;
+  height: 12px;
+  background: currentcolor;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  transition: transform 0.45s var(--ease);
+}
+.btn:hover .tile {
+  transform: translateX(4px) rotate(90deg);
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.btn:disabled {
+  background: #5a5d64;
+  color: #d3d5da;
+  cursor: not-allowed;
+}
+.btn:disabled::before {
+  display: none;
+}
+.btn.dark {
+  background: var(--light-ink);
+  color: var(--light);
+}
+.btn.dark::before {
+  background: var(--accent);
+}
+.btn.dark:hover {
+  color: var(--accent-ink);
+}
+.btn.dark:focus-visible {
+  outline-color: var(--light-ink);
+}
+.btn.sm {
+  min-height: 44px;
+  padding: 0 16px 0 18px;
+  font-size: 15px;
+  gap: 12px;
+}
+.lnk {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 16px 0;
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  background: repeating-linear-gradient(90deg, currentcolor 0 3px, transparent 3px 6px) left calc(100% - 12px) / 100% 2px no-repeat;
+}
+.lnk:hover {
+  background-image: linear-gradient(currentcolor, currentcolor);
+}
+.lnk:focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: 2px;
+}
+
+/* Motion safety net (concept.md §7): elements that scripts animate in are hidden only while
+   html.motion is set and the motion layer has not announced itself (.motion-ready).
+   If it never does, the keyframes reveal everything after 3 s. */
+html.motion:not(.motion-ready) :is([data-split], [data-rise], [data-stagger] > *) {
+  opacity: 0;
+  animation: reveal 0s linear 3s forwards;
+}
+@keyframes reveal {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Reduced motion: everything is visible at once, no transitions or animations */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  [data-split],
+  [data-rise],
+  [data-stagger] > * {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* TEMPORARY (task 2): the real .name lives in styles/sections/hero.css from task 5; delete this block then */
+.name {
+  font-family: var(--f-name);
+  font-weight: 700;
+  font-size: var(--t-name);
+  line-height: 0.84;
+  letter-spacing: -0.045em;
+  overflow-wrap: anywhere;
+}
