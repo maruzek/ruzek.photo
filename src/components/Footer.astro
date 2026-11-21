@@ -1,6 +1,7 @@
 ---
 import '../styles/sections/footer.css';
 import { site } from '../config/site';
+import { telHref } from '../lib/contact';
 import { fill, localePath, t, type Locale } from '../i18n';
 import Button from './Button.astro';
 import Todo from './Todo.astro';
@@ -46,11 +47,20 @@ const onHome = Astro.url.pathname.replace(/\/?$/, '/') === home;
       <span class="mono">{f.contact.label}</span>
       <a
         href={`mailto:${site.contact.email}`}
+        data-copy-email
         data-umami-event="contact_click"
         data-umami-event-type="email">{site.contact.email}</a
       >
       <br />
-      {site.contact.phone ?? <Todo>{f.contact.phoneTodo}</Todo>}
+      {site.contact.phone ? (
+        <a
+          href={telHref(site.contact.phone)}
+          data-umami-event="contact_click"
+          data-umami-event-type="phone">{site.contact.phone}</a
+        >
+      ) : (
+        <Todo>{f.contact.phoneTodo}</Todo>
+      )}
     </div>
   </div>
   <div class="legal">

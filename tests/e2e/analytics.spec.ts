@@ -39,7 +39,7 @@ test('a contact click sends contact_click, opening a photo sends lightbox_open',
         (window as unknown as { __umami: { name: string; data: Record<string, string> | null }[] })
           .__umami,
     );
-  // the phone number is still a TODO, so the e-mail is the contact link
+  // the e-mail link in the footer (on desktop a click copies the address; the event is sent all the same)
   await page.locator('footer.foot a[href^="mailto:"]').click();
   await expect.poll(calls).toContainEqual({ name: 'contact_click', data: { type: 'email' } });
   await page.locator('[data-lb]').first().click();

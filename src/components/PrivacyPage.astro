@@ -55,7 +55,9 @@ const sections = Object.entries(p.sections).map(([id, s]) => ({
             <p>
               {parts(text).map((chunk, i) => (
                 <>
-                  {i > 0 && <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>}
+                  {i > 0 && (
+                    <a href={`mailto:${site.contact.email}`} data-copy-email>{site.contact.email}</a>
+                  )}
                   {chunk}
                 </>
               ))}

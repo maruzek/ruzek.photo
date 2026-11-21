@@ -16,6 +16,14 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 
 ## Rozhodnuto
 
+### 2026-11-21: úpravy po první prohlídce
+- **Telefon +420 731 808 342** je veřejný (poptávka, patička, JSON-LD), WhatsApp je na stejném čísle (odkaz `wa.me`, žádné vložení ani cookies).
+- **E-mail:** na zařízení s myší klik adresu zkopíruje a ukáže hlášku s odkazem do pošty, na dotykovém zařízení otevře poštu. Odkaz zůstává `mailto:`.
+- **Formulář:** typ focení vybírá dlaždicemi, délka akce se dopočítá ze začátku a konce, pole jsou ve skupinách Kontakt / Akce / Výstupy.
+- **Odkazy v textu** mají tečkované podtržení jako „Prohlédnout práci“, hlavní menu ne.
+- **Astro audit „tabindex“:** neřeší se. `tabindex="-1"` na `main` a sekcích je cíl fokusu po skoku z menu a do pořadí tabulátoru nic nepřidává.
+- **Serif:** Instrument Serif se zkouší ve worktree `exp/instrument-serif`. Crimson Pro zůstává, dokud Martin nerozhodne.
+
 ### 2026-11-21: výkon, první měření Lighthouse CI
 Lab měření (`pnpm lhci`, emulace mobilu, medián z 5 běhů, zástupné fotky; opraveno po review PF-03 až PF-05): výkon 1,0, přístupnost 1, LCP ≈ 1,1 s, TBT 75 ms, CLS 0. Rozpočty na JS a písma se po review počítají poctivěji, viz níže.
 - **LCP není fotka.** Chrome nepočítá do LCP obrázek, který zabírá celý viewport, a hero fotka ho zabírá. LCP je proto úvodní odstavec. Odstavec se proto při načtení neskrývá (`opacity: 0` ho dřív odkrývalo až po načtení GSAP a po zpoždění 1,1 s, v labu LCP ≈ 4,3 s). Ostatní prvky hero (kicker, tlačítka, meta) se odkrývají jako dřív. **Martin potvrdí, že mu vzhled úvodu takhle vyhovuje.**

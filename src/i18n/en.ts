@@ -21,6 +21,9 @@ export const en = {
     skip: 'Skip to content',
     placeholderPhoto: 'Placeholder photo',
     cursorView: 'View',
+    emailCopied: 'Email copied.',
+    copyFailed: 'Could not copy the address.',
+    openMail: 'Open in your mail app',
   },
   anchors: {
     work: 'work',
@@ -177,6 +180,7 @@ export const en = {
       label: 'Prefer to reach me directly',
       phone: 'Phone and WhatsApp:',
       phoneTodo: 'number',
+      whatsapp: 'Message on WhatsApp',
       email: 'E-mail:',
     },
     form: {

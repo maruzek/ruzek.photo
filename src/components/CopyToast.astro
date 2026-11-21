@@ -1,0 +1,24 @@
+---
+// Toast for copied e-mail addresses (scripts/copy-email.ts). The live region is separate and always present, so
+// screen readers announce the message even though the toast itself appears from `hidden`.
+import { site } from '../config/site';
+import { t, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const d = t(Astro.props.locale).common;
+---
+
+<div class="toast" data-copy-toast data-copied={d.emailCopied} data-failed={d.copyFailed} hidden>
+  <span data-copy-text></span>
+  <a data-copy-open href={`mailto:${site.contact.email}`}>{d.openMail}</a>
+</div>
+<p class="vh" role="status" data-copy-live></p>
+
+<script>
+  const load = (): void => void import('../scripts/copy-email').then((m) => m.initCopyEmail());
+  if ('requestIdleCallback' in window) requestIdleCallback(load);
+  else setTimeout(load, 1);
+</script>

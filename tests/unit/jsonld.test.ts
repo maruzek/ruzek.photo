@@ -59,9 +59,12 @@ describe('buildJsonLd', () => {
     }
   });
 
-  it('invents nothing: no ratings, reviews, opening hours or phone while unknown', () => {
+  it('invents nothing: no ratings, reviews, opening hours or geo', () => {
     const json = JSON.stringify(buildJsonLd('cs'));
-    for (const key of ['aggregateRating', 'review', 'openingHours', 'telephone', 'geo'])
-      expect(json).not.toContain(key);
+    for (const key of ['aggregateRating', 'review', 'openingHours', 'geo']) expect(json).not.toContain(key);
+  });
+
+  it('gives the public phone number', () => {
+    expect(JSON.stringify(buildJsonLd('cs'))).toContain(`"telephone":"${site.contact.phone}"`);
   });
 });

@@ -3,6 +3,7 @@ import { Font } from 'astro:assets';
 import '../styles/tokens.css';
 import '../styles/fonts.css';
 import '../styles/base.css';
+import CopyToast from '../components/CopyToast.astro';
 import SeoHead from '../components/SeoHead.astro';
 import { analytics } from '../config/analytics';
 import type { PublishedPhoto } from '../lib/photos/get';
@@ -82,5 +83,6 @@ const bodyFace = [{ weight: 400, style: 'normal' as const }];
       import '../scripts/motion/boot';
       import '../scripts/analytics-boot';
     </script>
+    <CopyToast locale={locale} />
   </body>
 </html>

@@ -24,6 +24,6 @@ export const site = {
   /** Business profiles for JSON-LD `sameAs` (concept.md, kap. 12); `null` until they exist. */
   profiles: { google: null, firmy: null },
   cities: ['Praha', 'Karlovy Vary'],
-  contact: { email: 'foto@martinruzek.cz', phone: null, whatsapp: null },
+  contact: { email: 'foto@martinruzek.cz', phone: '+420 731 808 342', whatsapp: 'https://wa.me/420731808342' },
   legal: { ico: null, seat: null },
 } as const satisfies SiteFacts;

@@ -32,6 +32,9 @@ export const cs = {
     skip: 'Přeskočit na obsah',
     placeholderPhoto: 'Zástupná fotka',
     cursorView: 'Zobrazit',
+    emailCopied: 'E-mail je zkopírovaný.',
+    copyFailed: 'Adresu se nepodařilo zkopírovat.',
+    openMail: 'Otevřít v\u00A0poště',
   },
   anchors: {
     work: 'prace',
@@ -191,6 +194,7 @@ export const cs = {
       label: 'Radši napřímo',
       phone: 'Telefon a\u00A0WhatsApp:',
       phoneTodo: 'číslo',
+      whatsapp: 'Napsat na WhatsApp',
       email: 'E-mail:',
     },
     form: {

@@ -40,7 +40,6 @@
 }
 .foot .cols a {
   color: var(--ink);
-  text-underline-offset: 4px;
   overflow-wrap: anywhere;
 }
 .foot .legal {

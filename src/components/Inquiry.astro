@@ -4,6 +4,7 @@
 import '../styles/sections/inquiry.css';
 import InquiryForm from '../islands/InquiryForm.tsx';
 import { site } from '../config/site';
+import { telHref } from '../lib/contact';
 import { localePath, t, type Locale } from '../i18n';
 import Rich from './Rich.astro';
 import Todo from './Todo.astro';
@@ -36,11 +37,34 @@ const q = d.inquiry;
     <div slot="direct" class="direct">
       <span class="mono">{q.direct.label}</span>
       <span>
-        {q.direct.phone} {site.contact.phone ?? <Todo>{q.direct.phoneTodo}</Todo>}
+        {q.direct.phone}{' '}
+        {site.contact.phone ? (
+          <a
+            href={telHref(site.contact.phone)}
+            data-umami-event="contact_click"
+            data-umami-event-type="phone">{site.contact.phone}</a
+          >
+        ) : (
+          <Todo>{q.direct.phoneTodo}</Todo>
+        )}
+        {site.contact.whatsapp && (
+          <>
+            {' · '}
+            <a
+              href={site.contact.whatsapp}
+              rel="noopener"
+              target="_blank"
+              data-umami-event="contact_click"
+              data-umami-event-type="whatsapp">{q.direct.whatsapp}</a
+            >
+          </>
+        )}
       </span>
       <span>
-        {q.direct.email} <a
+        {q.direct.email}{' '}
+        <a
           href={`mailto:${site.contact.email}`}
+          data-copy-email
           data-umami-event="contact_click"
           data-umami-event-type="email">{site.contact.email}</a
         >

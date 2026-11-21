@@ -340,3 +340,64 @@ test('no dead band between services and "same day", sections after a wipe start 
   expect(m.gap).toBeLessThan(300); // was ≈ 420
   expect(m.aboutPad).toBeLessThanOrEqual(m.secPad / 2 + 1);
 });
+
+test('text links have the dashed underline, phone and WhatsApp are links', async ({ page }) => {
+  await page.goto('/');
+  const direct = page.locator('.direct');
+  await expect(direct.getByRole('link', { name: '+420 731 808 342' })).toHaveAttribute('href', 'tel:+420731808342');
+  await expect(direct.getByRole('link', { name: /WhatsApp/ })).toHaveAttribute('href', 'https://wa.me/420731808342');
+  for (const link of [direct.getByRole('link', { name: 'foto@martinruzek.cz' }), page.locator('footer.foot .cols a').first()]) {
+    await expect(link).toHaveCSS('text-decoration-line', 'none');
+    await expect(link).toHaveCSS('background-image', /repeating-linear-gradient/);
+  }
+});
+
+test('desktop: a click on the e-mail copies it and says so', async ({ page, context }, info) => {
+  test.skip(info.project.name !== 'desktop', 'fine pointer only');
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/');
+  await page.locator('[data-copy-toast][data-ready]').waitFor({ state: 'attached' });
+  await page.locator('footer.foot a[data-copy-email]').click();
+  await expect(page.locator('[data-copy-toast]')).toBeVisible();
+  await expect(page.locator('[data-copy-live]')).toHaveText('E-mail je zkopírovaný.');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('foto@martinruzek.cz');
+});
+
+// Review Focus 4
+test('desktop: when copying fails, the toast offers the mail app', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'fine pointer only');
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: () => Promise.reject(new Error('denied')) },
+    });
+  });
+  await page.goto('/');
+  await page.locator('[data-copy-toast][data-ready]').waitFor({ state: 'attached' });
+  await page.locator('footer.foot a[data-copy-email]').click();
+  await expect(page.locator('[data-copy-live]')).toHaveText('Adresu se nepodařilo zkopírovat.');
+  await expect(page.locator('[data-copy-open]')).toHaveAttribute('href', 'mailto:foto@martinruzek.cz');
+});
+
+// Review Focus 5
+test('touch: a click on the e-mail is a plain mailto link', async ({ page }, info) => {
+  test.skip(info.project.name !== 'mobile-360', 'touch only');
+  await page.goto('/');
+  await page.locator('[data-copy-toast][data-ready]').waitFor({ state: 'attached' }); // the lazy module runs
+  const prevented = await page.evaluate(() => {
+    let seen = true;
+    // window's bubble listener runs after the module's document listener: it reads its verdict, then keeps
+    // the test page from following the mailto: link
+    addEventListener(
+      'click',
+      (e) => {
+        seen = e.defaultPrevented;
+        e.preventDefault();
+      },
+      { once: true },
+    );
+    document.querySelector<HTMLAnchorElement>('footer.foot a[data-copy-email]')?.click();
+    return seen;
+  });
+  expect(prevented).toBe(false);
+  await expect(page.locator('[data-copy-toast]')).toBeHidden();
+});
