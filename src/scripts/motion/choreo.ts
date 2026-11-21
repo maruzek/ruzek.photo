@@ -239,7 +239,10 @@ export function sameDay({ gsap }: Libs, root: ParentNode, desktop: boolean): Cle
       ease: 'none',
       scrollTrigger: {
         trigger: day,
-        start: desktop ? 'top top' : 'top 70%',
+        // pinned in the middle of the screen while it fits, at the top when it is taller (short laptops)
+        start: desktop
+          ? () => (day.offsetHeight < innerHeight ? 'center center' : 'top top')
+          : 'top 70%',
         end: desktop ? '+=110%' : 'bottom 60%',
         scrub: true,
         pin: desktop,

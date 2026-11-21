@@ -384,3 +384,16 @@ test('the name mask does not clip accents or dots', async ({ page }) => {
   });
   expect(clipped).toEqual([]);
 });
+
+// Review Focus 2: on a short laptop the pinned section must not cut off its own heading
+test('"same day" pinned on a short screen keeps its heading in view', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'the pin is desktop only');
+  await page.setViewportSize({ width: 1280, height: 640 });
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  await page.locator('.day').scrollIntoViewIfNeeded();
+  await page.mouse.wheel(0, 300); // into the pinned range
+  await page.waitForTimeout(800);
+  const top = await page.locator('.day .eyebrow').evaluate((el) => el.getBoundingClientRect().top);
+  expect(top).toBeGreaterThanOrEqual(0);
+});

@@ -317,6 +317,11 @@ html.motion:not(.motion-ready, .reveal-fallback)
 .sec {
   padding: var(--sec) var(--m);
 }
+/* A dithered wipe already puts 120–220 px between zones: the section after it starts at half the spacing */
+.dwipe + .sec,
+.dwipe + .light > .sec:first-child {
+  padding-top: calc(var(--sec) * 0.5);
+}
 .sec-head {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);

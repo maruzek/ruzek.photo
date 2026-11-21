@@ -321,3 +321,22 @@ for (const path of ['/', '/en/']) {
     });
   }
 }
+
+test('no dead band between services and "same day", sections after a wipe start closer (desktop)', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'measured at 1440 × 900');
+  await page.emulateMedia({ reducedMotion: 'reduce' }); // layout without the pin
+  await page.goto('/');
+  const m = await page.evaluate(() => {
+    const top = (s: string): number => document.querySelector(s)!.getBoundingClientRect().top;
+    const svc = document.querySelector('.svc-sec')!;
+    return {
+      gap: top('.day .eyebrow') - svc.lastElementChild!.getBoundingClientRect().bottom,
+      aboutPad: parseFloat(getComputedStyle(document.querySelector('.about')!).paddingTop),
+      secPad: parseFloat(getComputedStyle(svc).paddingBottom), // the full --sec (its top padding is 0)
+    };
+  });
+  expect(m.gap).toBeLessThan(300); // was ≈ 420
+  expect(m.aboutPad).toBeLessThanOrEqual(m.secPad / 2 + 1);
+});
