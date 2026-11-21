@@ -11,8 +11,8 @@ interface Props {
   path: string;
 }
 
-const { locale, title, description, path } = Astro.props;
-const canonical = new URL(path, Astro.site);
+// `path` is for the canonical link that SeoHead adds in task 13
+const { locale, title, description } = Astro.props;
 // Only the two faces above the fold are preloaded (Notch 700 for the name, Text 400 for body copy)
 const aboveTheFold = [{ weight: 700, style: 'normal' as const }];
 const bodyFace = [{ weight: 400, style: 'normal' as const }];
@@ -25,7 +25,6 @@ const bodyFace = [{ weight: 400, style: 'normal' as const }];
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical.href} />
     <script is:inline>
       document.documentElement.classList.add(
         matchMedia('(prefers-reduced-motion: reduce)').matches ? 'rm' : 'motion'

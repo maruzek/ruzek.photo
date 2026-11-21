@@ -23,8 +23,10 @@ const variants = (pkg: string, weights: readonly number[], style: Style = 'norma
   weights.flatMap((weight) =>
     (
       [
-        ['latin-ext', LATIN_EXT],
+        // `latin` first: Astro derives the fallback face metrics (size-adjust etc.) from the first variant,
+        // and the latin-ext file gave 147 % / 166 % instead of the real values for the text people read
         ['latin', LATIN],
+        ['latin-ext', LATIN_EXT],
       ] as const
     ).map(([subset, unicodeRange]) => ({
       weight,
