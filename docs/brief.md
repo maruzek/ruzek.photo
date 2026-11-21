@@ -13,7 +13,7 @@ Zdroj: Martinovo zadání a odpovědi z brainstormu (2026-11-20). Texty o Martin
 ## Zaměření
 | Oblast | Role | Příklady |
 |---|---|---|
-| Akce | hlavní příjem | firemní akce, konference, přednášky a debaty, univerzitní a spolkové akce, plesy, večírky, bary |
+| Akce | hlavní příjem | firemní akce, konference, přednášky a debaty, univerzitní a spolkové akce, plesy, večírky |
 | Sport | vášeň a odlišení | fotbal, florbal, turnaje, závody |
 | Portréty | doplněk | — |
 | Sociální sítě | unikátní nabídka | výběr na sítě týž den, vertikální videa (reels), vlastní obsah |

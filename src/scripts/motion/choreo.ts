@@ -72,6 +72,10 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
       type: 'lines',
       mask: 'lines',
       linesClass: 'sl', // the mask gets `sl-mask` (base.css gives it room for háčky)
+      // SplitText's own whitespace reduction matches \s, which turns the no-break spaces after one-letter words
+      // (z\u00A0akcí) into plain ones and lets a line end in "z"; collapse only ordinary whitespace instead
+      reduceWhiteSpace: false,
+      prepareText: (text) => text.replace(/[ \t\n\r\f]+/g, ' '),
       autoSplit: true,
       onSplit: (self) =>
         gsap.from(self.lines, {

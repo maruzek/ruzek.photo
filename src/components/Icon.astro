@@ -1,0 +1,36 @@
+---
+// An icon from Hugeicons (free set, MIT, stroke rounded), rendered to inline SVG at build time: no client JS.
+// Every icon on the site comes from this one set. Decorative: the link or button next to it carries the name.
+
+/** Shape of a Hugeicons icon (the package declares it but does not export it) */
+type IconNode = readonly (readonly [string, Readonly<Record<string, string | number>>])[];
+
+interface Props {
+  icon: IconNode;
+  size?: number;
+}
+
+const { icon, size = 20 } = Astro.props;
+// Hugeicons ships React-style attribute names (strokeWidth); SVG wants them kebab-cased
+const attrs = (a: Readonly<Record<string, string | number>>): Record<string, string | number> =>
+  Object.fromEntries(
+    Object.entries(a)
+      .filter(([k]) => k !== 'key')
+      .map(([k, v]) => [k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`), v]),
+  );
+---
+
+<svg
+  class="icon"
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  {icon.map(([tag, a]) => {
+    const Tag = tag;
+    return <Tag {...attrs(a)} />;
+  })}
+</svg>

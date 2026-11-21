@@ -67,8 +67,7 @@ const onHome = Astro.url.pathname.replace(/\/?$/, '/') === home;
     <span>
       {fill(f.legal.copyright, { year, name: site.name })} ·{' '}
       {site.legal.ico ? `${f.legal.ico} ${site.legal.ico}` : <Todo>{f.legal.ico}</Todo>} ·{' '}
-      {site.legal.seat ? `${f.legal.seat} ${site.legal.seat}` : <Todo>{f.legal.seat}</Todo>} ·{' '}
-      {f.legal.vat}
+      {site.legal.seat ? `${f.legal.seat} ${site.legal.seat}` : <Todo>{f.legal.seat}</Todo>}
     </span>
     <a href={localePath(locale, 'privacy')}>{f.legal.privacy}</a>
   </div>

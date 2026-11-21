@@ -394,6 +394,23 @@ for (const [what, selector] of [
   });
 }
 
+// Czech typography: a one-letter preposition or conjunction never ends a line, also after SplitText cut the
+// heading into line boxes (its own whitespace reduction used to turn the no-break spaces into plain ones)
+test('split headings keep one-letter words with the next word', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  await page.evaluate(() => document.fonts.ready);
+  await expect.poll(() => page.locator('[data-split] .sl').count()).toBeGreaterThan(0);
+  const stranded = await page
+    .locator('[data-split] .sl')
+    .evaluateAll((lines) =>
+      lines
+        .map((l) => (l.textContent ?? '').trim())
+        .filter((t) => /(^|[\s\u00A0])[vszkouaiVSZKOUAI]$/.test(t)),
+    );
+  expect(stranded).toEqual([]);
+});
+
 // The fold number sits in a clipping box and has negative tracking: the last digit must keep its right edge
 test('the fold number is not clipped on the right', async ({ page }) => {
   await page.goto('/');

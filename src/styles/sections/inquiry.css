@@ -21,9 +21,46 @@
 }
 .direct {
   display: grid;
-  gap: 6px;
+  gap: 8px;
+}
+/* One row per action: icon, what it does, and the number or address. The whole row is the link (44 px tall). */
+.direct ul {
+  display: grid;
+}
+.direct a {
+  display: grid;
+  grid-template-columns: 20px 9ch minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  text-decoration: none;
+  color: var(--light-ink);
+}
+.direct .k {
+  color: var(--light-muted);
+}
+.direct .v {
+  overflow-wrap: anywhere;
+  transition: transform 0.25s var(--ease, ease);
+}
+.direct a:hover .v,
+.direct a:focus-visible .v {
+  transform: translateX(4px);
+}
+/* Variant with rules between the rows */
+.direct.rules ul {
   border-top: 1px solid var(--rule-l);
-  padding-top: 20px;
+}
+.direct.rules li {
+  border-bottom: 1px solid var(--rule-l);
+}
+.direct.rules a {
+  min-height: 52px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .direct .v {
+    transition: none;
+  }
 }
 @media (max-width: 900px) {
   .inq {

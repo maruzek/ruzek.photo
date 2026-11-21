@@ -10,6 +10,7 @@ import Button from './Button.astro';
 import Footer from './Footer.astro';
 import Header from './Header.astro';
 import PlaceholderTag from './PlaceholderTag.astro';
+import { site } from '../config/site';
 import { getPhoto, type PublishedPhoto } from '../lib/photos/get';
 import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
 import { localePath, t, type Locale } from '../i18n';
@@ -36,7 +37,7 @@ const home = localePath(locale, 'home');
   locale={locale}
   route="caseStudy"
   slug={entry.id}
-  title={`${title[locale]} · ${d.meta.title.split(' · ')[0]}`}
+  title={`${title[locale]} · ${site.name}`}
   description={summary[locale]}
   photo={photos[0]}
 >

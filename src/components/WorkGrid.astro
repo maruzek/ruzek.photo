@@ -39,7 +39,6 @@ const photos = (await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)))).fil
         <Rich text={d.work.title} />
       </h2>
     </div>
-    <p data-rise>{d.work.lead}</p>
   </div>
   <div class="work">
     {photos.map((photo, i) => {

@@ -32,7 +32,7 @@ test('no cookies, no storage, no banner after a full visit', async ({ page, cont
   await page.getByLabel('Jméno').fill('Jana Nováková');
   await page.getByLabel('E-mail').fill('jana@example.com');
   await page.locator('#inq button[type="submit"]').click();
-  await expect(page.locator('#inq')).toContainText('Díky');
+  await expect(page.locator('#inq')).toContainText('Děkuji');
   // both trackers loaded and reported (page view, the lightbox and form events)
   await expect
     .poll(() => new Set(stubs.collects.map((c) => c.url)))

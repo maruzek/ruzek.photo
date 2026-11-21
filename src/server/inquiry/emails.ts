@@ -107,6 +107,7 @@ export function clientConfirmation(r: InquiryRecord): MailText {
     m.reply,
     m.notYou,
     '',
+    m.closing,
     site.name,
     d.hero.kicker.replace(/\u00A0/g, ' '),
   ].join('\n');

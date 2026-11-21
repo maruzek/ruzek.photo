@@ -45,18 +45,11 @@ const portrait = await getPhoto(PLACEMENT.about);
     <h2 class="h" id="about-h" data-split>
       <Rich text={a.title} />
     </h2>
-    <p data-rise>
-      <strong>{a.leadStrong}</strong> {a.lead}
-    </p>
-    <p data-rise>{a.speed}</p>
+    <p data-rise><strong>{a.lead}</strong></p>
     <p data-rise>
       <Todo>{a.storyTodo}</Todo>
     </p>
     <dl class="facts mono" data-stagger>
-      <div>
-        <dt>{a.facts.where.label}</dt>
-        <dd>{a.facts.where.value}</dd>
-      </div>
       <div>
         <dt>{a.facts.forWhom.label}</dt>
         <dd>{a.facts.forWhom.value}</dd>

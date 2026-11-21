@@ -16,15 +16,15 @@ type Widen<T> = T extends string ? string : { readonly [K in keyof T]: Widen<T[K
 // The prototype shows one card for the short shoot and the portrait; both pricing ids point to it.
 const shortAndPortraitCard = {
   title: 'Portrét a\u00A0krátké focení',
-  text: 'Portréty pro profil, tým nebo řečníky. Krátké focení na menší akce.',
+  text: 'Portréty na profil, pro tým nebo řečníky. Krátké focení menší akce.',
   priceLabel: 'Portrét / krátké focení',
 } as const;
 
 export const cs = {
   meta: {
-    title: 'Martin Růžek · fotograf akcí a sportu',
+    title: 'Fotograf akcí a sportu Praha · Martin Růžek',
     description:
-      'Martin Růžek fotí firemní akce, konference, plesy, večírky a sport v Praze a Karlových Varech. Výběr fotek na sítě ještě týž den.',
+      'Fotograf akcí a sportu v Praze a Karlových Varech: firemní akce, konference, plesy, zápasy. Výběr fotek na sítě ještě týž den. Poptejte focení.',
     // Shown on the English page until Martin approves the translation (concept.md, kap. 5).
     translationTodo: 'kontrola překladu',
   },
@@ -32,7 +32,7 @@ export const cs = {
     skip: 'Přeskočit na obsah',
     placeholderPhoto: 'Zástupná fotka',
     cursorView: 'Zobrazit',
-    emailCopied: 'E-mail je zkopírovaný.',
+    emailCopied: 'Adresa je zkopírovaná.',
     copyFailed: 'Adresu se nepodařilo zkopírovat.',
     openMail: 'Otevřít v\u00A0poště',
   },
@@ -43,7 +43,7 @@ export const cs = {
     inquiry: 'poptavka',
   },
   nav: {
-    label: 'Hlavní',
+    label: 'Hlavní navigace',
     homeLabel: '{name}, úvod',
     logoLabel: 'Logo {name}',
     work: 'Práce',
@@ -58,8 +58,8 @@ export const cs = {
   hero: {
     kicker: 'Fotograf akcí a\u00A0sportu',
     places: 'Praha · Karlovy Vary',
-    scrollHint: 'Scroll',
-    lead: 'Fotím firemní akce, konference, plesy, večírky i\u00A0zápasy. Výběr fotek na vaše sítě posílám *ještě týž den.*',
+    scrollHint: 'Dolů',
+    lead: 'Fotím firemní akce, konference, plesy a\u00A0sport. Výběr na vaše sítě máte *ještě týž den.*',
     cta: 'Poptat focení',
     ctaWork: 'Prohlédnout práci',
     instagram: 'Instagram {handle}',
@@ -74,8 +74,8 @@ export const cs = {
       'konference',
       'Přednášky a\u00A0debaty',
       'plesy',
-      'Večírky a\u00A0bary',
-      'univerzity a\u00A0spolky',
+      'Večírky',
+      'univerzitní a\u00A0spolkové akce',
       'Fotbal',
       'florbal',
       'Turnaje a\u00A0závody',
@@ -85,7 +85,7 @@ export const cs = {
   folds: {
     events: {
       title: 'Akce, které *chcete* vidět znovu.',
-      chips: ['Firemní akce', 'Konference', 'Přednášky a\u00A0debaty', 'Plesy', 'Večírky a\u00A0bary'],
+      chips: ['Firemní akce', 'Konference', 'Plesy', 'Večírky'],
       text: 'Nehledám pózy. Fotím, co se opravdu stalo: řečníka, plný sál, přípitek i\u00A0poslední tanec.',
       index: '01',
       indexLabel: 'Akce',
@@ -93,16 +93,15 @@ export const cs = {
     sport: {
       title: 'Sport je moje *vášeň.*',
       chips: ['Fotbal', 'Florbal', 'Turnaje', 'Závody'],
-      text: 'Na hřišti nedostanete druhou šanci. Tu rychlost pak nosím i\u00A0na akce.',
+      text: 'Na hřišti se moment neopakuje.',
       index: '02',
       indexLabel: 'Sport',
     },
   },
   work: {
     eyebrow: 'Vybraná práce',
-    title: 'Okamžiky z\u00A0akcí, *ne* aranžmá.',
-    lead: 'Ukázky z\u00A0akcí a\u00A0sportu. Klikněte na fotku a\u00A0otevře se celá.',
-    foot: 'Fotky z\u00A0akce předávám klientům v\u00A0soukromé online galerii. Na webu jsou jen fotky se souhlasem klienta nebo pořadatele.',
+    title: 'Okamžiky z\u00A0akcí a\u00A0*zápasů.*',
+    foot: 'Celou akci dostanete v\u00A0soukromé online galerii.',
     footLink: 'Chci podobné fotky',
     // A photo caption names the event; the place and date are not known yet
     captionTodo: 'místo a\u00A0datum',
@@ -110,12 +109,12 @@ export const cs = {
   services: {
     eyebrow: 'Služby a\u00A0ceny',
     title: 'Co fotím a\u00A0*za kolik.*',
-    lead: 'V\u00A0ceníku uvádím orientační ceny „od“. Nejsem plátce DPH. Přesnou nabídku pošlu podle délky a\u00A0typu akce.',
+    lead: 'Ceny jsou orientační („od“), nejsem plátce DPH. Přesnou nabídku dostanete podle délky a\u00A0typu akce.',
     calcLink: 'Spočítat cenu',
     cards: {
       event: {
         title: 'Akce',
-        text: 'Firemní akce, konference, přednášky a\u00A0debaty, univerzitní a\u00A0spolkové akce, plesy, večírky a\u00A0bary.',
+        text: 'Firemní akce, konference, přednášky a\u00A0debaty, univerzitní a\u00A0spolkové akce, plesy a\u00A0večírky.',
         priceLabel: 'První hodina',
         priceNote: 'každá další {price}',
       },
@@ -131,15 +130,15 @@ export const cs = {
     deliverables: {
       photos: '{range}\u00A0fotek',
       photosPerHour: '{range}\u00A0fotek za hodinu',
-      turnaroundDays: 'do\u00A0{range}\u00A0dnů',
-      turnaroundHours: 'do\u00A0{range}\u00A0h',
+      turnaroundDays: 'dodání za\u00A0{range}\u00A0dnů',
+      turnaroundHours: 'dodání do\u00A0{range}\u00A0h',
       durationMin: '{range}\u00A0min',
       durationMaxHours: 'focení do\u00A0{n}\u00A0h',
       durationMaxMinutes: 'focení do\u00A0{n}\u00A0min',
     },
     addons: {
-      sameDay: { label: 'Výběr na sítě týž den', note: 'Vybrané fotky ještě v\u00A0den akce' },
-      video: { label: 'Vertikální videa', note: 'Krátká videa na výšku pro sítě' },
+      sameDay: { label: 'Výběr na sítě týž den', note: 'Expres' },
+      video: { label: 'Videa pro sítě', note: '1–3 videa na výšku' },
     },
   },
   day: {
@@ -150,18 +149,18 @@ export const cs = {
       {
         no: '01 · Během akce',
         title: 'Fotím, co se děje',
-        text: 'Řečníci, hosté, atmosféra, detaily. Na sportovních akcích pohyb a\u00A0emoce.',
+        text: 'Řečníci, hosté, detaily.',
       },
       {
         no: '02 · Hned po akci',
         title: 'Vybírám to nejsilnější',
-        text: 'Z\u00A0celého dne připravím výběr na sítě a\u00A0případně vertikální videa.',
+        text: 'Z\u00A0celého dne vyberu snímky pro sítě. Na přání přidám videa na výšku.',
       },
       {
         no: '03 · Týž den',
         title: 'Posílám výběr',
         // Followed by <Todo>{galleryTodo}</Todo> and a full stop.
-        text: 'Hotové fotky máte ještě ten den. Celou galerii dodám',
+        text: 'Celou galerii dodám',
       },
     ],
     galleryTodo: 'termín',
@@ -169,14 +168,11 @@ export const cs = {
   about: {
     eyebrow: 'O\u00A0mně',
     title: 'Jsem Martin. Fotím lidi v\u00A0*pohybu.*',
-    leadStrong: 'Jsem fotograf akcí a\u00A0sportu. Fotím v\u00A0Praze a\u00A0působím i\u00A0v\u00A0Karlových Varech.',
-    lead: 'Nejčastěji fotím firemní akce, konference, univerzitní a\u00A0spolkové akce, plesy a\u00A0večírky. Sport je moje vášeň, portréty jsou doplněk.',
-    speed: 'Moje silná stránka je rychlost. Výběr fotek na sítě posílám ještě týž den a\u00A0točím i\u00A0vertikální videa.',
+    lead: 'Fotím akce a\u00A0sport v\u00A0Praze a\u00A0Karlových Varech.',
     storyTodo: 'Martinův vlastní příběh, jak se k\u00A0focení dostal',
     portraitAlt: 'Zástupný portrét, místo pro Martinovu fotku',
     portraitTodo: 'Martinův portrét',
     facts: {
-      where: { label: 'Kde', value: 'Praha, Karlovy Vary' },
       forWhom: { label: 'Pro koho', value: 'Firmy, agentury, univerzity, spolky, kluby' },
       instagram: { label: 'Instagram' },
     },
@@ -184,17 +180,18 @@ export const cs = {
   inquiry: {
     eyebrow: 'Poptávka',
     title: 'Kdy je *vaše* akce?',
-    lead: 'Napište datum, místo a\u00A0typ akce. Odpovím s\u00A0cenou a\u00A0tím, jestli mám volno.',
+    lead: 'Napište datum, místo a\u00A0typ akce. Odpovím s\u00A0cenou a\u00A0potvrdím, jestli mám volno.',
     estimate: {
       label: 'Orientačně od',
-      note: 'Podle vybraných možností. Nejsem plátce DPH.',
+      note: 'Podle vybraných možností.',
     },
     direct: {
       label: 'Radši napřímo',
-      phone: 'Telefon a\u00A0WhatsApp:',
+      call: 'Zavolat',
       phoneTodo: 'číslo',
-      whatsapp: 'Napsat na WhatsApp',
-      email: 'E-mail:',
+      whatsapp: 'WhatsApp',
+      whatsappAction: 'Napsat zprávu',
+      email: 'E-mail',
     },
     form: {
       name: {
@@ -220,17 +217,17 @@ export const cs = {
       hoursFromTimes: 'Spočítáno ze začátku a\u00A0konce.',
       hoursLess: 'Ubrat hodinu',
       hoursMore: 'Přidat hodinu',
-      groups: { contact: 'Kontakt', event: 'Akce', extras: 'Výstupy a\u00A0poznámka' },
+      groups: { contact: 'Kontakt', event: 'Akce', extras: 'Doplňky a\u00A0poznámka' },
       optional: '(nepovinné)',
       date: { label: 'Datum' },
       place: { label: 'Místo', placeholder: 'Praha, Karlovy Vary…' },
       note: {
         label: 'Co mám vědět',
-        placeholder: 'Program, počet hostů, co je pro vás důležité',
+        placeholder: 'Program, na čem vám nejvíc záleží',
       },
       send: 'Odeslat poptávku',
       sending: 'Odesílám…',
-      done: 'Díky! Poptávka je odeslaná. Potvrzení vám přijde na e-mail.',
+      done: 'Děkuji, poptávka je odeslaná. Potvrzení vám přijde na e-mail.',
       reset: 'Napsat další poptávku',
     },
     privacy: {
@@ -243,7 +240,7 @@ export const cs = {
       timeFrom: { label: 'Začátek' },
       timeTo: { label: 'Konec' },
       guests: { label: 'Počet lidí' },
-      addons: { legend: 'Požadované výstupy' },
+      addons: { legend: 'Doplňky' },
       honeypot: { label: 'Toto pole nechte prázdné' },
     },
     errors: {
@@ -253,10 +250,10 @@ export const cs = {
       date: 'Datum se nepodařilo přečíst. Vyberte ho v\u00A0kalendáři.',
       time: 'Čas se nepodařilo přečíst. Napište ho jako 18:30.',
       guests: 'Počet lidí napište celým číslem.',
-      tooLong: 'Text je moc dlouhý. Zkraťte ho prosím.',
+      tooLong: 'Text je příliš dlouhý, zkraťte ho prosím.',
       turnstile: 'Nepodařilo se ověřit, že poptávku posílá člověk. Odešlete ji prosím znovu.',
-      rateLimit: 'Z\u00A0vaší sítě přišlo za krátkou dobu víc poptávek. Zkuste to prosím za pár minut.',
-      network: 'Poptávka neodešla, spojení se přerušilo. Zkontrolujte připojení a\u00A0odešlete ji znovu. Vyplněné údaje zůstaly ve formuláři.',
+      rateLimit: 'Z\u00A0vaší sítě přišlo za krátkou dobu více poptávek. Zkuste to prosím za pár minut.',
+      network: 'Poptávka neodešla, spojení se přerušilo. Zkuste ji odeslat znovu, vyplněné údaje zůstaly ve formuláři.',
       server: 'Poptávka neodešla kvůli chybě na mé straně. Zkuste to prosím za chvíli, nebo mi napište e-mail.',
     },
     noscript: 'Formulář potřebuje zapnutý JavaScript. Napište mi napřímo:',
@@ -264,7 +261,7 @@ export const cs = {
       // To Martin, always in Czech
       owner: {
         subject: 'Poptávka z\u00A0webu: {service}, {name}',
-        intro: 'Z\u00A0webu přišla nová poptávka. Když odpovíte na tento e-mail, odpověď půjde rovnou klientovi.',
+        intro: 'Z\u00A0webu přišla nová poptávka. Odpověď na tento e-mail půjde rovnou klientovi.',
         estimate: 'Orientační odhad',
         source: 'Zdroj',
         locale: 'Jazyk webu',
@@ -273,13 +270,14 @@ export const cs = {
       },
       // To the client, in the language of the page. Fixed text only, never free text from the form.
       client: {
-        subject: 'Potvrzení poptávky focení',
+        subject: 'Potvrzení vaší poptávky na focení',
         greeting: 'Dobrý den,',
-        body: 'děkuji za poptávku. Ozvu se vám s\u00A0cenou a\u00A0tím, jestli mám v\u00A0termínu volno.',
-        summary: 'Co jste poptali:',
+        body: 'děkuji za poptávku. Ozvu se vám s\u00A0cenou a\u00A0potvrdím, jestli mám v\u00A0termínu volno.',
+        summary: 'Shrnutí poptávky:',
         estimateNote: 'Odhad je orientační. Přesnou nabídku pošlu podle délky a\u00A0typu akce.',
         reply: 'Chcete něco doplnit? Odpovězte na tento e-mail.',
         notYou: 'Pokud jste poptávku neposílali vy, e-mail prosím ignorujte.',
+        closing: 'S\u00A0pozdravem',
       },
       // To Martin before inquiries are anonymized (maintenance worker)
       preview: {
@@ -299,7 +297,6 @@ export const cs = {
       copyright: '© {year} {name}',
       ico: 'IČO',
       seat: 'Sídlo',
-      vat: 'Nejsem plátce DPH',
       privacy: 'Zásady ochrany osobních údajů',
     },
   },
@@ -395,9 +392,9 @@ export const cs = {
     back: 'Zpět na úvod',
   },
   notFound: {
-    meta: { title: 'Stránka nenalezena · Martin Růžek', description: 'Tahle stránka neexistuje.' },
+    meta: { title: 'Stránka nenalezena · Martin Růžek', description: 'Stránka neexistuje.' },
     code: '404',
-    title: 'Tahle stránka *neexistuje.*',
+    title: 'Stránka *neexistuje.*',
     text: 'Možná se změnila adresa, nebo je v odkazu překlep. Fotky, ceny i poptávku najdete na úvodní stránce.',
     home: 'Na úvodní stránku',
   },

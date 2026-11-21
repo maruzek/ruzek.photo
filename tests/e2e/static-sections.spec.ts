@@ -50,12 +50,20 @@ for (const path of ['/', '/en/']) {
   test(`hero keeps CTAs and captions inside the section on a short phone ${path}`, async ({
     page,
   }) => {
-    await page.setViewportSize(path === '/' ? { width: 390, height: 600 } : { width: 360, height: 640 });
+    await page.setViewportSize(
+      path === '/' ? { width: 390, height: 600 } : { width: 360, height: 640 },
+    );
     await page.goto(path);
     const hero = await page.locator('.hero').boundingBox();
     expect(hero?.height).toBeGreaterThanOrEqual(600);
     const bottom = (hero?.y ?? 0) + (hero?.height ?? 0);
-    for (const sel of ['.hero .cta .btn', '.hero .cta .lnk', '.hero .meta > span:nth-child(1)', '.hero .meta > span:nth-child(2)', '.hero .ph-tag']) {
+    for (const sel of [
+      '.hero .cta .btn',
+      '.hero .cta .lnk',
+      '.hero .meta > span:nth-child(1)',
+      '.hero .meta > span:nth-child(2)',
+      '.hero .ph-tag',
+    ]) {
       const box = await page.locator(sel).boundingBox();
       expect(box, sel).not.toBeNull();
       expect((box?.y ?? 0) + (box?.height ?? 0), `${sel} bottom`).toBeLessThanOrEqual(bottom);
@@ -75,7 +83,9 @@ for (const path of ['/', '/en/']) {
   });
 }
 
-test('folds with a placeholder photo carry the placeholder tag clear of the text', async ({ page }) => {
+test('folds with a placeholder photo carry the placeholder tag clear of the text', async ({
+  page,
+}) => {
   await page.goto('/');
   const folds = page.locator('.fold');
   expect(await folds.count()).toBe(2);
@@ -143,13 +153,17 @@ test('header focus ring is visible over the hero and over a photo fold', async (
   await page.goto('/');
   await focusHomeLink(page);
   expect(await focusRingContrast(page)).toBeGreaterThanOrEqual(3);
-  await page.evaluate(() => window.scrollTo(0, (document.querySelector('#fold-sport') as HTMLElement).offsetTop + 300));
+  await page.evaluate(() =>
+    window.scrollTo(0, (document.querySelector('#fold-sport') as HTMLElement).offsetTop + 300),
+  );
   await page.waitForTimeout(200);
   expect(await focusRingContrast(page)).toBeGreaterThanOrEqual(3);
 });
 
 for (const blend of [false, true]) {
-  test(`header focus ring is visible over mid-grey${blend ? ' with the blend on' : ''}`, async ({ page }) => {
+  test(`header focus ring is visible over mid-grey${blend ? ' with the blend on' : ''}`, async ({
+    page,
+  }) => {
     await page.goto('/');
     await page.evaluate((withBlend) => {
       // a mid-grey strip behind the header: the worst case for white text and for a blended ring
@@ -194,7 +208,9 @@ test('decorative canvases are hidden and the logo has one accessible name', asyn
   expect(await page.locator('[role="img"][aria-label*="Logo"]').count()).toBe(0);
 });
 
-test('marquee has a pause button with one constant name, the second copy is hidden', async ({ page }) => {
+test('marquee has a pause button with one constant name, the second copy is hidden', async ({
+  page,
+}) => {
   await page.goto('/');
   const toggle = page.locator('.marquee-toggle');
   await expect(toggle).toHaveAttribute('aria-pressed', 'false');
@@ -210,7 +226,9 @@ test('marquee has a pause button with one constant name, the second copy is hidd
 });
 
 for (const path of ['/', '/en/']) {
-  test(`marquee without the motion layer shows every item, once, wrapped ${path}`, async ({ page }) => {
+  test(`marquee without the motion layer shows every item, once, wrapped ${path}`, async ({
+    page,
+  }) => {
     // external scripts fail, the inline script still sets html.motion: the case that clipped the band at 360 px
     await page.route('**/*.js', (r) => r.abort());
     await page.goto(path);
@@ -231,13 +249,18 @@ for (const path of ['/', '/en/']) {
   });
 }
 
-test('marquee turns into one moving line with a hidden second copy once the motion layer is up', async ({ page }) => {
+test('marquee turns into one moving line with a hidden second copy once the motion layer is up', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.evaluate(() => document.documentElement.classList.add('motion-ready'));
   const copies = page.locator('.marquee ul');
   await expect(copies.nth(1)).toBeVisible();
   await expect(copies.nth(1)).toHaveAttribute('aria-hidden', 'true');
-  const ys = await copies.first().locator('li').evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().y)));
+  const ys = await copies
+    .first()
+    .locator('li')
+    .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().y)));
   expect(new Set(ys).size).toBe(1);
 });
 
@@ -264,7 +287,10 @@ for (const path of ['/', '/en/']) {
     test(`font swap does not shift the hero name or the paragraph below it ${path} at ${width} px`, async ({
       page,
     }, testInfo) => {
-      test.skip(testInfo.project.name !== 'desktop', 'sizes are set per test, one project is enough');
+      test.skip(
+        testInfo.project.name !== 'desktop',
+        'sizes are set per test, one project is enough',
+      );
       await page.setViewportSize({ width, height: 800 });
       // the motion layer's hero entrance moves the paragraph on purpose (a transform, no layout shift); this
       // test measures font metrics only
@@ -281,12 +307,20 @@ for (const path of ['/', '/en/']) {
           const rect = (sel: string) => {
             const el = document.querySelector(sel) as HTMLElement;
             const r = el.getBoundingClientRect();
-            return { x: r.x, y: r.y, w: r.width, h: r.height, lh: parseFloat(getComputedStyle(el).lineHeight) };
+            return {
+              x: r.x,
+              y: r.y,
+              w: r.width,
+              h: r.height,
+              lh: parseFloat(getComputedStyle(el).lineHeight),
+            };
           };
           return { name: rect('#name'), lead: rect('.hero .row p') };
         });
       await page.waitForTimeout(300);
-      expect(await page.evaluate(() => [...document.fonts].some((f) => f.status === 'loaded'))).toBe(false);
+      expect(
+        await page.evaluate(() => [...document.fonts].some((f) => f.status === 'loaded')),
+      ).toBe(false);
       // Which font is the browser really using while the web fonts are pending? The metric-adjusted fallback is
       // `local("Arial")`; a machine without Arial (e.g. this Linux box: DejaVu Sans) falls through to system-ui,
       // whose widths no CSS can match. Then the paragraph may re-wrap, and the allowed shift is exactly that.
@@ -294,9 +328,14 @@ for (const path of ['/', '/en/']) {
       await cdp.send('DOM.enable');
       await cdp.send('CSS.enable');
       const { root } = await cdp.send('DOM.getDocument');
-      const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: '.hero .row p' });
+      const { nodeId } = await cdp.send('DOM.querySelector', {
+        nodeId: root.nodeId,
+        selector: '.hero .row p',
+      });
       const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId });
-      const adjusted = fonts.some((f) => /arial|helvetica|nimbus sans|liberation sans/i.test(f.familyName));
+      const adjusted = fonts.some((f) =>
+        /arial|helvetica|nimbus sans|liberation sans/i.test(f.familyName),
+      );
       if (!adjusted) {
         testInfo.annotations.push({
           type: 'note',
@@ -320,7 +359,8 @@ for (const path of ['/', '/en/']) {
         expect(Math.abs(after[key].x - before[key].x), `${key} x`).toBeLessThanOrEqual(6);
       }
       expect(Math.abs(after.name.h - before.name.h), 'name height').toBeLessThanOrEqual(6);
-      if (adjusted) expect(Math.abs(after.lead.h - before.lead.h), 'lead height').toBeLessThanOrEqual(6);
+      if (adjusted)
+        expect(Math.abs(after.lead.h - before.lead.h), 'lead height').toBeLessThanOrEqual(6);
     });
   }
 }
@@ -344,14 +384,33 @@ test('no dead band between services and "same day", sections after a wipe start 
   expect(m.aboutPad).toBeLessThanOrEqual(m.secPad / 2 + 1);
 });
 
-test('text links have the dashed underline, phone and WhatsApp are links', async ({ page }) => {
+test('text links have the dashed underline', async ({ page }) => {
   await page.goto('/');
-  const direct = page.locator('.direct');
-  await expect(direct.getByRole('link', { name: '+420 731 808 342' })).toHaveAttribute('href', 'tel:+420731808342');
-  await expect(direct.getByRole('link', { name: /WhatsApp/ })).toHaveAttribute('href', 'https://wa.me/420731808342');
-  for (const link of [direct.getByRole('link', { name: 'foto@martinruzek.cz' }), page.locator('footer.foot .cols a').first()]) {
+  for (const link of [
+    page.locator('.about .facts a'),
+    page.locator('footer.foot .cols a').first(),
+  ]) {
     await expect(link).toHaveCSS('text-decoration-line', 'none');
     await expect(link).toHaveCSS('background-image', /repeating-linear-gradient/);
+  }
+});
+
+// The contact rows next to the form: one action each, the whole row is the link and a 44 px target
+test('the direct contacts are one row per action: call, WhatsApp, e-mail', async ({ page }) => {
+  await page.goto('/');
+  const direct = page.locator('.direct');
+  const rows = [
+    [direct.getByRole('link', { name: 'Zavolat +420 731 808 342' }), 'tel:+420731808342'],
+    [direct.getByRole('link', { name: 'WhatsApp Napsat zprávu' }), 'https://wa.me/420731808342'],
+    [
+      direct.getByRole('link', { name: 'E-mail foto@martinruzek.cz' }),
+      'mailto:foto@martinruzek.cz',
+    ],
+  ] as const;
+  for (const [link, href] of rows) {
+    await expect(link).toHaveAttribute('href', href);
+    expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    await expect(link.locator('svg.icon')).toHaveAttribute('aria-hidden', 'true');
   }
 });
 
@@ -362,7 +421,7 @@ test('desktop: a click on the e-mail copies it and says so', async ({ page, cont
   await page.locator('[data-copy-toast][data-ready]').waitFor({ state: 'attached' });
   await page.locator('footer.foot a[data-copy-email]').click();
   await expect(page.locator('[data-copy-toast]')).toBeVisible();
-  await expect(page.locator('[data-copy-live]')).toHaveText('E-mail je zkopírovaný.');
+  await expect(page.locator('[data-copy-live]')).toHaveText('Adresa je zkopírovaná.');
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('foto@martinruzek.cz');
 });
 
@@ -378,7 +437,10 @@ test('desktop: when copying fails, the toast offers the mail app', async ({ page
   await page.locator('[data-copy-toast][data-ready]').waitFor({ state: 'attached' });
   await page.locator('footer.foot a[data-copy-email]').click();
   await expect(page.locator('[data-copy-live]')).toHaveText('Adresu se nepodařilo zkopírovat.');
-  await expect(page.locator('[data-copy-open]')).toHaveAttribute('href', 'mailto:foto@martinruzek.cz');
+  await expect(page.locator('[data-copy-open]')).toHaveAttribute(
+    'href',
+    'mailto:foto@martinruzek.cz',
+  );
 });
 
 // Review Focus 5

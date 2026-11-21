@@ -1,13 +1,48 @@
 ---
 // Renders "plain text with *emphasised* words": each *…* becomes <em class="s"> (serif italic accent).
 // Astro escapes every string, so the text cannot inject markup.
+// A word tied to the emphasis by a no-break space (a\u00A0*za kolik.*) is wrapped with the emphasis's first word
+// in a no-wrap span: SplitText makes every word its own box, and a box boundary would otherwise allow the break.
 interface Props {
   text: string;
 }
 
+type Seg =
+  | { kind: 'plain'; text: string }
+  | { kind: 'em'; text: string }
+  | { kind: 'glued'; word: string; text: string };
+
 const { text } = Astro.props;
 // split() with a capture group puts the emphasised words at odd indexes
 const parts = text.split(/\*([^*]+)\*/);
+const segs: Seg[] = [];
+for (let i = 0; i < parts.length; i++) {
+  const part = parts[i] ?? '';
+  if (i % 2 === 1) {
+    segs.push({ kind: 'em', text: part });
+    continue;
+  }
+  const next = parts[i + 1];
+  const tied = next === undefined ? null : /^([\s\S]*?)(\S+\u00A0)$/.exec(part);
+  const first = next === undefined ? null : /^(\S+)([\s\S]*)$/.exec(next);
+  if (!tied || !first) {
+    segs.push({ kind: 'plain', text: part });
+    continue;
+  }
+  segs.push({ kind: 'plain', text: tied[1] ?? '' });
+  segs.push({ kind: 'glued', word: tied[2] ?? '', text: first[1] ?? '' });
+  if (first[2]) segs.push({ kind: 'em', text: first[2] });
+  i++; // the emphasis is used up
+}
 ---
 
-{parts.map((part, i) => (i % 2 === 1 ? <em class="s">{part}</em> : part))}
+{segs.map((s) =>
+  s.kind === 'plain' ? (
+    s.text
+  ) : s.kind === 'em' ? (
+    <em class="s">{s.text}</em>
+  ) : (
+    // one expression, so no template whitespace lands between the no-break space and the emphasis
+    <span class="nw">{[s.word, <em class="s">{s.text}</em>]}</span>
+  ),
+)}

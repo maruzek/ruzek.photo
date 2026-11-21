@@ -25,7 +25,7 @@ Agenti mají v designu **volnou ruku**. Všechno v části „Co se Martinovi l�
 ## Kontext: kdo a pro koho
 - **Martin Růžek**, fotograf akcí a sportu v Praze a Karlových Varech. Instagram **@ruzek.jpg**.
 - **Značka:** hlavní je jméno, „ruzek.jpg“ slouží jako hravý podpis.
-- **Hlavní byznys** jsou akce: firemní akce, konference, přednášky a debaty, univerzitní a spolkové akce, plesy, večírky, bary.
+- **Hlavní byznys** jsou akce: firemní akce, konference, přednášky a debaty, univerzitní a spolkové akce, plesy, večírky.
 - **Sport** je vášeň a odlišení: fotbal, florbal, turnaje, závody. **Portréty** jsou doplněk.
 - **Klienti:** firmy, eventové agentury, univerzity, spolky, sportovní kluby a organizátoři.
 - **Silná stránka:** výběr fotek na sociální sítě ještě týž den a vertikální videa (reels).

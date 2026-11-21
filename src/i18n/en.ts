@@ -12,16 +12,16 @@ const shortAndPortraitCard = {
 
 export const en = {
   meta: {
-    title: 'Martin Růžek · event and sports photographer',
+    title: 'Event and sports photographer Prague · Martin Růžek',
     description:
-      'Martin Růžek photographs corporate events, conferences, balls, parties and sport in Prague and Karlovy Vary. A selection of photos for your social media the same day.',
+      'Event and sports photographer in Prague and Karlovy Vary: corporate events, conferences, balls, matches. Social media selection the same day. Send an inquiry.',
     translationTodo: 'kontrola překladu',
   },
   common: {
     skip: 'Skip to content',
     placeholderPhoto: 'Placeholder photo',
     cursorView: 'View',
-    emailCopied: 'Email copied.',
+    emailCopied: 'Address copied.',
     copyFailed: 'Could not copy the address.',
     openMail: 'Open in your mail app',
   },
@@ -32,7 +32,7 @@ export const en = {
     inquiry: 'inquiry',
   },
   nav: {
-    label: 'Main',
+    label: 'Main navigation',
     homeLabel: '{name}, home',
     logoLabel: '{name} logo',
     work: 'Work',
@@ -46,8 +46,8 @@ export const en = {
   hero: {
     kicker: 'Event and sports photographer',
     places: 'Prague · Karlovy Vary',
-    scrollHint: 'Scroll',
-    lead: 'I photograph corporate events, conferences, balls, parties and matches. A selection of photos for your social media goes out *the same day.*',
+    scrollHint: 'Down',
+    lead: 'I photograph corporate events, conferences, balls and sport. You get a selection for your social media *the same day.*',
     cta: 'Request a shoot',
     ctaWork: 'See the work',
     instagram: 'Instagram {handle}',
@@ -62,8 +62,8 @@ export const en = {
       'conferences',
       'Talks and debates',
       'balls',
-      'Parties and bars',
-      'universities and associations',
+      'Parties',
+      'university and association events',
       'Football',
       'floorball',
       'Tournaments and races',
@@ -73,7 +73,7 @@ export const en = {
   folds: {
     events: {
       title: 'Events you will *want* to see again.',
-      chips: ['Corporate events', 'Conferences', 'Talks and debates', 'Balls', 'Parties and bars'],
+      chips: ['Corporate events', 'Conferences', 'Balls', 'Parties'],
       text: 'I don’t look for poses. I photograph what actually happened: the speaker, the packed hall, the toast and the last dance.',
       index: '01',
       indexLabel: 'Events',
@@ -81,28 +81,27 @@ export const en = {
     sport: {
       title: 'Sport is my *passion.*',
       chips: ['Football', 'Floorball', 'Tournaments', 'Races'],
-      text: 'On the pitch you don’t get a second chance. I bring that speed to events too.',
+      text: 'On the pitch, no moment happens twice.',
       index: '02',
       indexLabel: 'Sport',
     },
   },
   work: {
     eyebrow: 'Selected work',
-    title: 'Moments from events, *not* arrangements.',
-    lead: 'Samples from events and sport. Click a photo to open it in full.',
-    foot: 'I deliver the photos from an event to clients in a private online gallery. The website only shows photos with the consent of the client or organiser.',
+    title: 'Moments from events and *matches.*',
+    foot: 'You get the whole event in a private online gallery.',
     footLink: 'I want photos like these',
     captionTodo: 'place and date',
   },
   services: {
     eyebrow: 'Services and prices',
     title: 'What I shoot and *for how much.*',
-    lead: 'The prices shown are indicative starting prices. I am not a VAT payer. I will send an exact quote based on the length and type of the event.',
+    lead: 'Prices are indicative starting prices, I am not a VAT payer. You get an exact quote based on the length and type of the event.',
     calcLink: 'Calculate the price',
     cards: {
       event: {
         title: 'Events',
-        text: 'Corporate events, conferences, talks and debates, university and association events, balls, parties and bars.',
+        text: 'Corporate events, conferences, talks and debates, university and association events, balls and parties.',
         priceLabel: 'First hour',
         priceNote: 'each additional hour {price}',
       },
@@ -117,15 +116,15 @@ export const en = {
     deliverables: {
       photos: '{range}\u00A0photos',
       photosPerHour: '{range}\u00A0photos per hour',
-      turnaroundDays: 'within {range}\u00A0days',
-      turnaroundHours: 'within {range}\u00A0h',
+      turnaroundDays: 'delivered in {range}\u00A0days',
+      turnaroundHours: 'delivered within {range}\u00A0h',
       durationMin: '{range}\u00A0min',
       durationMaxHours: 'shoot up to {n}\u00A0h',
       durationMaxMinutes: 'shoot up to {n}\u00A0min',
     },
     addons: {
-      sameDay: { label: 'Same-day selection for social media', note: 'Selected photos on the day of the event' },
-      video: { label: 'Vertical videos', note: 'Short vertical videos for social media' },
+      sameDay: { label: 'Same-day selection for social media', note: 'Express' },
+      video: { label: 'Videos for social media', note: '1–3 vertical videos' },
     },
   },
   day: {
@@ -136,18 +135,18 @@ export const en = {
       {
         no: '01 · During the event',
         title: 'I shoot what happens',
-        text: 'Speakers, guests, atmosphere, details. At sporting events, movement and emotion.',
+        text: 'Speakers, guests, details.',
       },
       {
         no: '02 · Right after the event',
         title: 'I pick the strongest',
-        text: 'From the whole day I prepare a selection for social media and, if needed, vertical videos.',
+        text: 'From the whole day I pick shots for social media. On request I add vertical videos.',
       },
       {
         no: '03 · Same day',
         title: 'I send the selection',
         // Followed by <Todo>{galleryTodo}</Todo> and a full stop.
-        text: 'The finished photos are yours the same day. I will deliver the full gallery',
+        text: 'I will deliver the full gallery',
       },
     ],
     galleryTodo: 'deadline',
@@ -155,14 +154,11 @@ export const en = {
   about: {
     eyebrow: 'About me',
     title: 'I’m Martin. I photograph people in *motion.*',
-    leadStrong: 'I am an event and sports photographer. I shoot in Prague and also work in Karlovy Vary.',
-    lead: 'Most often I photograph corporate events, conferences, university and association events, balls and parties. Sport is my passion, portraits are a supplement.',
-    speed: 'My strength is speed. I send a selection of photos for social media the same day, and I also shoot vertical videos.',
+    lead: 'I photograph events and sport in Prague and Karlovy Vary.',
     storyTodo: 'Martin’s own story, how he got into photography',
     portraitAlt: 'Placeholder portrait, a spot for Martin’s photo',
     portraitTodo: 'Martin’s portrait',
     facts: {
-      where: { label: 'Where', value: 'Prague, Karlovy Vary' },
       forWhom: { label: 'For whom', value: 'Companies, agencies, universities, associations, clubs' },
       instagram: { label: 'Instagram' },
     },
@@ -170,17 +166,18 @@ export const en = {
   inquiry: {
     eyebrow: 'Inquiry',
     title: 'When is *your* event?',
-    lead: 'Send the date, place and type of event. I will reply with a price and whether I am free.',
+    lead: 'Send the date, place and type of event. I will reply with a price and confirm whether I am free.',
     estimate: {
       label: 'Estimate from',
       note: 'Based on the selected options. I am not a VAT payer.',
     },
     direct: {
       label: 'Prefer to reach me directly',
-      phone: 'Phone and WhatsApp:',
+      call: 'Call',
       phoneTodo: 'number',
-      whatsapp: 'Message on WhatsApp',
-      email: 'E-mail:',
+      whatsapp: 'WhatsApp',
+      whatsappAction: 'Send a message',
+      email: 'E-mail',
     },
     form: {
       name: {
@@ -206,17 +203,17 @@ export const en = {
       hoursFromTimes: 'Calculated from the start and end.',
       hoursLess: 'One hour less',
       hoursMore: 'One hour more',
-      groups: { contact: 'Contact', event: 'Event', extras: 'Extras and notes' },
+      groups: { contact: 'Contact', event: 'Event', extras: 'Add-ons and notes' },
       optional: '(optional)',
       date: { label: 'Date' },
       place: { label: 'Place', placeholder: 'Prague, Karlovy Vary…' },
       note: {
         label: 'What should I know',
-        placeholder: 'Programme, number of guests, what matters to you',
+        placeholder: 'Programme, what matters most to you',
       },
       send: 'Send inquiry',
       sending: 'Sending…',
-      done: 'Thanks! The inquiry has been sent. A confirmation will arrive at your e-mail.',
+      done: 'Thank you, the inquiry has been sent. A confirmation will arrive at your e-mail.',
       reset: 'Write another inquiry',
     },
     privacy: {
@@ -229,7 +226,7 @@ export const en = {
       timeFrom: { label: 'Start' },
       timeTo: { label: 'End' },
       guests: { label: 'Number of people' },
-      addons: { legend: 'Requested deliverables' },
+      addons: { legend: 'Add-ons' },
       honeypot: { label: 'Leave this field empty' },
     },
     errors: {
@@ -242,7 +239,7 @@ export const en = {
       tooLong: 'The text is too long. Please shorten it.',
       turnstile: 'We could not verify that a person is sending the inquiry. Please send it again.',
       rateLimit: 'Several inquiries came from your network in a short time. Please try again in a few minutes.',
-      network: 'The inquiry was not sent, the connection dropped. Check your connection and send it again. Your details are still in the form.',
+      network: 'The inquiry was not sent, the connection dropped. Try sending it again, your details are still in the form.',
       server: 'The inquiry was not sent because of an error on my side. Please try again shortly, or send me an e-mail.',
     },
     noscript: 'The form needs JavaScript. Write to me directly:',
@@ -250,7 +247,7 @@ export const en = {
       // To Martin, always in Czech
       owner: {
         subject: 'Inquiry from the website: {service}, {name}',
-        intro: 'A new inquiry came from the website. If you reply to this e-mail, the reply goes straight to the client.',
+        intro: 'A new inquiry came from the website. A reply to this e-mail goes straight to the client.',
         estimate: 'Estimate',
         source: 'Source',
         locale: 'Website language',
@@ -262,10 +259,11 @@ export const en = {
         subject: 'Your photography inquiry is confirmed',
         greeting: 'Hello,',
         body: 'thank you for your inquiry. I will get back to you with a price and whether I am free on that date.',
-        summary: 'What you asked for:',
+        summary: 'Inquiry summary:',
         estimateNote: 'The estimate is indicative. I will send an exact offer based on the length and type of the event.',
         reply: 'Want to add something? Reply to this e-mail.',
         notYou: 'If you did not send this inquiry, please ignore this e-mail.',
+        closing: 'Best regards',
       },
       // To Martin before inquiries are anonymized (maintenance worker)
       preview: {
@@ -285,7 +283,6 @@ export const en = {
       copyright: '© {year} {name}',
       ico: 'Company ID (IČO)',
       seat: 'Registered office',
-      vat: 'I am not a VAT payer',
       privacy: 'Privacy policy',
     },
   },
@@ -379,7 +376,7 @@ export const en = {
     back: 'Back to the home page',
   },
   notFound: {
-    meta: { title: 'Page not found · Martin Růžek', description: 'This page does not exist.' },
+    meta: { title: 'Page not found · Martin Růžek', description: 'Page not found.' },
     code: '404',
     title: 'This page *does not* exist.',
     text: 'The address may have changed, or the link has a typo. Photos, prices and the inquiry form are on the home page.',

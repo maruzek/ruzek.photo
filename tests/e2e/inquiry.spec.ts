@@ -17,7 +17,8 @@ const FAKE_TURNSTILE = `(function () {
   };
 })();`;
 
-const plain = (s: string | null): string => (s ?? '').replace(/[\u00A0\u202F]/g, ' ').replace(/\u200B/g, '');
+const plain = (s: string | null): string =>
+  (s ?? '').replace(/[\u00A0\u202F]/g, ' ').replace(/\u200B/g, '');
 
 async function open(page: Page, path: string = HOME.cs): Promise<string[]> {
   const turnstile: string[] = [];
@@ -39,7 +40,8 @@ async function fillRequired(page: Page): Promise<void> {
   await page.getByLabel('E-mail').fill('jana@example.com');
 }
 
-const ok = (r: Route) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
+const ok = (r: Route) =>
+  r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
 test.describe('inquiry form', () => {
   test('the hours follow the start and end time, also past midnight', async ({ page }) => {
     await open(page);
@@ -79,10 +81,10 @@ test.describe('inquiry form', () => {
     await expect(page.getByRole('button', { name: 'Ubrat hodinu' })).toBeDisabled();
   });
 
-  test('fields are grouped under Kontakt, Akce and Výstupy', async ({ page }) => {
+  test('fields are grouped under Kontakt, Akce and Doplňky', async ({ page }) => {
     await open(page);
     await toForm(page);
-    for (const name of ['Kontakt', 'Akce', 'Výstupy a poznámka'])
+    for (const name of ['Kontakt', 'Akce', 'Doplňky a poznámka'])
       await expect(page.locator('#inq').getByRole('heading', { name, level: 3 })).toBeVisible();
   });
 
@@ -117,7 +119,9 @@ test.describe('inquiry form', () => {
       w.__focus = [];
       document.addEventListener('focusin', (e) => {
         const id = (e.target as Element).getAttribute('aria-describedby');
-        w.__focus.push(id && document.getElementById(id) ? document.getElementById(id)!.textContent : null);
+        w.__focus.push(
+          id && document.getElementById(id) ? document.getElementById(id)!.textContent : null,
+        );
       });
     });
     await open(page);
@@ -129,15 +133,21 @@ test.describe('inquiry form', () => {
     const msgId = await name.getAttribute('aria-describedby');
     expect(msgId).toBeTruthy();
     await expect(page.locator(`#${msgId}`)).toHaveText(/komu odpovídám/);
-    const atFocus = await page.evaluate(() => (window as unknown as { __focus: (string | null)[] }).__focus);
+    const atFocus = await page.evaluate(
+      () => (window as unknown as { __focus: (string | null)[] }).__focus,
+    );
     expect(atFocus.at(-1)).toMatch(/komu odpovídám/);
   });
 
-  test('the alert region is in the accessibility tree before a message arrives (FM-08)', async ({ page }) => {
+  test('the alert region is in the accessibility tree before a message arrives (FM-08)', async ({
+    page,
+  }) => {
     await open(page);
     await toForm(page);
     await expect(page.getByRole('alert')).toBeAttached();
-    expect(await page.getByRole('alert').evaluate((el) => getComputedStyle(el).display)).not.toBe('none');
+    expect(await page.getByRole('alert').evaluate((el) => getComputedStyle(el).display)).not.toBe(
+      'none',
+    );
   });
 
   test('a focused add-on shows a focus ring (FM-08)', async ({ page }, info) => {
@@ -203,7 +213,7 @@ test.describe('inquiry form', () => {
     await toForm(page);
     await fillRequired(page);
     await page.locator('#inq button[type="submit"]').click();
-    await expect(page.getByRole('alert')).toHaveText(/připojení/);
+    await expect(page.getByRole('alert')).toHaveText(/spojení se přerušilo/);
     await page.locator('#inq button[type="submit"]').click();
     await expect(page.locator('.done')).toBeVisible();
     await page.locator('.done button').click();
@@ -215,7 +225,9 @@ test.describe('inquiry form', () => {
     expect(ids[2]).not.toBe(ids[0]);
   });
 
-  test('Turnstile that never loads ends in the verification error, values kept (FM-07)', async ({ page }) => {
+  test('Turnstile that never loads ends in the verification error, values kept (FM-07)', async ({
+    page,
+  }) => {
     await page.route('https://challenges.cloudflare.com/**', () => {}); // hangs forever
     await page.goto(HOME.cs);
     await toForm(page);
@@ -242,7 +254,9 @@ test.describe('inquiry form', () => {
       await fillRequired(page);
       await page.getByLabel(/Co mám vědět/).fill('Program večera');
       await page.locator('#inq button[type="submit"]').click();
-      await expect(page.getByRole('alert')).toHaveText(failure === 'network' ? /připojení/ : /chybě na mé straně/);
+      await expect(page.getByRole('alert')).toHaveText(
+        failure === 'network' ? /spojení se přerušilo/ : /chybě na mé straně/,
+      );
       await expect(page.getByLabel('Jméno')).toHaveValue('Jana Nováková');
       await expect(page.getByLabel(/Co mám vědět/)).toHaveValue('Program večera');
       await expect(page.locator('#inq button[type="submit"]')).toBeEnabled();
@@ -276,7 +290,9 @@ test.describe('inquiry form', () => {
       await toForm(page);
       const boxes = page.locator('#inq input[type="checkbox"]');
       await expect(boxes).toHaveCount(2);
-      for (const name of await boxes.evaluateAll((els) => els.map((e) => (e as HTMLInputElement).name)))
+      for (const name of await boxes.evaluateAll((els) =>
+        els.map((e) => (e as HTMLInputElement).name),
+      ))
         expect(name).toBe('addons');
       const link = page.locator('#inq .privacy a');
       await expect(link).toHaveAttribute('href', PRIVACY[locale]);
@@ -298,7 +314,9 @@ test.describe('inquiry form', () => {
       w.umami = { track: (e, d) => w.__ev.push(d === undefined ? [e] : [e, d]) };
     });
     let fail = true;
-    await page.route('**/api/inquiry', (r) => (fail ? r.fulfill({ status: 500, body: '' }) : ok(r)));
+    await page.route('**/api/inquiry', (r) =>
+      fail ? r.fulfill({ status: 500, body: '' }) : ok(r),
+    );
     await open(page);
     await toForm(page);
     await fillRequired(page);
@@ -318,15 +336,19 @@ test.describe('inquiry form', () => {
     await open(page, HOME.en);
     await toForm(page);
     await page.getByLabel('Event length (hours)').fill('12');
-    await page.getByLabel(/Vertical videos/).check();
-    await expect.poll(async () => plain(await page.locator('.est output').textContent())).toBe('CZK 16,000–21,110');
+    await page.getByLabel(/Videos for social media/).check();
+    await expect
+      .poll(async () => plain(await page.locator('.est output').textContent()))
+      .toBe('CZK 16,000–21,110');
     const [sw, cw] = await page.evaluate(() => [
       document.documentElement.scrollWidth,
       document.documentElement.clientWidth,
     ]);
     expect(sw).toBeLessThanOrEqual(cw);
     const box = await page.locator('.est').boundingBox();
-    const out = await page.locator('.est output').evaluate((el) => el.scrollWidth <= el.clientWidth);
+    const out = await page
+      .locator('.est output')
+      .evaluate((el) => el.scrollWidth <= el.clientWidth);
     expect(box!.x + box!.width).toBeLessThanOrEqual(360);
     expect(out).toBe(true);
   });
