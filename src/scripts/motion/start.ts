@@ -64,11 +64,12 @@ function canvasEffects(scope: ParentNode): () => void {
 }
 
 export async function start(): Promise<() => void> {
-  gsap.registerPlugin(ScrollTrigger, SplitText);
   const root = document.documentElement;
   await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, FONT_WAIT_MS))]);
-  // the preference may have changed during the font wait: nothing is set up yet, boot.ts settles (HM-04)
+  // the preference may have changed during the font wait: nothing is set up yet, boot.ts settles (HM-04).
+  // Plugins are registered only after this check, because registering ScrollTrigger starts its frame loop.
   if (matchMedia(REDUCE).matches) return () => undefined;
+  gsap.registerPlugin(ScrollTrigger, SplitText);
 
   // cleanups are registered as each part is set up, so a failure half-way undoes exactly what exists (HM-02)
   const undo: Array<() => void> = [];

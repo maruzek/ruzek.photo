@@ -183,8 +183,14 @@ test('a failure in the middle of the motion layer reveals the page', async ({ pa
 // HM-04: reduced motion chosen while start() waits for the fonts never starts Lenis
 test('switching to reduced motion during the font wait starts nothing', async ({ page }) => {
   await page.addInitScript(() => {
-    const w = window as unknown as { __lenisSeen: boolean };
+    const w = window as unknown as { __lenisSeen: boolean; __raf: number };
     w.__lenisSeen = false;
+    w.__raf = 0;
+    const raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = (cb) => {
+      w.__raf++;
+      return raf(cb);
+    };
     // added and removed in the same task would leave no trace in classList: read the old values too
     // (init scripts run before <html> exists, so watch the document)
     new MutationObserver((records) => {
@@ -213,6 +219,11 @@ test('switching to reduced motion during the font wait starts nothing', async ({
     await page.evaluate(() => (window as unknown as { __lenisSeen: boolean }).__lenisSeen),
   ).toBe(false);
   await expect(page.locator('html')).not.toHaveClass(/motion-ready/);
+  // registering ScrollTrigger would start its frame loop even without any trigger
+  const a = await page.evaluate(() => (window as unknown as { __raf: number }).__raf);
+  await page.waitForTimeout(1000);
+  const b = await page.evaluate(() => (window as unknown as { __raf: number }).__raf);
+  expect(b - a).toBeLessThan(5);
 });
 
 // HM-04: after switching to reduced motion no frame loop keeps running
