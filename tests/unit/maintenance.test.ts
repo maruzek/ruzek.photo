@@ -59,7 +59,20 @@ function memoryStore(rows: InquiryRecord[]): InquiryStore {
           anonymizable(r, before) &&
           ((r.previewedAt !== null && r.previewedAt <= previewedBefore) || r.createdAt < hardBefore),
       );
-      for (const r of hit) Object.assign(r, { name: '', email: '', anonymizedAt: at });
+      // like d1Store (ST-04): month-rounded created_at, no mail timestamps, no campaign name
+      for (const r of hit) {
+        const d = new Date(r.createdAt);
+        Object.assign(r, {
+          name: '',
+          email: '',
+          createdAt: Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1),
+          notifiedAt: null,
+          confirmedAt: null,
+          previewedAt: null,
+          utmCampaign: null,
+          anonymizedAt: at,
+        });
+      }
       return hit.length;
     },
   };

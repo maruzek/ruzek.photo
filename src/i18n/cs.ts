@@ -324,10 +324,11 @@ export const cs = {
         ],
       },
       source: {
-        title: 'Odkud jste přišli a vaše IP adresa',
+        title: 'Co se k poptávce uloží navíc a vaše IP adresa',
         paragraphs: [
-          'K poptávce si uložím jazyk webu, verzi těchto zásad a odkud jste na web přišli. Je to jen doména stránky, ze které jste přišli, stránka webu, na které jste začali, a značky kampaně (UTM), pokud je odkaz měl.',
-          'Vaši IP adresu použiji jen k ochraně formuláře před roboty a před zahlcením. Neukládám ji.',
+          'K poptávce se uloží také čas přijetí, náhodné ID poptávky, jazyk webu, verze těchto zásad a stav poptávky (nová, zakázka, bez zakázky). Uloží se i to, kdy odešel e-mail s poptávkou mně, kdy potvrzení vám a kdy byla poptávka v měsíčním přehledu před anonymizací.',
+          'Kvůli statistice si uložím, odkud poptávka přišla: stránku tohoto webu, ze které jste formulář odeslali (třeba /en/), doménu jiného webu, ze kterého jste na ni přišli, a značky kampaně (UTM) zdroj, médium a název kampaně, pokud je odkaz měl. Když jste na stránku přišli odkazem z tohoto webu, doménu neukládám.',
+          'Vaši IP adresu použiji jen k ochraně formuláře. Podle ní omezím počet poptávek z jedné sítě a předám ji službě Cloudflare Turnstile, která ověřuje, že formulář vyplňuje člověk. Do databáze ji neukládám.',
         ],
       },
       purpose: {
@@ -341,10 +342,11 @@ export const cs = {
       retention: {
         title: 'Jak dlouho údaje uchovávám',
         paragraphs: [
-          'Když z poptávky nebude zakázka, poptávku anonymizuji po {months} měsících od odeslání. Smažu jméno, e-mail, telefon, místo, čas a poznámku a datum akce zkrátím na měsíc a rok. Nejpozději se to stane {graceDays} dní po této lhůtě.',
-          'Zůstanou jen údaje, podle kterých vás nejde poznat: typ focení, měsíc akce, délka, počet lidí, výstupy, odhad ceny, jazyk a odkud jste přišli. Slouží mi ke statistice.',
+          'Když z poptávky nebude zakázka, poptávku anonymizuji po {months} měsících od odeslání, nejpozději {graceDays} dní po této lhůtě. Smažu jméno, e-mail, telefon, místo, čas, poznámku a název kampaně. ID poptávky nahradím novým náhodným, datum akce zkrátím na měsíc a rok, čas přijetí na první den měsíce a smažu, kdy odešly e-maily a kdy byla poptávka v přehledu.',
+          'Jednou měsíčně mi před anonymizací přijde e-mail s poptávkami, na které brzy dojde: jméno, datum přijetí, typ focení a ID poptávky. Podle něj označím ty, ze kterých byla zakázka.',
+          'Po anonymizaci zůstane jen typ focení, měsíc akce, délka, počet lidí, požadované výstupy, odhad ceny, jazyk webu, verze zásad, stav poptávky, měsíc přijetí a den anonymizace. Dál stránka webu, ze které poptávka přišla, doména webu, ze kterého jste přišli, a zdroj a médium kampaně, ale jen když jde o obecný kanál, třeba instagram nebo email. Tyto údaje mi slouží ke statistice.',
           'Když z poptávky bude zakázka, údaje si nechám po dobu spolupráce. Doklady uchovávám tak dlouho, jak ukládají daňové předpisy.',
-          'Kopie poptávky mi přijde e-mailem do mé schránky.',
+          'Kopie poptávky se všemi údaji mi přijde e-mailem do schránky. Anonymizace v databázi se jí netýká.',
         ],
         todo: 'kdy anonymizovat údaje bývalých klientů a jak dlouho držet e-maily s poptávkou ve schránce',
       },
@@ -352,8 +354,8 @@ export const cs = {
         title: 'Komu údaje předávám',
         paragraphs: ['Údaje neprodávám a nikomu je nedávám k marketingu. Pomáhají mi tito zpracovatelé:'],
         items: [
-          'Cloudflare provozuje web a databázi poptávek. Jeho služba Turnstile chrání formulář: podle signálů z prohlížeče ověří, že ho vyplňuje člověk. Načte se jen u formuláře.',
-          'Resend odesílá e-mail s poptávkou mně a potvrzení vám.',
+          'Cloudflare provozuje web a databázi poptávek. Jeho služba Turnstile chrání formulář: podle signálů z prohlížeče a vaší IP adresy ověří, že ho vyplňuje člověk. Načte se jen u formuláře.',
+          'Resend odesílá e-mail s poptávkou mně, potvrzení vám a jednou měsíčně mně přehled poptávek před anonymizací (jméno, datum přijetí, typ focení a ID poptávky).',
           'Poskytovatel mé e-mailové schránky, kam poptávky chodí.',
           'Umami a Cloudflare Web Analytics měří návštěvnost (viz níže).',
         ],
@@ -363,7 +365,8 @@ export const cs = {
         title: 'Měření návštěvnosti bez cookies',
         paragraphs: [
           'Web nenastavuje cookies a kvůli měření nic neukládá do vašeho prohlížeče. Proto tu není cookie lišta.',
-          'Návštěvnost měřím nástrojem Umami: kolik lidí web navštívilo, odkud přišli a co na webu udělali, třeba odeslali poptávku nebo otevřeli fotku. Rychlost načítání stránek měřím přes Cloudflare Web Analytics. Ani jeden nástroj nepoužívá cookies a oba se načtou až po načtení stránky.',
+          'Návštěvnost měřím nástrojem Umami: kolik lidí web navštívilo, odkud přišli a co na webu udělali, třeba odeslali poptávku nebo otevřeli fotku. Při každém zobrazení stránky a u takové akce mu prohlížeč pošle adresu stránky bez parametrů a bez části za znakem #. Ponechá jen značky kampaně (zdroj, médium a název). Dál pošle doménu webu, ze kterého jste přišli (bez konkrétní stránky), název stránky, jazyk prohlížeče a velikost obrazovky, u akce i její název a upřesnění, třeba na jaký jazyk jste přepnuli.',
+          'Rychlost načítání stránek měřím přes Cloudflare Web Analytics. Ani jeden nástroj nepoužívá cookies a oba se načtou až po načtení stránky. Jako každý server, se kterým prohlížeč komunikuje, vidí i vaši IP adresu.',
         ],
       },
       rights: {

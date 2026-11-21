@@ -308,10 +308,11 @@ export const en = {
         ],
       },
       source: {
-        title: 'Where you came from and your IP address',
+        title: 'What else is stored with the inquiry, and your IP address',
         paragraphs: [
-          'With the inquiry I store the language of the website, the version of this policy and where you came to the website from. That is only the domain of the page you came from, the page of this website where you started, and the campaign tags (UTM) if the link had them.',
-          'I use your IP address only to protect the form from bots and from flooding. I do not store it.',
+          'The inquiry is also stored with the time it arrived, a random inquiry ID, the language of the website, the version of this policy and the state of the inquiry (new, order, no order). It also records when the inquiry e-mail was sent to me, when the confirmation was sent to you and when the inquiry was listed in the monthly overview before anonymization.',
+          'For statistics I store where the inquiry came from: the page of this website you sent the form from (for example /en/), the domain of another website you came to that page from, and the campaign tags (UTM) source, medium and campaign name if the link had them. If you reached the page through a link on this website, I do not store the domain.',
+          'I use your IP address only to protect the form. I use it to limit the number of inquiries from one network and pass it to Cloudflare Turnstile, which checks that a human is filling in the form. I do not store it in the database.',
         ],
       },
       purpose: {
@@ -325,10 +326,11 @@ export const en = {
       retention: {
         title: 'How long I keep the data',
         paragraphs: [
-          'If an inquiry does not become an order, I anonymize it after {months} months from sending. I delete the name, e-mail, phone, place, time and note and shorten the event date to month and year. This happens at the latest {graceDays} days after that period.',
-          'Only data that cannot identify you remains: type of shoot, month of the event, length, number of people, outputs, price estimate, language and where you came from. I use it for statistics.',
+          'If an inquiry does not become an order, I anonymize it after {months} months from sending, at the latest {graceDays} days after that period. I delete the name, e-mail, phone, place, time, note and campaign name. I replace the inquiry ID with a new random one, shorten the event date to month and year and the time it arrived to the first day of the month, and delete when the e-mails were sent and when the inquiry was listed in the overview.',
+          'Once a month, before anonymization, I receive an e-mail listing the inquiries that are about to be anonymized: name, date received, type of shoot and inquiry ID. I use it to mark the ones that became an order.',
+          'After anonymization only this remains: type of shoot, month of the event, length, number of people, requested deliverables, price estimate, language of the website, policy version, state of the inquiry, month received and the day of anonymization. Also the page of this website the inquiry came from, the domain of the website you came from, and the campaign source and medium, but only when they name a general channel, such as instagram or email. I use this data for statistics.',
           'If an inquiry becomes an order, I keep the data for the duration of our cooperation. I keep invoices and receipts for as long as tax law requires.',
-          'A copy of the inquiry reaches me by e-mail in my mailbox.',
+          'A copy of the inquiry with all its details reaches my mailbox by e-mail. Anonymization in the database does not affect it.',
         ],
         todo: 'when to anonymize the data of former clients and how long to keep inquiry e-mails in the mailbox',
       },
@@ -336,8 +338,8 @@ export const en = {
         title: 'Who I share the data with',
         paragraphs: ['I do not sell the data or give it to anyone for marketing. These processors help me:'],
         items: [
-          'Cloudflare runs the website and the inquiry database. Its Turnstile service protects the form: it uses signals from your browser to check that a human is filling it in. It loads only with the form.',
-          'Resend sends the inquiry e-mail to me and the confirmation to you.',
+          'Cloudflare runs the website and the inquiry database. Its Turnstile service protects the form: it uses signals from your browser and your IP address to check that a human is filling it in. It loads only with the form.',
+          'Resend sends the inquiry e-mail to me, the confirmation to you and, once a month, an overview of inquiries before anonymization to me (name, date received, type of shoot and inquiry ID).',
           'The provider of my mailbox, where inquiries arrive.',
           'Umami and Cloudflare Web Analytics measure traffic (see below).',
         ],
@@ -347,7 +349,8 @@ export const en = {
         title: 'Cookieless traffic measurement',
         paragraphs: [
           'The website sets no cookies and stores nothing in your browser for measurement. That is why there is no cookie banner.',
-          'I measure traffic with Umami: how many people visited, where they came from and what they did on the website, such as sending an inquiry or opening a photo. I measure page loading speed with Cloudflare Web Analytics. Neither tool uses cookies, and both load only after the page has loaded.',
+          'I measure traffic with Umami: how many people visited, where they came from and what they did on the website, such as sending an inquiry or opening a photo. With every page view and such action your browser sends it the page address without parameters and without the part after the # sign. Only the campaign tags (source, medium and name) are kept. It also sends the domain of the website you came from (without the specific page), the page title, the browser language and the screen size, and for an action its name and a detail, such as the language you switched to.',
+          'I measure page loading speed with Cloudflare Web Analytics. Neither tool uses cookies, and both load only after the page has loaded. Like every server your browser talks to, they also see your IP address.',
         ],
       },
       rights: {

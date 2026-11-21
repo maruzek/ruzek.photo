@@ -53,3 +53,34 @@ export function sanitizeSource(s: InquirySource): StoredSource {
     utmCampaign: utm(s.utmCampaign),
   };
 }
+
+/**
+ * UTM values that survive anonymization (ST-04): generic channel names only, never a free campaign name
+ * (`jana-novakova`). Before anonymization the e-mail to Martin and the row carry the sanitized values above.
+ */
+export const ANONYMOUS_UTM_SOURCES = [
+  'instagram',
+  'ig',
+  'facebook',
+  'fb',
+  'google',
+  'seznam',
+  'firmy',
+  'linkedin',
+  'tiktok',
+  'youtube',
+  'email',
+  'newsletter',
+  'qr',
+] as const;
+export const ANONYMOUS_UTM_MEDIUMS = [
+  'social',
+  'organic',
+  'cpc',
+  'paid',
+  'email',
+  'referral',
+  'qr',
+  'print',
+  'display',
+] as const;

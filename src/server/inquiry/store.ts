@@ -1,3 +1,4 @@
+import { ANONYMOUS_UTM_MEDIUMS, ANONYMOUS_UTM_SOURCES } from './source';
 import type { InquiryRecord, InquiryStatus, InquiryStore } from './types';
 
 interface Row {
@@ -75,24 +76,28 @@ function fromRow(r: Row): InquiryRecord {
 
 const ANONYMIZABLE = `status != 'won' AND anonymized_at IS NULL AND created_at < ?1`;
 
-/** Source values are sanitized on insert; anonymization drops anything that still does not fit (defence in depth). */
-const keepUtm = (c: string): string => `CASE
-    WHEN ${c} GLOB '*[^a-z0-9._-]*' OR length(${c}) > 64
-      OR replace(replace(replace(${c}, '.', ''), '-', ''), '_', '') GLOB '*[0-9][0-9][0-9][0-9][0-9][0-9][0-9]*'
-    THEN NULL ELSE ${c} END`;
+/** Keeps the column only when it is one of the listed generic values (inlined; each is [a-z]+ by construction). */
+const keepListed = (c: string, values: readonly string[]): string => {
+  if (!values.every((v) => /^[a-z]+$/.test(v))) throw new Error('store: UTM allowlist must be [a-z]+');
+  return `CASE WHEN ${c} IN (${values.map((v) => `'${v}'`).join(', ')}) THEN ${c} ELSE NULL END`;
+};
 
 // Personal and free-text columns become NULL, event_date keeps the month. The id gets a new random value,
 // so the row no longer matches the ID quoted in the owner's e-mail (which still holds the personal data).
+// ST-04: nothing may link the row back to that e-mail either: created_at goes down to the first day of its month
+// (UTC), the mail timestamps become NULL, the free campaign name goes, and source/medium stay only when generic.
 const ANONYMIZE_SET = `
   id = lower(hex(randomblob(16))),
   submission_id = NULL,
+  created_at = CAST(strftime('%s', created_at / 1000, 'unixepoch', 'start of month') AS INTEGER) * 1000,
   name = NULL, email = NULL, phone = NULL, place = NULL, note = NULL, time_from = NULL, time_to = NULL,
   event_date = substr(event_date, 1, 7),
   referrer = CASE WHEN referrer GLOB '*[^a-z0-9.-]*' OR length(referrer) > 253 THEN NULL ELSE referrer END,
   landing_path = CASE WHEN landing_path GLOB '*[^a-z0-9/-]*' OR length(landing_path) > 120 THEN NULL ELSE landing_path END,
-  utm_source = ${keepUtm('utm_source')},
-  utm_medium = ${keepUtm('utm_medium')},
-  utm_campaign = ${keepUtm('utm_campaign')},
+  utm_source = ${keepListed('utm_source', ANONYMOUS_UTM_SOURCES)},
+  utm_medium = ${keepListed('utm_medium', ANONYMOUS_UTM_MEDIUMS)},
+  utm_campaign = NULL,
+  notified_at = NULL, confirmed_at = NULL, previewed_at = NULL,
   anonymized_at = ?2`;
 
 export function d1Store(db: D1Database): InquiryStore {

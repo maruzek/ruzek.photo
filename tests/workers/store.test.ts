@@ -63,9 +63,12 @@ const count = async (): Promise<number> =>
   (await db.prepare('SELECT count(*) AS n FROM inquiries').first<{ n: number }>())?.n ?? -1;
 const row = (id: string) =>
   db.prepare('SELECT * FROM inquiries WHERE id = ?').bind(id).first<Record<string, unknown>>();
-/** The id changes on anonymization, so anonymized rows are found by their (unique in these tests) created_at. */
-const rowAt = (createdAt: number) =>
-  db.prepare('SELECT * FROM inquiries WHERE created_at = ?').bind(createdAt).first<Record<string, unknown>>();
+/** The id and created_at change on anonymization, so anonymized rows are found by their (unique here) status. */
+const anonRow = (status: InquiryRecord['status']) =>
+  db
+    .prepare('SELECT * FROM inquiries WHERE anonymized_at IS NOT NULL AND status = ?')
+    .bind(status)
+    .first<Record<string, unknown>>();
 
 beforeAll(async () => {
   proxy = await getPlatformProxy<{ DB: D1Database }>({
@@ -140,7 +143,7 @@ describe('d1Store', () => {
     expect(await store.anonymizeCreatedBefore(cut, NOW, seen - 1, 0)).toBe(0);
     expect(await store.anonymizeCreatedBefore(cut, NOW, NOW - 3 * DAY, 0)).toBe(2);
 
-    const anon = await rowAt(old);
+    const anon = await anonRow('new');
     expect(anon).toMatchObject({
       submission_id: null,
       name: null,
@@ -160,7 +163,6 @@ describe('d1Store', () => {
       addons: '["sameDay"]',
       estimate_from: 4200,
       utm_source: 'ig',
-      utm_campaign: 'jaro',
       landing_path: '/',
       locale: 'cs',
       status: 'new',
@@ -168,7 +170,7 @@ describe('d1Store', () => {
     // a new random id, so the row no longer matches the id quoted in the owner's mail
     expect(anon!['id']).toMatch(/^[0-9a-f]{32}$/);
     expect(await row('old-new')).toBeNull();
-    expect(await rowAt(old + 1)).toMatchObject({
+    expect(await anonRow('lost')).toMatchObject({
       referrer: 'seznam.cz',
       name: null,
       status: 'lost',
@@ -178,7 +180,7 @@ describe('d1Store', () => {
     expect(await row('young')).toMatchObject({ name: 'Jana Nováková', anonymized_at: null });
 
     expect(await store.anonymizeCreatedBefore(cut, NOW + 1, NOW, 0)).toBe(0);
-    expect(await rowAt(old)).toMatchObject({ anonymized_at: NOW });
+    expect(await anonRow('new')).toMatchObject({ anonymized_at: NOW });
     expect(await count()).toBe(before);
   });
 
@@ -205,7 +207,7 @@ describe('d1Store', () => {
       }),
     );
     expect(await store.anonymizeCreatedBefore(NOW - 365 * DAY, NOW, NOW - 3 * DAY, 0)).toBe(1);
-    const r = await rowAt(NOW - 400 * DAY);
+    const r = await anonRow('new');
     expect(r).toMatchObject({
       referrer: null,
       landing_path: null,
@@ -215,6 +217,33 @@ describe('d1Store', () => {
       anonymized_at: NOW,
     });
     expect(JSON.stringify(r)).not.toMatch(/jana|777123456/i);
+  });
+
+  it('anonymization leaves nothing that links the row to the owner\'s e-mail (ST-04)', async () => {
+    const created = Date.UTC(2026, 3, 17, 14, 23, 5, 120); // 2026-04-17 14:23:05.120 UTC
+    await store.insert(
+      rec({
+        createdAt: created,
+        utmSource: 'jana-novakova',
+        utmMedium: 'social',
+        utmCampaign: 'jana-novakova',
+        notifiedAt: created + 1500,
+        confirmedAt: created + 2100,
+        previewedAt: NOW - 10 * DAY,
+      }),
+    );
+    expect(await store.anonymizeCreatedBefore(NOW - 365 * DAY, NOW, NOW - 3 * DAY, 0)).toBe(1);
+    expect(await anonRow('new')).toMatchObject({
+      created_at: Date.UTC(2026, 3, 1), // the first day of the month, UTC
+      notified_at: null,
+      confirmed_at: null,
+      previewed_at: null,
+      utm_source: null, // a free value, not a generic channel
+      utm_medium: 'social',
+      utm_campaign: null,
+      referrer: 'www.instagram.com',
+      landing_path: '/',
+    });
   });
 
   it('anonymized rows are not resent', async () => {
