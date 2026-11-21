@@ -22,3 +22,6 @@ dist/
 research/notes/
 research/moodboard/
 private/
+
+# Orchestrated build run state (local only)
+.run/

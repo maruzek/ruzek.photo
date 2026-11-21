@@ -5,7 +5,6 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 ## Otevřené otázky
 | Otázka | Stav / poznámka |
 |---|---|
-| Převod směru Rozpad do Astra | Koncept [concept.md](concept.md) a [plán](superpowers/plans/2026-11-20-rozpad-astro.md) jsou upravené podle rozhodnutí z 2026-11-21 a čekají na Martinovo schválení. Reference: [design/final/rozpad/](../design/final/rozpad/) |
 | Mřížka „kontaktní arch“ | Líbí se, ale musí být výrazně přetvořená. Ověřit, jestli šlo o mřížku ze směru A, nebo o izometrickou ze směru D |
 | Stack Sans Notch | Zkouší se. Argumenty: v malých velikostech působí jako chyba, má jinou geometrii než logo, pochází z rebrandingu Stack Overflow, je zdarma. Doporučení: jen display ≥ 64 px. Pro porovnání vzniká i varianta bez něj |
 | Serifový akcent | Kandidáti jsou Newsreader, Fraunces a Instrument Serif (vše kurzíva) |
@@ -15,6 +14,10 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 | Využití `martinruzek.cz` | Zatím neurčeno (přesměrování na .eu?) |
 
 ## Rozhodnuto
+
+### 2026-11-21: schválení konceptu a plánu
+- Martin schválil [koncept](concept.md) i [plán převodu do Astra](superpowers/plans/2026-11-20-rozpad-astro.md) a dal pokyn začít implementaci.
+- Implementace běží na větvi `feat/rozpad-astro`, úkol po úkolu: každý úkol píše nový agent a kontroluje ho Codex `gpt-6.2-sol`. Průběh je v [logu běhu](superpowers/plans/2026-11-20-rozpad-astro.run-log.md).
 
 ### 2026-11-21: e-mail, uchování poptávek, měření, postup
 - **E-mail:** veřejný kontakt je `foto@martinruzek.cz` (alias nebo schránka u stávajícího Email Profi). Na `.eu` žádná schránka. Formulář odesílá z `noreply@martinruzek.eu` (jen DNS záznamy SPF, DKIM a DMARC). E-mail Martinovi má `Reply-To` na klienta, potvrzení klientovi má `Reply-To` na `foto@`. Poskytovatele odesílání (Cloudflare Email Service, nebo Resend) ověří implementace.

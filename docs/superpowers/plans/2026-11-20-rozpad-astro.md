@@ -919,6 +919,22 @@ Kroky na Cloudflare účtu dělá Martin, nebo agent s jeho výslovným souhlase
 
 ---
 
+## Browser check
+
+Kontrolu v prohlížeči dělá Codex Sol v T3 po každých 2 přijatých UI chunkách (B, E, F, G, H, I, L), nejvýš 2× za běh.
+
+- **Setup:** `pnpm install`, `pnpm build && pnpm preview` (web na `http://localhost:8787`). Prototyp pro srovnání: `cd design/final/rozpad && python3 -m http.server 8080` (`http://localhost:8080`). Po kontrole oba procesy ukončit.
+- **Přihlášení:** žádné.
+- **Flows:**
+  1. `/` na 1440 × 900 a 390 × 844 vedle prototypu: header, hero, pás, fotografické sekce, přechody, práce, služby, týž den, o mně, poptávka, patička. Hledat rozdíly v barvách, písmech, rozestupech a textech.
+  2. `/en/` totéž, dlouhé anglické texty se nesmí lámat ani přetékat.
+  3. `/` a `/en/` na 360 × 780: žádný vodorovný scroll, jméno v hero, pás, ceny a štítky se vejdou.
+  4. `prefers-reduced-motion: reduce` (emulace): veškerý obsah vidět, žádné ASCII ani pin, přechody statické.
+  5. Klávesnice: Tab od skip linku přes navigaci, kotvy sekcí (fokus na sekci), lightbox (Enter otevře, šipky listují, Esc zavře a vrátí fokus), pauza pásu.
+  6. Formulář (od chunku I): prázdné odeslání (chyby a fokus), vyplněný stav s odhadem ceny, chyba sítě, úspěch. Žádné zaškrtávátko souhlasu, věta se zásadami nad tlačítkem.
+  7. Zásady, 404 a EN zásady (od chunku L).
+- **Vždy:** konzole bez chyb, žádné požadavky na Google Fonts ani jiné CDN, žádné cookies. Web nemá tmavý přepínač, tmavý režim systému se nekontroluje.
+
 ## Mimo tento plán
 
 - Vertikální videa (R2, nebo Stream): samostatný plán po rozhodnutí.
