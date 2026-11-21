@@ -377,7 +377,7 @@ it('unpublished photo needs nothing', () =>
 - [x] **Step 3:** Napsat test `check-contrast`: `light.jpg` (spodek #DDDDDD) s `normal` → < 4,5. `dark.jpg` (spodek #202020) → ≥ 4,5. `light.jpg` se `strong` → vyšší než s `normal`.
 - [x] **Step 4:** Spustit, FAIL. Implementovat:
   - `photos-import.ts <files…>`: sharp `rotate()` (aplikuje orientaci), `resize({ width: 3000, height: 3000, fit: 'inside', withoutEnlargement: true })`, `jpeg({ quality: 90, mozjpeg: true })` bez `withMetadata`. Výstup `src/assets/photos/<slug>.jpg` a kostra YAML s `alt: { cs: "TODO", en: "TODO" }` a bez `consentRef` (build pak selže, dokud se nedoplní, nebo se nenastaví `published: false`).
-  - `check-exif.ts`: exif-reader nad `sharp(file).metadata().exif`. `src/assets` → `gps`, `dist` → `any` (když `dist` neexistuje, přeskočí). Nenulový exit při nálezu.
+  - `check-exif.ts`: exif-reader nad `sharp(file).metadata().exif`. `src` a `public` → `gps` (fotka může ležet i vedle YAML v `src/content`), `dist` → `any` (EXIF, XMP, IPTC, ICC, PNG text, JPEG komentář; když `dist` neexistuje, přeskočí). Symlinky na adresáře se hlásí. `pnpm build` = `astro build && pnpm check:exif`. Nenulový exit při nálezu.
   - `check-contrast.ts`: výřez spodních 35 %, `stats()`, průměrný relativní jas, aplikovat průměrné krytí gradientu `.shade` (normal ≈ 0,75, strong ≈ 0,9 nad `--night`), kontrast podle WCAG. Projde kolekci fotek použitých ve `fold` a hero a vypíše varování pod 4,5. Neselhává, jen hlásí.
 - [x] **Step 5:** Naimportovat 14 zástupných fotek z `design/final/rozpad/assets/stock/` s `placeholder: true` a kreditem z `credits.json`. Alt texty převzít z `index.html`.
 - [x] **Step 6:** Testy PASS, `pnpm check` PASS.
@@ -913,7 +913,7 @@ Kroky na Cloudflare účtu dělá Martin, nebo agent s jeho výslovným souhlase
 - [ ] **Step 2:** Turnstile widget pro `martinruzek.eu`, `wrangler secret put TURNSTILE_SECRET`, site key do `PUBLIC_TURNSTILE_SITE_KEY`.
 - [ ] **Step 3:** Alias `foto@martinruzek.cz` u Email Profi (Martin). Odesílání z `noreply@martinruzek.eu` přes poskytovatele z úkolu 11: DNS záznamy SPF, DKIM a DMARC na `martinruzek.eu`, tajný klíč přes `wrangler secret`.
 - [ ] **Step 4:** Nasazení `workers/maintenance`. Umami: web v cloudu, ID do `PUBLIC_UMAMI_WEBSITE_ID`. Cloudflare Web Analytics: token do `PUBLIC_CF_BEACON_TOKEN`. Google Search Console: ověření domény přes DNS a odeslání sitemap.
-- [ ] **Step 5:** `pnpm check && pnpm test:e2e && pnpm check:launch`, pak `pnpm build && wrangler deploy`. Vlastní doména `martinruzek.eu`.
+- [ ] **Step 5:** `pnpm check && pnpm test:e2e && pnpm check:launch`, pak `pnpm build && wrangler deploy`. `pnpm build` spouští `astro build && pnpm check:exif`, takže `dist` se prohledá při každém buildu a nasazuje se jen výstup, který prošel (nikdy `wrangler deploy` bez předchozího `pnpm build`). Vlastní doména `martinruzek.eu`.
 - [ ] **Step 6:** Kontrola na produkci: testovací poptávka dojde na `foto@` (odpověď jde klientovi) i na testovací adresu klienta (odpověď jde na `foto@`), záznam je v D1 se zdrojem, v Umami je vidět `inquiry_sent`, v Cloudflare první data, Lighthouse na produkční URL, žádné cookies.
 - [ ] **Step 7:** Commit `chore: production configuration` (bez tajemství) a záznam do `docs/decisions.md`.
 

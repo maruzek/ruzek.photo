@@ -1,4 +1,4 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -32,11 +32,11 @@ function hexToRgb(hex: string): Rgb {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-/** WCAG 2.x relative luminance of an sRGB colour (0–255 channels). */
+/** WCAG 2.2 relative luminance of an sRGB colour (0–255 channels, threshold 0.04045 of the sRGB standard). */
 function luminance([r, g, b]: Rgb): number {
   const lin = (c: number): number => {
     const s = c / 255;
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
   };
   return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
 }
@@ -47,24 +47,38 @@ function contrast(a: number, b: number): number {
 }
 
 /**
- * WCAG contrast between the ink colour and the bottom 35 % of the photo after the `.shade` gradient
- * (mean sRGB colour of the strip blended over with `--night`, as the browser does).
+ * WCAG contrast between the ink colour and the bottom 35 % of the photo after the `.shade` gradient.
+ * The shade is blended over each pixel (as the browser does), each pixel becomes a relative luminance, and
+ * only then are the luminances averaged. Averaging the sRGB channels first would overestimate the contrast
+ * of a strip that is half light and half dark.
  */
 export async function bottomContrast(
   file: string,
   inkHex = INK,
-  shade: 'normal' | 'strong'
+  shade: 'normal' | 'strong',
 ): Promise<number> {
   const oriented = sharp(file).rotate();
   const { width, height } = await sharp(await oriented.clone().toBuffer()).metadata();
   const top = Math.floor(height * (1 - BOTTOM_FRACTION));
   const strip = await oriented.extract({ left: 0, top, width, height: height - top }).toBuffer();
-  const { channels } = await sharp(strip).stats();
-  const mean = [channels[0]?.mean ?? 0, channels[1]?.mean ?? 0, channels[2]?.mean ?? 0];
+  const { data, info } = await sharp(strip)
+    .toColourspace('srgb')
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   const alpha = SHADE_OPACITY[shade];
   const night = hexToRgb(NIGHT);
-  const blended = mean.map((c, i) => c * (1 - alpha) + (night[i] ?? 0) * alpha) as Rgb;
-  return contrast(luminance(hexToRgb(inkHex)), luminance(blended));
+  const pixels = info.width * info.height;
+  let sum = 0;
+  for (let i = 0; i < pixels; i++) {
+    const o = i * info.channels;
+    sum += luminance([
+      (data[o] ?? 0) * (1 - alpha) + (night[0] ?? 0) * alpha,
+      (data[o + 1] ?? 0) * (1 - alpha) + (night[1] ?? 0) * alpha,
+      (data[o + 2] ?? 0) * (1 - alpha) + (night[2] ?? 0) * alpha,
+    ]);
+  }
+  return contrast(luminance(hexToRgb(inkHex)), sum / pixels);
 }
 
 interface PhotoEntry {
@@ -73,36 +87,42 @@ interface PhotoEntry {
   shade: 'normal' | 'strong';
 }
 
-async function loadPhotos(dir: string): Promise<PhotoEntry[]> {
-  const files = (await readdir(dir)).filter((f) => f.endsWith('.yaml')).sort();
-  return Promise.all(
-    files.map(async (f) => {
-      const data = parse(await readFile(join(dir, f), 'utf8')) as { image: string; shade?: 'normal' | 'strong' };
-      return { id: f.replace(/\.yaml$/, ''), image: resolve(dir, data.image), shade: data.shade ?? 'normal' };
-    })
-  );
+/** Reads one `<id>.yaml`. Throws when the file is missing or unreadable; the caller reports that per photo. */
+async function loadPhoto(dir: string, id: string): Promise<PhotoEntry> {
+  const data = parse(await readFile(join(dir, `${id}.yaml`), 'utf8')) as {
+    image?: string;
+    shade?: 'normal' | 'strong';
+  };
+  if (!data?.image) throw new Error('no `image` in the YAML');
+  return { id, image: resolve(dir, data.image), shade: data.shade ?? 'normal' };
 }
 
 /** Reports, never fails (exit 0): the check guides the choice of `shade`, it is no gate. */
 async function main(ids: string[]): Promise<void> {
   const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-  const all = await loadPhotos(resolve(root, 'src/content/photos'));
+  const dir = resolve(root, 'src/content/photos');
   const wanted = ids.length > 0 ? ids : [...TEXT_OVER_PHOTOS];
   let below = 0;
   for (const id of wanted) {
-    const photo = all.find((p) => p.id === id);
-    if (!photo) {
-      console.warn(`check:contrast: no photo "${id}" in src/content/photos`);
+    let photo: PhotoEntry;
+    let ratio: number;
+    try {
+      photo = await loadPhoto(dir, id);
+      ratio = await bottomContrast(photo.image, INK, photo.shade);
+    } catch (error) {
+      console.warn(
+        `check:contrast: WARN ${id}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       continue;
     }
-    const ratio = await bottomContrast(photo.image, INK, photo.shade);
     const line = `${id} (shade: ${photo.shade}): ${ratio.toFixed(2)}:1`;
     if (ratio >= WCAG_AA) {
       console.log(`check:contrast: ok   ${line}`);
       continue;
     }
     below++;
-    const strong = photo.shade === 'normal' ? await bottomContrast(photo.image, INK, 'strong') : undefined;
+    const strong =
+      photo.shade === 'normal' ? await bottomContrast(photo.image, INK, 'strong') : undefined;
     const hint =
       strong === undefined
         ? 'even the strong shade is not enough'
@@ -111,7 +131,8 @@ async function main(ids: string[]): Promise<void> {
           : `shade: strong gives only ${strong.toFixed(2)}:1`;
     console.warn(`check:contrast: WARN ${line} is below ${WCAG_AA}:1, ${hint}`);
   }
-  if (below > 0) console.warn(`check:contrast: ${below} photo(s) below ${WCAG_AA}:1 (warning only)`);
+  if (below > 0)
+    console.warn(`check:contrast: ${below} photo(s) below ${WCAG_AA}:1 (warning only)`);
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

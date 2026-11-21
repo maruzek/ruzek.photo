@@ -57,4 +57,27 @@ describe('bottomContrast', () => {
     const b = await bottomContrast(bright, INK, 'normal');
     expect(Math.abs(a - b)).toBeLessThan(0.1);
   });
+  it('averages the luminance of the pixels, not their sRGB values (half white, half black strip)', async () => {
+    const file = join(dir, 'mixed.png');
+    const half = (background: string) =>
+      sharp({ create: { width: 100, height: 100, channels: 3, background } })
+        .png()
+        .toBuffer();
+    await sharp({ create: { width: 200, height: 100, channels: 3, background: '#000000' } })
+      .composite([{ input: await half('#FFFFFF'), left: 0, top: 0 }])
+      .png()
+      .toFile(file);
+    // independent calculation: the normal shade (0.41 of #07080b) over each half, then the mean luminance
+    const lin = (c: number): number => ((c / 255 + 0.055) / 1.055) ** 2.4;
+    const lum = (r: number, g: number, b: number): number =>
+      0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    const a = 0.41;
+    const white = lum(255 * (1 - a) + 7 * a, 255 * (1 - a) + 8 * a, 255 * (1 - a) + 11 * a);
+    const black = lum(7 * a, 8 * a, 11 * a);
+    const ink = lum(0xe9, 0xea, 0xee);
+    const expected = (ink + 0.05) / ((white + black) / 2 + 0.05);
+    // the old way (mean sRGB first) would give about 6.9:1 here
+    expect(expected).toBeLessThan(4.5);
+    expect(await bottomContrast(file, INK, 'normal')).toBeCloseTo(expected, 1);
+  });
 });

@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { basename, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -15,16 +15,12 @@ export interface ImportOptions {
   yamlDir: string;
   /** File name without extension; default is derived from the source file. */
   slug?: string;
-  /** Write the skeleton of a CC0 placeholder instead of a real photo. */
-  placeholder?: { credit: string };
 }
 
 export interface ImportResult {
   slug: string;
   imagePath: string;
   yamlPath: string;
-  /** False when the YAML already existed and was left alone. */
-  yamlWritten: boolean;
 }
 
 export function slugify(name: string): string {
@@ -36,101 +32,71 @@ export function slugify(name: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-function skeleton(slug: string, placeholder: ImportOptions['placeholder']): string {
-  const lines = [
+function skeleton(slug: string): string {
+  return `${[
     `image: ../../assets/photos/${slug}.jpg`,
     'alt: { cs: "TODO", en: "TODO" }',
     'category: event # event | sport | portrait',
-    // `published: true` without `consentRef` fails the build until the consent is recorded (or published is set to false)
+    // without `consentRef` and `minors` the build fails until both are filled in (or `published` is set to false)
     'published: true',
-  ];
-  if (placeholder) {
-    lines.push('placeholder: true', `credit: ${JSON.stringify(placeholder.credit)}`);
-  } else {
-    lines.push('# consentRef: C-2026-001  # id of the consent record in private/, never a name or an e-mail');
-  }
-  lines.push('minors: false', 'shade: normal # normal | strong');
-  return `${lines.join('\n')}\n`;
+    '# consentRef: C-2026-001  # sequential ID of the consent record, assigned in private/. Nothing else: no name, e-mail or phone number',
+    '# minors: false  # REQUIRED: true if anyone under 18 is recognisable (then also parentalConsent: true), otherwise false',
+    'shade: normal # normal | strong',
+  ].join('\n')}\n`;
 }
 
 /**
  * Applies the orientation, scales down to at most MAX_EDGE and re-encodes as JPEG.
  * sharp keeps no metadata unless asked (no `withMetadata` / `keepMetadata`), so EXIF, XMP, IPTC and the
  * embedded colour profile are all dropped (the output is sRGB).
+ *
+ * Never overwrites: if the JPEG or the YAML of that name exists (two different `DSC_001.jpg` from two events
+ * get the same slug), the import fails and nothing is written. Files are created exclusively (`wx`), and when
+ * the second one cannot be written the first one is removed again (only files created by this call).
  */
 export async function importPhoto(source: string, options: ImportOptions): Promise<ImportResult> {
   const slug = slugify(options.slug ?? basename(source, extname(source)));
   if (!slug) throw new Error(`Cannot derive a file name from ${source}`);
-  const input = await readFile(source); // read first: the source may live in the output directory
-  await mkdir(options.outDir, { recursive: true });
+  const input = await readFile(source);
   const imagePath = join(options.outDir, `${slug}.jpg`);
-  await sharp(input)
+  const yamlPath = join(options.yamlDir, `${slug}.yaml`);
+  for (const path of [imagePath, yamlPath]) {
+    if (existsSync(path))
+      throw new Error(`${path} already exists: rename the source file, nothing was written`);
+  }
+  const jpeg = await sharp(input)
     .rotate()
     .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: 'inside', withoutEnlargement: true })
     .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
-    .toFile(imagePath);
-
+    .toBuffer();
+  await mkdir(options.outDir, { recursive: true });
   await mkdir(options.yamlDir, { recursive: true });
-  const yamlPath = join(options.yamlDir, `${slug}.yaml`);
-  const yamlWritten = !existsSync(yamlPath);
-  if (yamlWritten) await writeFile(yamlPath, skeleton(slug, options.placeholder));
-  return { slug, imagePath, yamlPath, yamlWritten };
-}
-
-interface Credit {
-  slot: string;
-  creator: string;
-  source: string;
-  license: string;
-}
-
-const SOURCE_NAMES: Record<string, string> = { stocksnap: 'StockSnap', flickr: 'Flickr' };
-
-function creditLine(entry: Credit): string {
-  const source = SOURCE_NAMES[entry.source] ?? entry.source;
-  return `${entry.creator}, ${entry.license.toUpperCase()} (${source})`;
-}
-
-async function main(args: string[]): Promise<void> {
-  const root = resolve(fileURLToPath(import.meta.url), '../..');
-  const files: string[] = [];
-  let creditsFile: string | undefined;
-  let placeholder = false;
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i] ?? '';
-    if (arg === '--placeholder') placeholder = true;
-    else if (arg === '--credits') creditsFile = args[++i];
-    else files.push(arg);
+  await writeFile(imagePath, jpeg, { flag: 'wx' });
+  try {
+    await writeFile(yamlPath, skeleton(slug), { flag: 'wx' });
+  } catch (error) {
+    await rm(imagePath, { force: true });
+    throw error;
   }
+  return { slug, imagePath, yamlPath };
+}
+
+async function main(files: string[]): Promise<void> {
+  const root = resolve(fileURLToPath(import.meta.url), '../..');
   if (files.length === 0) {
     console.error(
-      'Usage: pnpm photos:import [--placeholder --credits <credits.json>] <photo…>\n' +
-        'Strips all metadata, writes src/assets/photos/<name>.jpg and a YAML skeleton in src/content/photos/.'
+      'Usage: pnpm photos:import <photo…>\n' +
+        'Strips all metadata, writes src/assets/photos/<name>.jpg and a YAML skeleton in src/content/photos/.',
     );
     process.exitCode = 1;
     return;
   }
-  let credits: Credit[] = [];
-  if (placeholder) {
-    if (!creditsFile) throw new Error('--placeholder needs --credits <credits.json>');
-    credits = JSON.parse(await readFile(creditsFile, 'utf8')) as Credit[];
-  }
   for (const file of files) {
-    const slug = slugify(basename(file, extname(file)));
-    let ph: ImportOptions['placeholder'];
-    if (placeholder) {
-      const entry = credits.find((c) => c.slot === slug);
-      if (!entry) throw new Error(`No credit for "${slug}" in ${creditsFile}`);
-      ph = { credit: creditLine(entry) };
-    }
     const result = await importPhoto(file, {
       outDir: resolve(root, 'src/assets/photos'),
       yamlDir: resolve(root, 'src/content/photos'),
-      ...(ph ? { placeholder: ph } : {}),
     });
-    console.log(
-      `${result.imagePath}${result.yamlWritten ? ` + ${result.yamlPath}` : ` (kept existing ${result.yamlPath})`}`
-    );
+    console.log(`${result.imagePath} + ${result.yamlPath}`);
   }
 }
 

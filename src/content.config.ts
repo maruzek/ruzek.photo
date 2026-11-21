@@ -1,6 +1,7 @@
 import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { contentDate } from '@/lib/content-date';
 import { photoSchema } from '@/lib/photos/schema';
 
 const bilingual = z.object({ cs: z.string().min(1), en: z.string().min(1) });
@@ -16,7 +17,7 @@ const caseStudies = defineCollection({
     draft: z.boolean(),
     title: bilingual,
     summary: bilingual,
-    date: z.coerce.date(),
+    date: contentDate,
     photos: z.array(reference('photos')),
     matchReport: z.object({ score: z.string(), venue: z.string() }).optional(),
   }),
