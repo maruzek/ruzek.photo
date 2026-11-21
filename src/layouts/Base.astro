@@ -3,15 +3,14 @@ import { Font } from 'astro:assets';
 import '../styles/tokens.css';
 import '../styles/fonts.css';
 import '../styles/base.css';
+import type { Locale, StaticRoute } from '../i18n';
 
-interface Props {
-  locale: 'cs' | 'en';
-  title: string;
-  description: string;
-  path: string;
-}
+// `route` (and `slug` for a case study) feed canonical and hreflang via alternates() in SeoHead (task 13)
+type Props = { locale: Locale; title: string; description: string } & (
+  | { route: StaticRoute; slug?: never }
+  | { route: 'caseStudy'; slug: string }
+);
 
-// `path` is for the canonical link that SeoHead adds in task 13
 const { locale, title, description } = Astro.props;
 // Only the two faces above the fold are preloaded (Notch 700 for the name, Text 400 for body copy)
 const aboveTheFold = [{ weight: 700, style: 'normal' as const }];

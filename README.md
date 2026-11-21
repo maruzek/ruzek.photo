@@ -2,7 +2,7 @@
 
 Portfolio a obchodní web fotografa Martina Růžka (`@ruzek.jpg`), Praha a Karlovy Vary.
 
-> **Stav:** probíhá průzkum vizuálu (fáze 3 z 5). Kód aplikace zatím neexistuje. Napíše se až po schválení konceptu a plánu.
+> **Stav:** koncept a plán jsou schválené (2026-11-21). Probíhá implementace na větvi `feat/rozpad-astro`.
 
 ## Cíl webu
 - Získávat poptávky na **focení akcí**: firemní akce, konference, přednášky, univerzitní a spolkové akce, plesy, večírky, bary.
