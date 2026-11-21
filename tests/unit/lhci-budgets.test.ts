@@ -109,7 +109,7 @@ describe('budgetProblems', () => {
   });
 
   it('names the page and the budget that is over', () => {
-    const problems = budgetProblems(js(12000, 50000), '/en/');
+    const problems = budgetProblems(js(13000, 50000), '/en/');
     expect(problems).toHaveLength(1);
     expect(problems[0]).toMatch(/first-render.*\/en\//);
     expect(budgetProblems(js(1000, 200000), '/').join()).toMatch(/total JS/);
