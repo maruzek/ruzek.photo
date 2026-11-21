@@ -224,7 +224,7 @@ em.s {
 .btn.dark::before {
   background: var(--accent);
 }
-.btn.dark:hover {
+.btn.dark:not(:disabled):hover {
   color: var(--accent-ink);
 }
 .btn.dark:focus-visible {

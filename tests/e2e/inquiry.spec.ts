@@ -122,7 +122,17 @@ test.describe('inquiry form', () => {
     await expect(page.locator('.done')).toBeVisible();
     expect(calls).toBe(1);
     // a sent inquiry cannot be sent again until "send another" (FM-03)
-    await expect(page.locator('#inq button[type="submit"]')).toBeDisabled();
+    const submit = page.locator('#inq button[type="submit"]');
+    await expect(submit).toBeDisabled();
+    // hovering the disabled button keeps its label readable (BR-01: the hover colour matched the background)
+    const colours = () =>
+      submit.evaluate((el) => [getComputedStyle(el).color, getComputedStyle(el).backgroundColor]);
+    await page.mouse.move(0, 0); // the double click left the pointer on the button
+    await page.waitForTimeout(500); // the colour transition is 0.3 s
+    const before = await colours();
+    await submit.hover({ force: true });
+    await page.waitForTimeout(500); // the colour transition is 0.3 s
+    expect(await colours()).toEqual(before);
   });
 
   test('a retry after a lost response reuses the submission id, a new inquiry gets a new one (FM-03)', async ({
