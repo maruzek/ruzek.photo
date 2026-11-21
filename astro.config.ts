@@ -3,6 +3,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
+import { cspHeaders } from './scripts/csp-headers';
 import { publishedPhotos } from './scripts/vite-published-photos';
 import { SITE_URL } from './src/config/site';
 import { alternates } from './src/i18n';
@@ -73,6 +74,7 @@ export default defineConfig({
         return links ? { ...item, links } : item;
       },
     }),
+    cspHeaders(),
   ],
   i18n: { defaultLocale: 'cs', locales: ['cs', 'en'], routing: { prefixDefaultLocale: false } },
   build: { inlineStylesheets: 'auto' },

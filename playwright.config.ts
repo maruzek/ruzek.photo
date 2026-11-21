@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { ANALYTICS_TEST_ENV, BLOCKED_HOSTS } from './tests/e2e/analytics-env';
 
 // E2E_PORT lets a second checkout (worktree) run its own preview next to the main one
 const PORT = Number(process.env['E2E_PORT'] ?? 8787);
@@ -16,6 +17,9 @@ export default defineConfig({
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
+    launchOptions: {
+      args: [`--host-resolver-rules=${BLOCKED_HOSTS.map((h) => `MAP ${h} 127.0.0.1`).join(', ')}`],
+    },
   },
   webServer: {
     // wrangler dev serves dist/ the way Workers with static assets will on Cloudflare
@@ -28,7 +32,7 @@ export default defineConfig({
       `pnpm exec wrangler dev --port ${PORT} --env-file tests/e2e/preview.env` +
         ` --var ALLOWED_ORIGIN:http://localhost:${PORT}`,
     ].join(' && '),
-    env: { PUBLIC_TURNSTILE_SITE_KEY: TURNSTILE_TEST_SITE_KEY },
+    env: { PUBLIC_TURNSTILE_SITE_KEY: TURNSTILE_TEST_SITE_KEY, ...ANALYTICS_TEST_ENV },
     url: `http://localhost:${PORT}`,
     // always build the current source; an already running preview would serve stale HTML
     reuseExistingServer: false,

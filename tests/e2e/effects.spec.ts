@@ -40,7 +40,7 @@ test('a repeat visit with the photo in cache skips the intro', async ({ page }) 
 
 test('motion: dither canvases draw while in view', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction("document.documentElement.dataset.motion === 'on'");
+  await page.waitForFunction(() => document.documentElement.dataset['motion'] === 'on');
   await page.evaluate(() => document.querySelector('.fold')?.scrollIntoView({ block: 'start' }));
   await expect(page.locator('.fold canvas.dz').first()).toHaveAttribute('data-painted', 'live');
   await page.evaluate(() =>

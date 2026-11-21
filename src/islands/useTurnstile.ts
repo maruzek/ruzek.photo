@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
+import { TURNSTILE_ACTION } from '../lib/inquiry/turnstile';
 
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 /** The widget starts loading this far before the form reaches the viewport. */
@@ -11,6 +12,7 @@ interface TurnstileApi {
       sitekey: string;
       appearance: 'interaction-only';
       language: string;
+      action: string;
       callback(token: string): void;
       'expired-callback'(): void;
       'error-callback'(): void;
@@ -81,6 +83,7 @@ export function useTurnstile(
           sitekey: siteKey,
           appearance: 'interaction-only',
           language,
+          action: TURNSTILE_ACTION,
           callback: (t) => settle(t),
           'expired-callback': () => settle(null),
           'error-callback': () => settle(null),

@@ -39,7 +39,11 @@ const q = d.inquiry;
         {q.direct.phone} {site.contact.phone ?? <Todo>{q.direct.phoneTodo}</Todo>}
       </span>
       <span>
-        {q.direct.email} <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+        {q.direct.email} <a
+          href={`mailto:${site.contact.email}`}
+          data-umami-event="contact_click"
+          data-umami-event-type="email">{site.contact.email}</a
+        >
       </span>
     </div>
   </InquiryForm>

@@ -4,6 +4,7 @@ import '../styles/tokens.css';
 import '../styles/fonts.css';
 import '../styles/base.css';
 import SeoHead from '../components/SeoHead.astro';
+import { analytics } from '../config/analytics';
 import type { PublishedPhoto } from '../lib/photos/get';
 import { alternates, type Locale, type StaticRoute } from '../i18n';
 
@@ -70,8 +71,14 @@ const bodyFace = [{ weight: 400, style: 'normal' as const }];
   </head>
   <body>
     <slot />
+    {
+      (analytics.umami || analytics.cfBeaconToken) && (
+        <script type="application/json" id="analytics-config" set:html={JSON.stringify(analytics).replace(/</g, '\\u003c')} />
+      )
+    }
     <script>
       import '../scripts/motion/boot';
+      import '../scripts/analytics-boot';
     </script>
   </body>
 </html>

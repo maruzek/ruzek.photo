@@ -75,4 +75,24 @@ describe('verifyTurnstile', () => {
     expect(await verifyTurnstile('', 't', null, async () => Response.json({ success: true }))).toBe(false);
     err.mockRestore();
   });
+
+  describe('action and hostname (FM-11)', () => {
+    const expected = { action: 'inquiry', hostname: 'martinruzek.eu' };
+    const answer = (body: object) => async () => Response.json(body);
+    it('accepts a token issued for the inquiry action on the site', async () =>
+      expect(await verifyTurnstile('real', 't', null, answer({ success: true, ...expected }), expected)).toBe(true));
+    it('refuses another action or another hostname', async () => {
+      const wrongAction = answer({ success: true, action: 'login', hostname: 'martinruzek.eu' });
+      const wrongHost = answer({ success: true, action: 'inquiry', hostname: 'evil.example' });
+      const none = answer({ success: true });
+      expect(await verifyTurnstile('real', 't', null, wrongAction, expected)).toBe(false);
+      expect(await verifyTurnstile('real', 't', null, wrongHost, expected)).toBe(false);
+      expect(await verifyTurnstile('real', 't', null, none, expected)).toBe(false);
+    });
+    it('skips the check for the public test secrets (they answer example.com)', async () => {
+      const test = answer({ success: true, hostname: 'example.com', action: '' });
+      expect(await verifyTurnstile('1x0000000000000000000000000000000AA', 't', null, test, expected)).toBe(true);
+      expect(await verifyTurnstile('real', 't', null, test, expected)).toBe(false);
+    });
+  });
 });

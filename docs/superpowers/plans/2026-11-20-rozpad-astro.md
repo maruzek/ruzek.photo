@@ -869,10 +869,10 @@ export function track(event: TrackEvent, data?: Record<string, string | number>)
 export function loadAnalytics(cfg: typeof analytics, win?: Window): void; // injects scripts after load + requestIdleCallback
 ```
 
-- [ ] **Step 0:** Unit test `analytics.test.ts`: `track` bez `window.umami` nevyhodí chybu; s podstrčeným `umami.track` mu předá název a data; `loadAnalytics` s `null` konfigurací nic nevloží; s konfigurací vloží dva `<script defer>` (Umami s `data-website-id`, Cloudflare s `data-cf-beacon`) až po `load` a `requestIdleCallback`. Pak e2e `analytics.spec.ts`: požadavky na skript Umami a `static.cloudflareinsights.com` přijdou až po události `load`; klik na telefon pošle `contact_click`. Ověřit, že tvar atributů a API Umami odpovídá jejich aktuální dokumentaci.
+- [x] **Step 0:** Unit test `analytics.test.ts`: `track` bez `window.umami` nevyhodí chybu; s podstrčeným `umami.track` mu předá název a data; `loadAnalytics` s `null` konfigurací nic nevloží; s konfigurací vloží dva `<script defer>` (Umami s `data-website-id`, Cloudflare s `data-cf-beacon`) až po `load` a `requestIdleCallback`. Pak e2e `analytics.spec.ts`: požadavky na skript Umami a `static.cloudflareinsights.com` přijdou až po události `load`; klik na telefon pošle `contact_click`. Ověřit, že tvar atributů a API Umami odpovídá jejich aktuální dokumentaci.
 
-- [ ] **Step 1:** E2e: po načtení (se zapnutým měřením), scrollu na konec, otevření lightboxu a odeslání formuláře je `context.cookies()` prázdné a `localStorage.length === 0`; na stránce není cookie lišta; odpověď `/` má hlavičky `content-security-policy`, `referrer-policy: strict-origin-when-cross-origin`, `x-content-type-options: nosniff`, `permissions-policy`; v DOM není `iframe` mimo Turnstile.
-- [ ] **Step 2:** FAIL → `_headers`:
+- [x] **Step 1:** E2e: po načtení (se zapnutým měřením), scrollu na konec, otevření lightboxu a odeslání formuláře je `context.cookies()` prázdné a `localStorage.length === 0`; na stránce není cookie lišta; odpověď `/` má hlavičky `content-security-policy`, `referrer-policy: strict-origin-when-cross-origin`, `x-content-type-options: nosniff`, `permissions-policy`; v DOM není `iframe` mimo Turnstile.
+- [x] **Step 2:** FAIL → `_headers`:
 
 ```
 /*
@@ -883,7 +883,7 @@ export function loadAnalytics(cfg: typeof analytics, win?: Window): void; // inj
 ```
 
 Inline skript z úkolu 2 povolit hashem (`'sha256-…'`, generovaný při buildu, nebo CSP podpora zamčeného Astra). Domény Umami ověřit podle skutečných požadavků cloudu a při přechodu na vlastní server je vyměnit (hodnota se generuje z `PUBLIC_UMAMI_SRC`). Ověřit, že `style-src 'unsafe-inline'` je nutné (GSAP píše inline styly přes CSSOM, to CSP neblokuje). Pokud ne, odstranit.
-- [ ] **Step 3:** PASS. Commit `feat: security headers and cookieless analytics (Umami, Cloudflare)`.
+- [x] **Step 3:** PASS. Commit `feat: security headers and cookieless analytics (Umami, Cloudflare)`.
 
 ---
 

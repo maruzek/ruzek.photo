@@ -1,0 +1,7 @@
+# Security headers for every static response (concept.md, kap. 15). The CSP placeholder is filled in by the build
+# (scripts/csp-headers.ts): inline script hashes and the Umami origin are known only then.
+/*
+  Content-Security-Policy: __CSP__
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()

@@ -38,13 +38,17 @@ const onHome = Astro.url.pathname.replace(/\/?$/, '/') === home;
     </div>
     <div>
       <span class="mono">{f.instagram.label}</span>
-      <a href={site.instagram} rel="me">
+      <a href={site.instagram} rel="me" data-umami-event="contact_click" data-umami-event-type="instagram">
         {site.handle}
       </a>
     </div>
     <div>
       <span class="mono">{f.contact.label}</span>
-      <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      <a
+        href={`mailto:${site.contact.email}`}
+        data-umami-event="contact_click"
+        data-umami-event-type="email">{site.contact.email}</a
+      >
       <br />
       {site.contact.phone ?? <Todo>{f.contact.phoneTodo}</Todo>}
     </div>

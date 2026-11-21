@@ -2,6 +2,8 @@
 // with reduced motion: a native modal <dialog> traps focus, Esc closes it, the arrows page through the photos
 // and focus returns to the photo that opened it. Without JavaScript every photo is a link to its full image.
 
+import { track } from './analytics';
+
 export interface LightboxHooks {
   /** Called after the dialog opens (the motion layer stops smooth scrolling) */
   onOpen?(): void;
@@ -68,6 +70,7 @@ export function initLightbox(root: HTMLDialogElement, hooks: LightboxHooks = {})
       document.documentElement.classList.add('lb-open');
       close.focus();
       hooksOf.get(root)?.onOpen?.();
+      track('lightbox_open');
     });
   });
   prev.addEventListener('click', () => show(index - 1));

@@ -14,4 +14,4 @@ const href = (props.route === 'caseStudy' ? alternates('caseStudy', props.slug) 
 const d = t(locale).lang;
 ---
 
-<a href={href} hreflang={other} lang={other} data-umami-event="lang_switch">{d.other}</a>
+<a href={href} hreflang={other} lang={other} data-umami-event="lang_switch" data-umami-event-to={other}>{d.other}</a>

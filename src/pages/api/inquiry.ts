@@ -4,6 +4,7 @@ import { handleInquiry } from '../../server/inquiry/handler';
 import { createMailer, FROM_EMAIL, type MailerEnv } from '../../server/inquiry/mailer';
 import { d1Store } from '../../server/inquiry/store';
 import { verifyTurnstile } from '../../server/inquiry/turnstile';
+import { TURNSTILE_ACTION } from '../../lib/inquiry/turnstile';
 
 // The only server route of the site (concept.md, kap. 2). Bindings come from wrangler.jsonc; secrets
 // (TURNSTILE_SECRET, RESEND_API_KEY) from `wrangler secret`, locally from .dev.vars or --var.
@@ -17,7 +18,11 @@ export const ALL: APIRoute = ({ request, locals }) => {
   return handleInquiry(request, {
     store: d1Store(env.DB),
     mailer: createMailer(secrets),
-    verifyTurnstile: (token, ip) => verifyTurnstile(secrets.TURNSTILE_SECRET ?? '', token, ip),
+    verifyTurnstile: (token, ip) =>
+      verifyTurnstile(secrets.TURNSTILE_SECRET ?? '', token, ip, fetch, {
+        action: TURNSTILE_ACTION,
+        hostname: new URL(env.ALLOWED_ORIGIN).hostname,
+      }),
     rateLimit: async (key) => (await env.INQUIRY_RL.limit({ key })).success,
     now: () => Date.now(),
     newId: () => crypto.randomUUID(),

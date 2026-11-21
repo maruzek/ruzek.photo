@@ -2,8 +2,9 @@ import { test, expect } from '@playwright/test';
 
 // The motion layer reports its state on <html data-motion="on|off"> (no global in the production build, which
 // is what the e2e suite tests).
-const motionIs = (state: 'on' | 'off'): string =>
-  `document.documentElement.dataset.motion === '${state}'`;
+// A function, not a string: the CSP has no 'unsafe-eval', and Playwright evaluates a string predicate with eval.
+// The state is passed as the argument (a function is serialized without its closure).
+const motionIs = (state: 'on' | 'off'): boolean => document.documentElement.dataset['motion'] === state;
 
 test('reduced motion: no GSAP/Lenis downloaded, everything visible', async ({ page }) => {
   const scripts: string[] = [];
@@ -22,16 +23,16 @@ test('reduced motion: no GSAP/Lenis downloaded, everything visible', async ({ pa
 
 test('motion starts, sets motion-ready and runs Lenis', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   await expect(page.locator('html')).toHaveClass(/\bmotion-ready\b/);
   await expect(page.locator('html')).toHaveClass(/\blenis\b/);
 });
 
 test('switching to reduced motion at runtime settles the page', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.waitForFunction(motionIs('off'));
+  await page.waitForFunction(motionIs, 'off' as const);
   await expect(page.locator('html')).not.toHaveClass(/lenis-smooth/);
   await expect(page.locator('html')).not.toHaveClass(/\bmotion\b/);
   for (const el of await page.locator('[data-split], [data-rise], .step, #name').all()) {
@@ -48,7 +49,7 @@ test('a late motion layer skips entrance animations', async ({ page }) => {
   });
   await page.goto('/');
   await expect(page.locator('html')).toHaveClass(/reveal-fallback/, { timeout: 5000 });
-  await page.waitForFunction(motionIs('on'), undefined, { timeout: 15_000 });
+  await page.waitForFunction(motionIs, 'on' as const, { timeout: 15_000 });
   await expect(page.locator('#name')).toHaveCSS('opacity', '1');
   const nameTransforms = await page
     .locator('#name *')
@@ -64,7 +65,7 @@ test('a late motion layer skips entrance animations', async ({ page }) => {
 
 test('open lightbox blocks page scroll (wheel, space, arrows)', async ({ page }) => {
   await page.goto('/#prace');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   await page.locator('[data-lb]').first().click();
   await expect(page.locator('dialog.lb')).toHaveAttribute('open', '');
   // measure only once the page has stopped moving (the hash jump and Lenis may still be settling)
@@ -97,7 +98,7 @@ test('open lightbox blocks page scroll (wheel, space, arrows)', async ({ page })
 test('anchor link moves focus to the section', async ({ page, viewport }) => {
   test.skip((viewport?.width ?? 0) <= 900, 'the services link is in the desktop navigation only');
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   await page.getByRole('link', { name: /Služby a ceny/ }).click();
   await expect(page.locator('#sluzby')).toBeFocused();
   // HM-09: the section starts below the fixed header, not under it
@@ -123,14 +124,14 @@ test('reduced motion: an anchor jump lands below the header', async ({ page, vie
 // HM-09: a control focused before its group has risen in is shown at once
 test('focusing the hero CTA during its entrance shows it at once', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   await page.locator('.hero .cta a').first().focus();
   await expect(page.locator('.hero .row > .cta')).toHaveCSS('opacity', '1', { timeout: 200 });
 });
 
 test('marquee can be paused', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   const toggle = page.locator('.marquee-toggle');
   await expect(toggle).toBeVisible();
   await toggle.click();
@@ -146,7 +147,7 @@ test('marquee can be paused', async ({ page }) => {
 
 test('header blends only over flat sections and never over photos', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   const header = page.locator('header.top');
   await expect(header).not.toHaveClass(/\bblend\b/); // over the hero photo
   // the heading block of the services section: flat light surface under the whole header strip
@@ -172,7 +173,7 @@ test('a failure in the middle of the motion layer reveals the page', async ({ pa
     } as unknown as typeof IntersectionObserver;
   });
   await page.goto('/');
-  await page.waitForFunction(motionIs('off'));
+  await page.waitForFunction(motionIs, 'off' as const);
   await expect(page.locator('html')).not.toHaveClass(/\blenis\b/);
   await expect(page.locator('html')).not.toHaveClass(/motion-ready/);
   for (const el of await page.locator('.svc-sec [data-stagger] > *, [data-rise]').all())
@@ -213,7 +214,7 @@ test('switching to reduced motion during the font wait starts nothing', async ({
   await startChunk;
   await page.waitForTimeout(200); // start() is now waiting for the delayed fonts
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.waitForFunction(motionIs('off'), undefined, { timeout: 10_000 });
+  await page.waitForFunction(motionIs, 'off' as const, { timeout: 10_000 });
   await page.waitForTimeout(1500); // past FONT_WAIT_MS
   expect(
     await page.evaluate(() => (window as unknown as { __lenisSeen: boolean }).__lenisSeen),
@@ -238,9 +239,9 @@ test('switching to reduced motion stops every frame loop', async ({ page }) => {
     };
   });
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.waitForFunction(motionIs('off'));
+  await page.waitForFunction(motionIs, 'off' as const);
   await page.waitForTimeout(500);
   const a = await page.evaluate(() => (window as unknown as { __raf: number }).__raf);
   await page.waitForTimeout(1000);
@@ -251,7 +252,7 @@ test('switching to reduced motion stops every frame loop', async ({ page }) => {
 // HM-05: steps that are not reached yet keep full text contrast; the marker and the line show progress
 test('pinned same-day steps keep full contrast before they light up', async ({ page }) => {
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   await page.evaluate(() => {
     const day = document.querySelector('.day') as HTMLElement;
     window.scrollTo(0, day.getBoundingClientRect().top + scrollY + 10);
@@ -265,7 +266,7 @@ test('pinned same-day steps keep full contrast before they light up', async ({ p
 test('a scroll key during wheel inertia is not overridden by Lenis', async ({ page, isMobile }) => {
   test.skip(isMobile, 'wheel smoothing is desktop only');
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   await page.evaluate(() => window.scrollTo(0, 3000));
   await page.waitForTimeout(300);
   await page.mouse.move(700, 450);
@@ -283,7 +284,7 @@ test('header does not blend over a narrow photo', async ({ page, viewport }) => 
     'the portrait sits between sample points at desktop width',
   );
   await page.goto('/');
-  await page.waitForFunction(motionIs('on'));
+  await page.waitForFunction(motionIs, 'on' as const);
   const header = page.locator('header.top');
   for (let i = 0; i < 4; i++) {
     await page.evaluate(() => {

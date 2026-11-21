@@ -25,6 +25,7 @@ describe('build with withdrawn photos', () => {
     const entries = [
       'src',
       'scripts',
+      'public', // _headers holds the CSP placeholder the build fills in
       'design/logo',
       'astro.config.ts',
       'tsconfig.json',
