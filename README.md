@@ -32,7 +32,7 @@ Astro (statický výstup) s React islands, TypeScript, GSAP a Lenis. Na Cloudfla
 ## Postup projektu
 1. ✅ Brainstorm
 2. ✅ Rozbor webů fotografů a inspirací (shrnutí v [docs/research.md](docs/research.md))
-3. ⏳ Průzkum vizuálu: 9 variant v OpenDesignu (skilly Taste, Impeccable, Hallmark, každý ve 3 liniích)
+3. ⏳ Průzkum vizuálu: 9 směrů v OpenDesignu (skilly Taste, Impeccable a Hallmark, každý 3 směry s volnou rukou)
 4. Koncept a plán, poté schválení
 5. Implementace a nasazení na Cloudflare
 

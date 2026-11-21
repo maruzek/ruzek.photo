@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="cs" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Martin Růžek · fotograf akcí a sportu, Praha a Karlovy Vary</title>
+<meta name="description" content="Martin Růžek fotí firemní akce, konference, plesy, večírky a sport v Praze a Karlových Varech. Výběr fotek na sítě ještě týž den.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Notch:wght@600;700&family=Stack+Sans+Text:wght@400;500;600&family=Crimson+Pro:ital,wght@1,400&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.css">
+<link rel="stylesheet" href="assets/base.css">
+<style>
+/* Rozpad — final direction · Photographic macrostructure · Midnight + coral
+   Type: Stack Sans Notch (name, display ≥ 64px) · Stack Sans Text · Crimson Pro italic accent · Geist Mono */
+:root{
+  --night:#07080b; --night-2:#0e1015; --ink:#e9eaee; --muted:#a3a8b2; --rule-d:#23262d;
+  --light:#f2f2f3; --light-2:#e8e8ea; --light-ink:#0b0c10; --light-muted:#50545c; --rule-l:#c9cbd0; --control:#7e838c;
+  --accent:#ff7a66; --accent-hover:#ff9383; --accent-ink:#1a0703; --ok-bg:#e1eee5; --ok:#1f6b45; --err:#b3352a;
+  --f-name:"Stack Sans Notch","Stack Sans Text",system-ui,sans-serif;
+  --f-text:"Stack Sans Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-accent:"Crimson Pro",Georgia,serif; --f-mono:"Geist Mono",ui-monospace,Menlo,monospace;
+  --m:clamp(20px,3.4vw,56px); --gap:clamp(16px,2vw,32px); --sec:clamp(96px,11vw,184px);
+  --t-xs:13px; --t-s:16px; --t-m:clamp(18px,1.35vw,21px); --t-h:clamp(40px,4.8vw,80px); --t-name:clamp(76px,13.6vw,240px);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+html{scroll-behavior:auto}
+html.lb-open{overflow:hidden}
+body{background:var(--night);color:var(--ink);font:400 var(--t-s)/1.6 var(--f-text);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+::selection{background:var(--accent);color:var(--accent-ink)}
+em.s{font-family:var(--f-accent);font-style:italic;font-weight:400;letter-spacing:-.005em;font-size:1.04em}
+.mono{font-family:var(--f-mono);font-size:var(--t-xs);letter-spacing:.06em;text-transform:uppercase}
+.h{font-family:var(--f-text);font-weight:600;font-size:var(--t-h);line-height:1;letter-spacing:-.035em;text-wrap:balance}
+.eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.eyebrow::before{content:"";width:8px;height:8px;background:var(--accent);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:16px;min-height:56px;padding:0 22px 0 26px;background:var(--accent);color:var(--accent-ink);font:500 16px/1 var(--f-text);text-decoration:none;border:0;cursor:pointer;position:relative;overflow:hidden;isolation:isolate;transition:color .3s var(--ease)}
+.btn::before{content:"";position:absolute;inset:0;background:var(--ink);transform:translateY(101%);transition:transform .45s var(--ease);z-index:-1}
+.btn:hover::before{transform:none}
+.btn .tile{width:12px;height:12px;background:currentColor;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);transition:transform .45s var(--ease)}
+.btn:hover .tile{transform:translateX(4px) rotate(90deg)}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.btn:disabled{background:#5a5d64;color:#d3d5da;cursor:not-allowed}
+.btn:disabled::before{display:none}
+.btn.dark{background:var(--light-ink);color:var(--light)}
+.btn.dark::before{background:var(--accent)}
+.btn.dark:hover{color:var(--accent-ink)}
+.btn.dark:focus-visible{outline-color:var(--light-ink)}
+.btn.sm{min-height:44px;padding:0 16px 0 18px;font-size:15px;gap:12px}
+.lnk{color:inherit;text-decoration:none;font-weight:500;padding:16px 0;display:inline-flex;gap:10px;align-items:center;background:repeating-linear-gradient(90deg,currentColor 0 3px,transparent 3px 6px) left calc(100% - 12px)/100% 2px no-repeat}
+.lnk:hover{background-image:linear-gradient(currentColor,currentColor)}
+.lnk:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+
+/* Header */
+.top{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;justify-content:space-between;align-items:center;padding:16px var(--m);mix-blend-mode:difference;color:#fff;transition:transform .5s var(--ease)}
+.top.is-hidden{transform:translateY(-110%)}
+.top .mark{display:flex;gap:14px;align-items:center;color:#fff;text-decoration:none}
+.top .mark .logo{width:40px}
+.top .mark span{display:grid;line-height:1.2}
+.top .mark b{font-weight:600}
+.top .mark small{font:400 12px/1.3 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.top nav ul{display:flex;gap:32px;align-items:center}
+.top nav a{color:#fff;text-decoration:none;display:inline-block;padding:12px 0;position:relative}
+.top nav a::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .4s var(--ease)}
+.top nav a:hover::after{transform:scaleX(1);transform-origin:left}
+
+/* Shared dither containers */
+.dph{position:relative;overflow:hidden}
+.dph>img{width:100%;height:100%;object-fit:cover;display:block}
+canvas.dz{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
+canvas.dwipe{display:block;width:100%;height:clamp(120px,18vh,220px);image-rendering:pixelated}
+
+/* HERO */
+.hero{position:relative;height:100svh;min-height:640px;display:grid;grid-template-rows:1fr auto;overflow:hidden;background:var(--night)}
+.hero .media{position:absolute;inset:0}
+.hero .media img{width:100%;height:100%;object-fit:cover}
+.hero canvas.ascii{position:absolute;inset:0;pointer-events:none}
+.hero .shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,8,11,.55) 0%,rgba(7,8,11,0) 22%,rgba(7,8,11,0) 48%,rgba(7,8,11,.86) 86%,rgba(7,8,11,.96) 100%)}
+.hero .kick{position:relative;align-self:start;padding:112px var(--m) 0;display:flex;justify-content:space-between;gap:16px;color:var(--ink)}
+.hero .base{position:relative;padding:0 var(--m) clamp(28px,3vw,44px)}
+.hero h1{font-family:var(--f-name);font-weight:700;font-size:var(--t-name);line-height:.84;letter-spacing:-.045em;white-space:nowrap;margin-left:-.05em}
+.hero .row{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,4fr) minmax(0,3fr);gap:var(--gap);align-items:end;margin-top:clamp(24px,2.6vw,40px);padding-top:24px;border-top:1px solid rgba(233,234,238,.28)}
+.hero .row p{font-size:var(--t-m);line-height:1.5;max-width:40ch;text-wrap:pretty}
+.hero .row .cta{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.hero .row .meta{justify-self:end;text-align:right;color:var(--muted);display:grid;gap:6px}
+.hero .ph-tag{top:auto;bottom:16px;left:auto;right:var(--m);z-index:2}
+.scroll-hint{position:absolute;right:var(--m);top:50%;writing-mode:vertical-rl;color:var(--muted);display:flex;gap:12px;align-items:center}
+.scroll-hint::after{content:"";width:1px;height:48px;background:currentColor;animation:hint 2.4s var(--ease) infinite}
+@keyframes hint{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* MARQUEE */
+.marquee{overflow:hidden;border-top:1px solid var(--rule-d);border-bottom:1px solid var(--rule-d);padding:22px 0;background:var(--night)}
+.marquee .track{display:flex;width:max-content;gap:0}
+.marquee ul{display:flex;align-items:center;flex:none}
+.marquee li{display:flex;align-items:center;gap:32px;padding-right:32px;font-family:var(--f-text);font-weight:500;font-size:clamp(24px,2.6vw,40px);letter-spacing:-.025em;white-space:nowrap}
+.marquee li::after{content:"";width:10px;height:10px;background:var(--accent);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.marquee li:nth-child(even){font-family:var(--f-accent);font-style:italic;font-weight:400;color:var(--muted)}
+
+/* PHOTOGRAPHIC FOLDS */
+.fold{position:relative;height:100svh;min-height:600px;display:grid;align-items:end;overflow:hidden}
+.fold .dph{position:absolute;inset:0}
+.fold .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,11,.2) 0%,rgba(7,8,11,0) 35%,rgba(7,8,11,.9) 100%);pointer-events:none}
+.fold .note{position:relative;display:grid;grid-template-columns:minmax(0,6fr) minmax(0,3fr) minmax(0,3fr);gap:var(--gap);align-items:end;padding:var(--m)}
+.fold .note p{max-width:34ch;font-size:var(--t-m);line-height:1.5}
+.fold .idx{justify-self:end;text-align:right;color:var(--muted);overflow:hidden}
+.fold .idx b{display:block;font-family:var(--f-name);font-weight:700;font-size:clamp(72px,8vw,136px);line-height:.85;letter-spacing:-.045em;color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chips li{border:1px solid rgba(233,234,238,.4);padding:5px 14px;border-radius:24px;font-size:14px;backdrop-filter:blur(6px);background:rgba(7,8,11,.25)}
+
+/* LIGHT ZONE */
+.light{background:var(--light);color:var(--light-ink)}
+.light .mono{color:var(--light-muted)}
+.sec{padding:var(--sec) var(--m)}
+.sec-head{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--gap);align-items:end;margin-bottom:clamp(48px,6vw,96px)}
+.sec-head p{color:var(--light-muted);font-size:var(--t-m);max-width:38ch;line-height:1.5;text-wrap:pretty}
+
+/* WORK GRID */
+.work{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:clamp(20px,2.4vw,40px) var(--gap);align-items:start}
+.shot{all:unset;box-sizing:border-box;display:block;cursor:pointer;position:relative}
+.shot figure{display:grid;gap:12px}
+.shot .frame{overflow:hidden;position:relative;background:var(--light-2)}
+.shot img{width:100%;height:auto;display:block;transition:transform 1.1s var(--ease),filter .6s var(--ease)}
+.shot:hover img{transform:scale(1.04)}
+.shot figcaption{display:flex;justify-content:space-between;gap:12px;font-family:var(--f-mono);font-size:var(--t-xs);letter-spacing:.06em;text-transform:uppercase;color:var(--light-muted)}
+.shot figcaption b{color:var(--light-ink);font-weight:500}
+.shot:focus-visible{outline:2px solid var(--light-ink);outline-offset:6px}
+.w1{grid-column:1/8}.w2{grid-column:9/13;margin-top:18%}.w3{grid-column:2/6}.w4{grid-column:7/13;margin-top:-8%}
+.w5{grid-column:1/5;margin-top:6%}.w6{grid-column:6/10}.w7{grid-column:10/13;margin-top:24%}.w8{grid-column:3/9}
+.work-foot{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;margin-top:clamp(56px,6vw,96px);padding-top:24px;border-top:1px solid var(--rule-l)}
+.work-foot p{color:var(--light-muted);max-width:52ch}
+
+/* SERVICES */
+.services{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap)}
+.svc{display:grid;gap:18px;align-content:start}
+.svc .dph{aspect-ratio:4/3}
+.svc .lbl{position:absolute;left:0;top:0;background:var(--light);padding:8px 12px 8px 0;z-index:1}
+.svc h3{font-weight:600;font-size:clamp(26px,2.2vw,36px);letter-spacing:-.025em;line-height:1.1;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.svc h3 .tag{font:500 12px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--light-ink);border-radius:24px;padding:5px 9px}
+.svc p{color:var(--light-muted)}
+.svc .price{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--light-ink);padding-top:14px;font-variant-numeric:tabular-nums;align-items:baseline}
+.svc .price small{display:block;color:var(--light-muted);font-size:14px}
+.svc .price b{font-weight:600;white-space:nowrap;font-size:20px}
+.addons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gap);margin-top:clamp(40px,5vw,72px)}
+.addon{display:flex;justify-content:space-between;gap:16px;align-items:baseline;border-top:1px solid var(--rule-l);padding-top:18px}
+.addon small{display:block;color:var(--light-muted);font-size:15px}
+.addon b{font-weight:600;white-space:nowrap;font-size:20px}
+.note-line{margin-top:28px;color:var(--light-muted)}
+
+/* SAME DAY (pinned on desktop) */
+.day{min-height:100svh;display:grid;align-content:center;padding:var(--sec) var(--m)}
+.progress{height:2px;background:var(--rule-l);margin:0 0 40px;position:relative}
+.progress i{position:absolute;inset:0;background:var(--light-ink);transform-origin:left;transform:scaleX(1)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap)}
+.step{display:grid;gap:14px;align-content:start;transition:opacity .5s var(--ease)}
+html:not(.rm) .js-gsap .step:not(.is-on){opacity:.35}
+.step .no{display:flex;align-items:center;gap:10px}
+.step .no::before{content:"";width:10px;height:10px;border:1px solid var(--light-ink);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:transparent;transition:background .3s}
+.step.is-on .no::before{background:var(--accent)}
+.step h3{font-weight:600;font-size:clamp(24px,2vw,32px);letter-spacing:-.025em;line-height:1.15}
+.step p{color:var(--light-muted);max-width:34ch}
+.step .vert{width:min(168px,52%);aspect-ratio:9/16;margin-top:8px}
+
+/* ABOUT */
+.about{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,6vw,112px);align-items:center}
+.about .dph{aspect-ratio:4/5}
+.about .txt{display:grid;gap:24px;max-width:58ch}
+.about .txt p{color:var(--muted);font-size:var(--t-m);line-height:1.6;text-wrap:pretty}
+.about .txt p strong{color:var(--ink);font-weight:500}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;border-top:1px solid var(--rule-d);padding-top:24px;margin-top:8px}
+.facts dt{color:var(--muted)}
+.facts dd{margin-top:6px}
+
+/* INQUIRY */
+.inq{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,8fr);gap:clamp(32px,5vw,96px)}
+.inq-side{display:grid;gap:24px;align-content:start}
+.inq-side p{color:var(--light-muted);font-size:var(--t-m);line-height:1.5;max-width:34ch}
+.est{border:1px solid var(--light-ink);padding:22px;display:grid;gap:6px}
+.est output{font-family:var(--f-text);font-weight:600;font-size:clamp(30px,2.8vw,44px);letter-spacing:-.025em;white-space:nowrap;font-variant-numeric:tabular-nums}
+.est small{color:var(--light-muted)}
+.direct{display:grid;gap:6px;border-top:1px solid var(--rule-l);padding-top:20px}
+form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px var(--gap)}
+.field{display:grid;gap:10px;align-content:start}
+.field.full{grid-column:1/-1}
+label{font-weight:500}
+label .opt{color:var(--light-muted);font-weight:400}
+input,select,textarea{width:100%;min-height:52px;padding:12px 0;border:0;border-bottom:1px solid var(--control);border-radius:0;background:transparent;color:var(--light-ink);font-size:18px;transition:border-color .3s var(--ease)}
+select{appearance:none;background:linear-gradient(45deg,transparent 50%,var(--light-ink) 50%) right 6px center/7px 7px no-repeat,linear-gradient(-45deg,transparent 50%,var(--light-ink) 50%) right 0 center/7px 7px no-repeat;padding-right:28px}
+textarea{min-height:120px;resize:vertical}
+input::placeholder,textarea::placeholder{color:#8a8e96}
+input:hover,select:hover,textarea:hover{border-color:var(--light-ink)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;border-bottom:2px solid var(--light-ink)}
+.field.bad input{border-color:var(--err)}
+.msg{color:var(--err);font-size:15px}
+.ticks{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px var(--gap)}
+.tick{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--rule-l);padding:16px 18px;cursor:pointer;transition:border-color .3s var(--ease),background .3s var(--ease)}
+.tick:hover{border-color:var(--light-ink)}
+.tick:has(input:checked){border-color:var(--light-ink);background:#fff}
+.tick input{width:20px;min-height:20px;height:20px;margin-top:2px;accent-color:var(--light-ink);border:0}
+.tick small{display:block;color:var(--light-muted)}
+.actions{grid-column:1/-1;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+.done{grid-column:1/-1;background:var(--ok-bg);color:var(--ok);padding:18px 22px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.done button{background:none;border:0;color:var(--ok);text-decoration:underline;text-underline-offset:4px;cursor:pointer;padding:12px 0;font-weight:500}
+.privacy{grid-column:1/-1;color:var(--light-muted);font-size:14px;max-width:70ch}
+
+/* FOOTER */
+.foot{background:var(--night);color:var(--ink);padding:clamp(80px,9vw,144px) var(--m) 32px}
+.foot .lead{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:56px}
+.foot .lead p{font-size:var(--t-m);max-width:30ch}
+.foot .big{font-family:var(--f-name);font-weight:700;font-size:clamp(64px,13.4vw,236px);line-height:.84;letter-spacing:-.05em;white-space:nowrap;margin-left:-.05em}
+.foot .cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap);margin-top:48px;padding-top:24px;border-top:1px solid var(--rule-d)}
+.foot .cols .mono{color:var(--muted);display:block;margin-bottom:10px}
+.foot .cols a{color:var(--ink);text-underline-offset:4px}
+.foot .legal{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:56px;color:var(--muted);font-size:14px}
+.foot .legal a{color:inherit}
+
+/* Cursor + lightbox */
+.cur{position:fixed;left:0;top:0;z-index:40;pointer-events:none;display:flex;align-items:center;gap:10px;transform:translate(-100px,-100px);opacity:0;transition:opacity .25s var(--ease)}
+.cur.on{opacity:1}
+.cur i{width:56px;height:56px;margin:-28px 0 0 -28px;background:conic-gradient(var(--accent) 25%,transparent 0 50%,var(--accent) 0 75%,transparent 0) 0 0/8px 8px;mix-blend-mode:difference}
+.cur span{font:500 12px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;background:var(--light-ink);color:var(--light);padding:6px 8px;margin-top:-28px}
+dialog.lb{border:0;padding:0;margin:0;width:100vw;height:100dvh;max-width:none;max-height:none;background:rgba(7,8,11,.96);color:var(--ink)}
+dialog.lb::backdrop{background:rgba(7,8,11,.6)}
+.lb-in{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:16px;padding:16px var(--m) 24px}
+.lb-bar{display:flex;justify-content:space-between;align-items:center;color:var(--muted)}
+.lb-stage{display:grid;place-items:center;min-height:0}
+.lb-stage img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.lb-foot{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.lb-btn{min-width:48px;min-height:48px;border:1px solid var(--rule-d);background:transparent;color:var(--ink);cursor:pointer;padding:0 16px;font:500 15px/1 var(--f-text)}
+.lb-btn:hover{border-color:var(--ink)}
+.lb-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+@media (max-width:1100px){.hero .row{grid-template-columns:1fr 1fr}.hero .row .meta{grid-column:1/-1;justify-self:start;text-align:left}}
+@media (max-width:900px){
+  .top nav li:not(:last-child){display:none}
+  .top .mark small{display:none}
+  .scroll-hint{display:none}
+  .hero{min-height:600px}
+  .hero h1{white-space:normal;font-size:clamp(68px,22vw,128px)}
+  .hero .row{grid-template-columns:1fr}
+  .hero .kick{padding-top:88px;flex-direction:column;gap:4px}
+  .fold .note,.sec-head,.about,.inq{grid-template-columns:1fr}
+  .fold .idx{justify-self:start;text-align:left}
+  .work{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .w1,.w4,.w8{grid-column:1/-1;margin-top:0}.w2,.w5,.w7{grid-column:1/4;margin-top:0}.w3,.w6{grid-column:4/7;margin-top:12%}
+  .services,.steps{grid-template-columns:1fr}
+  .addons,.ticks,form{grid-template-columns:1fr}
+  .facts{grid-template-columns:1fr 1fr}
+  .foot .cols{grid-template-columns:1fr 1fr}
+  .foot .big{white-space:normal;font-size:clamp(64px,22vw,128px)}
+  .day{min-height:0}
+}
+@media (prefers-reduced-motion:reduce){.scroll-hint::after{animation:none}.shot img{transition:none}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Přeskočit na obsah</a>
+<div class="cur" aria-hidden="true"><i></i><span>Zobrazit</span></div>
+
+<header class="top">
+  <a class="mark" href="#top" aria-label="Martin Růžek, úvod"><span class="logo"><svg class="roh" viewBox="0 0 320 320" fill="none" role="img" aria-label="Logo Martin Růžek"><g fill="currentColor"><path transform="matrix(13.8564 -8 -13.8564 -8 160 146)" d="M0.105 0.105h.79v.79h-.79zM1.105 0.105h.79v.79h-.79zM2.105 0.105h.79v.79h-.79zM3.105 0.105h.79v.79h-.79zM4.105 0.105h.79v.79h-.79zM0.105 1.105h.79v.79h-.79zM1.105 1.105h.79v.79h-.79zM3.105 1.105h.79v.79h-.79zM5.105 1.105h.79v.79h-.79zM0.105 2.105h.79v.79h-.79zM1.105 2.105h.79v.79h-.79zM2.105 2.105h.79v.79h-.79zM3.105 2.105h.79v.79h-.79zM4.105 2.105h.79v.79h-.79zM6.105 2.105h.79v.79h-.79zM1.105 3.105h.79v.79h-.79zM3.105 3.105h.79v.79h-.79zM0.105 4.105h.79v.79h-.79zM1.105 4.105h.79v.79h-.79zM2.105 4.105h.79v.79h-.79zM4.105 4.105h.79v.79h-.79zM1.105 5.105h.79v.79h-.79zM5.105 5.105h.79v.79h-.79zM2.105 6.105h.79v.79h-.79zM6.105 6.105h.79v.79h-.79z"/><path transform="matrix(-13.8564 -8 0 16 160 146)" d="M0.105 0.105h.79v.79h-.79zM1.105 0.105h.79v.79h-.79zM3.105 0.105h.79v.79h-.79zM5.105 0.105h.79v.79h-.79zM0.105 1.105h.79v.79h-.79zM1.105 1.105h.79v.79h-.79zM2.105 1.105h.79v.79h-.79zM3.105 1.105h.79v.79h-.79zM4.105 1.105h.79v.79h-.79zM6.105 1.105h.79v.79h-.79zM1.105 2.105h.79v.79h-.79zM2.105 2.105h.79v.79h-.79zM3.105 2.105h.79v.79h-.79zM0.105 3.105h.79v.79h-.79zM1.105 3.105h.79v.79h-.79zM2.105 3.105h.79v.79h-.79zM3.105 3.105h.79v.79h-.79zM4.105 3.105h.79v.79h-.79zM1.105 4.105h.79v.79h-.79zM3.105 4.105h.79v.79h-.79zM5.105 4.105h.79v.79h-.79zM0.105 5.105h.79v.79h-.79zM2.105 5.105h.79v.79h-.79zM4.105 5.105h.79v.79h-.79zM6.105 5.105h.79v.79h-.79z"/><path transform="matrix(0 16 13.8564 -8 160 146)" d="M0.105 0.105h.79v.79h-.79zM1.105 0.105h.79v.79h-.79zM2.105 0.105h.79v.79h-.79zM3.105 0.105h.79v.79h-.79zM4.105 0.105h.79v.79h-.79zM6.105 0.105h.79v.79h-.79zM1.105 1.105h.79v.79h-.79zM2.105 1.105h.79v.79h-.79zM3.105 1.105h.79v.79h-.79zM0.105 2.105h.79v.79h-.79zM1.105 2.105h.79v.79h-.79zM2.105 2.105h.79v.79h-.79zM3.105 2.105h.79v.79h-.79zM4.105 2.105h.79v.79h-.79zM1.105 3.105h.79v.79h-.79zM3.105 3.105h.79v.79h-.79zM5.105 3.105h.79v.79h-.79zM0.105 4.105h.79v.79h-.79zM2.105 4.105h.79v.79h-.79zM4.105 4.105h.79v.79h-.79zM6.105 4.105h.79v.79h-.79zM3.105 5.105h.79v.79h-.79zM0.105 6.105h.79v.79h-.79zM4.105 6.105h.79v.79h-.79z"/></g></svg></span><span><b>Martin Růžek</b><small>ruzek.jpg</small></span></a>
+  <nav aria-label="Hlavní"><ul><li><a href="#prace">Práce</a></li><li><a href="#sluzby">Služby a ceny</a></li><li><a href="#o-mne">O mně</a></li><li><a href="#poptavka">Poptat focení →</a></li></ul></nav>
+</header>
+
+<main id="main">
+  <section class="hero" id="top" data-ascii aria-labelledby="name">
+    <div class="media"><img src="assets/stock/smoke.jpg" width="960" height="640" alt="Lidé na večírku v kouři a barevném světle" fetchpriority="high"></div>
+    <canvas class="ascii" aria-hidden="true"></canvas>
+    <div class="shade" aria-hidden="true"></div>
+    <span class="ph-tag">Zástupná fotka</span>
+    <div class="kick mono"><span>Fotograf akcí a sportu</span><span>Praha · Karlovy Vary</span></div>
+    <span class="scroll-hint mono" aria-hidden="true">Scroll</span>
+    <div class="base">
+      <h1 id="name"><span>Martin</span> <span>Růžek</span></h1>
+      <div class="row">
+        <p>Fotím firemní akce, konference, plesy, večírky i&nbsp;zápasy. Výběr fotek na vaše sítě posílám <em class="s">ještě týž den.</em></p>
+        <div class="cta"><a class="btn" href="#poptavka" data-magnetic>Poptat focení<span class="tile" aria-hidden="true"></span></a><a class="lnk" href="#prace">Prohlédnout práci</a></div>
+        <div class="meta mono"><span>Instagram @ruzek.jpg</span><span>Na fotce: <span class="todo">TODO</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-label="Co fotím">
+    <div class="track">
+      <ul><li>Firemní akce</li><li>konference</li><li>Přednášky a debaty</li><li>plesy</li><li>Večírky a bary</li><li>univerzity a spolky</li><li>Fotbal</li><li>florbal</li><li>Turnaje a závody</li><li>portréty</li></ul>
+      <ul aria-hidden="true"><li>Firemní akce</li><li>konference</li><li>Přednášky a debaty</li><li>plesy</li><li>Večírky a bary</li><li>univerzity a spolky</li><li>Fotbal</li><li>florbal</li><li>Turnaje a závody</li><li>portréty</li></ul>
+    </div>
+  </div>
+
+  <section class="fold" aria-labelledby="f-akce">
+    <div class="dph" data-dz data-dz-color="#07080b"><img src="assets/stock/ball.jpg" width="960" height="640" alt="Pár tančí na plese" loading="lazy"><canvas class="dz" aria-hidden="true"></canvas></div>
+    <div class="shade" aria-hidden="true"></div>
+    <div class="note">
+      <div><h2 class="h" id="f-akce" data-split>Akce, které <em class="s">chcete</em> vidět znovu.</h2>
+        <ul class="chips"><li>Firemní akce</li><li>Konference</li><li>Přednášky a debaty</li><li>Plesy</li><li>Večírky a bary</li></ul></div>
+      <p>Nehledám pózy. Fotím, co se opravdu stalo: řečníka, plný sál, přípitek i&nbsp;poslední tanec.</p>
+      <div class="idx mono" aria-hidden="true"><b>01</b>Akce</div>
+    </div>
+  </section>
+
+  <section class="fold" aria-labelledby="f-sport">
+    <div class="dph" data-dz data-dz-color="#07080b"><img src="assets/stock/soccer-goal.jpg" width="960" height="720" alt="Míč v síti branky" loading="lazy"><canvas class="dz" aria-hidden="true"></canvas></div>
+    <div class="shade" aria-hidden="true"></div>
+    <div class="note">
+      <div><h2 class="h" id="f-sport" data-split>Sport je moje <em class="s">vášeň.</em></h2>
+        <ul class="chips"><li>Fotbal</li><li>Florbal</li><li>Turnaje</li><li>Závody</li></ul></div>
+      <p>Na hřišti nedostanete druhou šanci. Tu rychlost pak nosím i&nbsp;na akce.</p>
+      <div class="idx mono" aria-hidden="true"><b>02</b>Sport</div>
+    </div>
+  </section>
+
+  <canvas class="dwipe" data-from="#07080b" data-to="#f2f2f3" aria-hidden="true"></canvas>
+  <div class="light">
+    <section class="sec" id="prace" aria-labelledby="work-h">
+      <div class="sec-head">
+        <div><span class="eyebrow mono">Vybraná práce</span><h2 class="h" id="work-h" data-split>Okamžiky z&nbsp;akcí, <em class="s">ne</em> aranžmá.</h2></div>
+        <p data-rise>Ukázky z&nbsp;akcí a&nbsp;sportu. Klikněte na fotku a&nbsp;otevře se celá.</p>
+      </div>
+      <div class="work">
+        <button class="shot w1" type="button" data-lb="Konference · Praha" data-cursor><figure><div class="frame"><img src="assets/stock/stage.jpg" width="960" height="640" alt="Řečník s mikrofonem na pódiu" loading="lazy"></div><figcaption><b>Konference</b><span>Praha · TODO</span></figcaption></figure></button>
+        <button class="shot w2" type="button" data-lb="Ples · Karlovy Vary" data-cursor data-par="40"><figure><div class="frame"><img src="assets/stock/dance.jpg" width="960" height="1440" alt="Tanečníci v objetí, černobíle" loading="lazy"></div><figcaption><b>Ples</b><span>K. Vary · TODO</span></figcaption></figure></button>
+        <button class="shot w3" type="button" data-lb="Bar · Praha" data-cursor data-par="24"><figure><div class="frame"><img src="assets/stock/bartender.jpg" width="960" height="640" alt="Barman připravuje drinky" loading="lazy"></div><figcaption><b>Bar</b><span>TODO</span></figcaption></figure></button>
+        <button class="shot w4" type="button" data-lb="Fotbal" data-cursor><figure><div class="frame"><img src="assets/stock/soccer-night.jpg" width="960" height="640" alt="Fotbalisté v souboji pod světly" loading="lazy"></div><figcaption><b>Fotbal</b><span>TODO</span></figcaption></figure></button>
+        <button class="shot w5" type="button" data-lb="Florbalový turnaj" data-cursor data-par="56"><figure><div class="frame"><img src="assets/stock/floorball.jpg" width="1024" height="683" alt="Florbalisté na turnaji" loading="lazy"></div><figcaption><b>Florbal</b><span>TODO</span></figcaption></figure></button>
+        <button class="shot w6" type="button" data-lb="Promoce · univerzita" data-cursor><figure><div class="frame"><img src="assets/stock/graduation.jpg" width="960" height="640" alt="Absolventi v talárech" loading="lazy"></div><figcaption><b>Univerzita</b><span>TODO</span></figcaption></figure></button>
+        <button class="shot w7" type="button" data-lb="Hala" data-cursor data-par="32"><figure><div class="frame"><img src="assets/stock/athlete.jpg" width="960" height="1440" alt="Hráč v dresu v hale" loading="lazy"></div><figcaption><b>Hala</b><span>TODO</span></figcaption></figure></button>
+        <button class="shot w8" type="button" data-lb="Raut · firemní večer" data-cursor><figure><div class="frame"><img src="assets/stock/toast.jpg" width="960" height="638" alt="Přípitek sklenkami šampaňského" loading="lazy"></div><figcaption><b>Raut</b><span>TODO</span></figcaption></figure></button>
+      </div>
+      <div class="work-foot"><p>Celé galerie z&nbsp;akcí dostávají klienti přes soukromou online galerii. Na webu jsou jen fotky se souhlasem klienta nebo pořadatele.</p><a class="lnk" href="#poptavka">Chci podobné fotky</a></div>
+    </section>
+
+    <section class="sec" id="sluzby" aria-labelledby="svc-h" style="padding-top:0">
+      <div class="sec-head">
+        <div><span class="eyebrow mono">Služby a ceny</span><h2 class="h" id="svc-h" data-split>Co fotím a&nbsp;<em class="s">za kolik.</em></h2></div>
+        <p data-rise>Ceny jsou od. Nejsem plátce DPH. Přesnou nabídku pošlu podle délky a&nbsp;typu akce.</p>
+      </div>
+      <div class="services" data-stagger>
+        <article class="svc">
+          <div class="dph" data-dz="hover" data-dz-color="#f2f2f3"><img src="assets/stock/conference.jpg" width="960" height="568" alt="Publikum na konferenci" loading="lazy"><canvas class="dz" aria-hidden="true"></canvas><span class="lbl mono">01</span></div>
+          <h3>Akce <span class="tag">hlavní</span></h3>
+          <p>Firemní akce, konference, přednášky a&nbsp;debaty, univerzitní a&nbsp;spolkové akce, plesy, večírky a&nbsp;bary.</p>
+          <div class="price"><span>První hodina<small>každá další 1&nbsp;000–1&nbsp;200&nbsp;Kč</small></span><b>1&nbsp;500&nbsp;Kč</b></div>
+        </article>
+        <article class="svc">
+          <div class="dph" data-dz="hover" data-dz-color="#f2f2f3"><img src="assets/stock/hockey.jpg" width="960" height="694" alt="Hráči při vhazování" loading="lazy"><canvas class="dz" aria-hidden="true"></canvas><span class="lbl mono">02</span></div>
+          <h3>Sport</h3>
+          <p>Fotbal, florbal, turnaje a&nbsp;závody. Pro kluby, týmy i&nbsp;pořadatele.</p>
+          <div class="price"><span>Zápas</span><b>1&nbsp;500–2&nbsp;500&nbsp;Kč</b></div>
+        </article>
+        <article class="svc">
+          <div class="dph" data-dz="hover" data-dz-color="#f2f2f3"><img src="assets/stock/portrait.jpg" width="960" height="1201" alt="Černobílý portrét muže" loading="lazy"><canvas class="dz" aria-hidden="true"></canvas><span class="lbl mono">03</span></div>
+          <h3>Portrét a&nbsp;krátké focení</h3>
+          <p>Portréty pro profil, tým nebo řečníky. Krátké focení na menší akce.</p>
+          <div class="price"><span>Portrét / krátké focení</span><b>1&nbsp;500&nbsp;Kč</b></div>
+        </article>
+      </div>
+      <div class="addons" data-stagger>
+        <div class="addon"><span>Výběr na sítě týž den<small>Vybrané fotky ještě v den akce</small></span><b>+20–30&nbsp;%</b></div>
+        <div class="addon"><span>Vertikální videa<small>Krátká videa na výšku pro sítě</small></span><b>+1&nbsp;000–2&nbsp;000&nbsp;Kč</b></div>
+      </div>
+    </section>
+
+    <section class="day" aria-labelledby="day-h">
+      <div class="sec-head">
+        <div><span class="eyebrow mono">Týž den</span><h2 class="h" id="day-h" data-split>Od příjezdu <em class="s">po</em> vaše sítě.</h2></div>
+        <p data-rise>Zatímco hosté odcházejí, vybírám fotky. Na sítích jsou dřív, než akce vychladne.</p>
+      </div>
+      <div class="progress" aria-hidden="true"><i></i></div>
+      <ol class="steps">
+        <li class="step is-on"><span class="no mono">01 · Během akce</span><h3>Fotím, co se děje</h3><p>Řečníci, hosté, atmosféra, detaily. Na sportu akce a&nbsp;emoce.</p></li>
+        <li class="step is-on"><span class="no mono">02 · Hned po</span><h3>Vybírám to nejsilnější</h3><p>Z&nbsp;celého dne připravím výběr na sítě a&nbsp;případně vertikální videa.</p><div class="dph vert" data-dz data-dz-color="#f2f2f3"><img src="assets/stock/athlete.jpg" width="960" height="1440" alt="Hráč v hale, formát na výšku" loading="lazy"><canvas class="dz" aria-hidden="true"></canvas></div></li>
+        <li class="step is-on"><span class="no mono">03 · Týž den</span><h3>Posílám výběr</h3><p>Hotové fotky máte ještě ten den. Celou galerii dodám <span class="todo">TODO: termín</span>.</p></li>
+      </ol>
+    </section>
+  </div>
+  <canvas class="dwipe" data-from="#f2f2f3" data-to="#07080b" aria-hidden="true"></canvas>
+
+  <section class="sec about" id="o-mne" aria-labelledby="about-h">
+    <div class="dph ph-wrap" data-dz data-dz-color="#07080b"><img src="assets/stock/portrait.jpg" width="960" height="1201" alt="Zástupný portrét, místo pro Martinovu fotku" loading="lazy"><canvas class="dz" aria-hidden="true"></canvas><span class="ph-tag">TODO: Martinův portrét</span></div>
+    <div class="txt">
+      <span class="eyebrow mono" style="margin:0;color:var(--muted)">O mně</span>
+      <h2 class="h" id="about-h" data-split>Jsem Martin. <em class="s">Fotím</em> lidi v&nbsp;pohybu.</h2>
+      <p data-rise><strong>Jsem fotograf akcí a&nbsp;sportu z&nbsp;Prahy a&nbsp;Karlových Varů.</strong> Nejčastěji fotím firemní akce, konference, univerzitní a&nbsp;spolkové akce, plesy a&nbsp;večírky. Sport je moje vášeň, portréty doplněk.</p>
+      <p data-rise>Moje silná stránka je rychlost. Výběr fotek na sítě posílám ještě týž den a&nbsp;točím i&nbsp;vertikální videa.</p>
+      <p data-rise><span class="todo">TODO: Martinův vlastní příběh, jak se k focení dostal</span></p>
+      <dl class="facts mono" data-stagger><div><dt>Kde</dt><dd>Praha, Karlovy Vary</dd></div><div><dt>Pro koho</dt><dd>Firmy, agentury, univerzity, spolky, kluby</dd></div><div><dt>Instagram</dt><dd>@ruzek.jpg</dd></div></dl>
+    </div>
+  </section>
+
+  <canvas class="dwipe" data-from="#07080b" data-to="#f2f2f3" aria-hidden="true"></canvas>
+  <div class="light">
+    <section class="sec inq" id="poptavka" aria-labelledby="inq-h">
+      <div class="inq-side">
+        <span class="eyebrow mono" style="margin:0">Poptávka</span>
+        <h2 class="h" id="inq-h" data-split>Kdy je <em class="s">vaše</em> akce?</h2>
+        <p>Napište datum, místo a&nbsp;typ akce. Odpovím s&nbsp;cenou a&nbsp;tím, jestli mám volno.</p>
+        <div class="est" aria-live="polite"><span class="mono">Orientačně od</span><output id="inq-est">1&nbsp;500&nbsp;Kč</output><small>Podle vybraných možností. Nejsem plátce DPH.</small></div>
+        <div class="direct"><span class="mono">Radši napřímo</span><span>Telefon a WhatsApp: <span class="todo">TODO</span></span><span>E-mail: <span class="todo">TODO</span></span></div>
+      </div>
+      <form id="inq" novalidate>
+        <div class="field"><label for="inq-name">Jméno</label><input id="inq-name" autocomplete="name" required aria-describedby="inq-name-msg" placeholder="Jana Nováková"><span class="msg" id="inq-name-msg" hidden>Napište prosím jméno, ať vím, komu odpovídám.</span></div>
+        <div class="field"><label for="inq-mail">E-mail</label><input id="inq-mail" type="email" autocomplete="email" required aria-describedby="inq-mail-msg" placeholder="jana@firma.cz"><span class="msg" id="inq-mail-msg" hidden>E-mail vypadá neúplně. Zkontrolujte zavináč a doménu.</span></div>
+        <div class="field"><label for="inq-type">Co fotíme</label><select id="inq-type"><option value="event">Akce</option><option value="match">Zápas</option><option value="short">Krátké focení</option><option value="portrait">Portrét</option></select></div>
+        <div class="field" id="inq-hours-row"><label for="inq-hours">Délka akce (hodiny)</label><input id="inq-hours" type="number" min="1" max="12" value="3" inputmode="numeric"></div>
+        <div class="field"><label for="inq-date">Datum <span class="opt">(nepovinné)</span></label><input id="inq-date" type="date"></div>
+        <div class="field"><label for="inq-place">Místo <span class="opt">(nepovinné)</span></label><input id="inq-place" placeholder="Praha, Karlovy Vary…"></div>
+        <div class="ticks">
+          <label class="tick"><input type="checkbox" id="inq-same" checked><span>Výběr na sítě týž den<small>+20–30&nbsp;%</small></span></label>
+          <label class="tick"><input type="checkbox" id="inq-reels"><span>Vertikální videa<small>+1&nbsp;000–2&nbsp;000&nbsp;Kč</small></span></label>
+        </div>
+        <div class="field full"><label for="inq-note">Co mám vědět <span class="opt">(nepovinné)</span></label><textarea id="inq-note" placeholder="Program, počet hostů, co je pro vás důležité"></textarea></div>
+        <div class="actions"><button class="btn dark" type="button" id="inq-send" data-magnetic>Odeslat poptávku<span class="tile" aria-hidden="true"></span></button><span class="mono">Ukázka, nic se neodesílá</span></div>
+        <div class="done" id="inq-done" role="status" hidden><span>Díky! Poptávka je připravená. Ve skutečném webu teď přijde potvrzení na váš e-mail.</span><button type="button" id="inq-reset">Napsat další</button></div>
+        <p class="privacy">Údaje z&nbsp;formuláře použiju jen k&nbsp;odpovědi na poptávku. <span class="todo">TODO: odkaz na zásady ochrany osobních údajů a doba uchování</span></p>
+      </form>
+    </section>
+  </div>
+  <canvas class="dwipe" data-from="#f2f2f3" data-to="#07080b" aria-hidden="true"></canvas>
+</main>
+
+<footer class="foot">
+  <div class="lead"><p>Máte akci nebo zápas? Napište mi, ať ho máte na fotkách.</p><a class="btn" href="#poptavka" data-magnetic>Poptat focení<span class="tile" aria-hidden="true"></span></a></div>
+  <div class="big">Martin Růžek</div>
+  <div class="cols">
+    <div><span class="mono">Fotím</span>Akce, sport, portréty</div>
+    <div><span class="mono">Kde</span>Praha · Karlovy Vary</div>
+    <div><span class="mono">Instagram</span><a href="#top">@ruzek.jpg</a></div>
+    <div><span class="mono">Kontakt</span><span class="todo">TODO: e-mail, telefon</span></div>
+  </div>
+  <div class="legal"><span>© 2026 Martin Růžek · IČO <span class="todo">TODO</span> · Sídlo <span class="todo">TODO</span> · Nejsem plátce DPH</span><a href="#top">Zásady ochrany osobních údajů <span class="todo">TODO</span></a></div>
+</footer>
+
+<dialog class="lb" id="lb" aria-label="Náhled fotky">
+  <div class="lb-in">
+    <div class="lb-bar mono"><span class="lb-no">01 / 08</span><button class="lb-btn lb-close" type="button">Zavřít</button></div>
+    <div class="lb-stage"><img alt=""></div>
+    <div class="lb-foot"><button class="lb-btn lb-prev" type="button" aria-label="Předchozí fotka">←</button><span class="lb-cap mono"></span><button class="lb-btn lb-next" type="button" aria-label="Další fotka">→</button></div>
+  </div>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.4/dist/lenis.min.js"></script>
+<script>document.documentElement.classList.remove('no-js');if(window.gsap&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.body.classList.add('js-gsap');else document.documentElement.classList.add('rm');</script>
+<script src="assets/r2.js"></script>
+<script src="assets/rozpad.js"></script>
+</body>
+</html>

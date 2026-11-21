@@ -1,0 +1,143 @@
+[
+ {
+  "file": "a-1.html",
+  "name": "Pole světla",
+  "idea": "Celá obrazovka je logo protažené do nekonečna: tři izometrické plochy kosočtverců vyrůstají z rohu loga a po nich krouží studiové světlo, které se ordered ditheringem lomí do sedmi šedí loga. Po načtení se pole rozpadá stejným ditheringem, ze kterého je logo postavené, a smršťuje se z okrajů obrazovky do loga.",
+  "flow": [
+   "Pole vyroste z rohu krychle ven, dlaždice se rodí v pořadí Bayerovy matice (cca 0,5 s).",
+   "Během čekání krouží světlo kolem rohu a po ploše putuje měkké bodové světlo, šedi přeskakují v ditheru.",
+   "Po načtení se pole v šestiúhelníkové vlně z okrajů obrazovky rozpustí do loga, dlaždice loga dosednou na své přesné šedi (0,8 s).",
+   "Plátno se beze švu vymění za skutečné SVG loga, které odletí do navigace, nadpis a fotky vyjedou zespodu."
+  ],
+  "timing": "Rychlé načtení: pole je vidět minimálně 0,65 s, logo dosedne do navigace po cca 2,25 s a stránka je ovladatelná už po 1,45 s. Pomalé načtení: světlo krouží ve smyčce (perioda 7 s) a počítadlo se jen asymptoticky blíží 92 %, odchod začne hned ve chvíli načtení, bez čekání na konec cyklu.",
+  "tech": "Jeden canvas 2D, dlaždice se kreslí stejnou afinní maticí jako SVG (21 výplní na snímek, cca 2–3 tisíce dlaždic), předání do navigace dělá GSAP technikou FLIP. V Astru by šlo o inline skript v layoutu, který čeká na Promise.all([document.fonts.ready, hero.decode()]), spouští se jen při první návštěvě (sessionStorage s try/catch) a při navigaci přes View Transitions se už nezobrazuje.",
+  "risks": "Hustá šedá mozaika přes celou obrazovku je výrazná a na velkých monitorech může krátce působit těžce, takže by si zasloužila test na skutečném displeji a jemnější kontrast.",
+  "id": "a-1",
+  "angle": "Tvoje poznámka",
+  "selected": true
+ },
+ {
+  "file": "a-2.html",
+  "name": "Složená síť",
+  "idea": "Černá stránka z drobných čtverců jako v temné komoře nebo na senzoru: přes pole přejíždí čtecí pás a uprostřed se s postupem načítání vyvolává logo jako negativ, rozložené naplocho jako síť rohu krychle. Po načtení zbytek čtverců spadne, rozsvítí se, negativ se přepne na pozitiv a síť se složí do izometrického rohu.",
+  "flow": [
+   "Černé pole čtverců, přes ně pomalu přejíždí diagonální čtecí pás v ditheru.",
+   "Uprostřed se s odhadem průběhu vyvolává negativ loga (tři ploché 7×7 mřížky s 90° mezerou), takže logo samo slouží jako ukazatel načítání.",
+   "Po načtení se čtverce uvolňují v pořadí ditheru a padají gravitací (0,5 s), potom se rozsvítí: pozadí přejde z černé do papírové a dlaždice loga se rozditherovaně přepnou na pozitiv.",
+   "Síť se zavře: osy ploch se pootočí z 90° do 120° izometrie a vznikne přesné logo (0,55 s).",
+   "Logo odletí do navigace a stránka vyjede."
+  ],
+  "timing": "Rychlé načtení: pole je vidět minimálně 0,5 s, celkem cca 2,35 s a stránka je ovladatelná po 1,6 s. Pomalé načtení: čtecí pás běží ve smyčce a negativ se vyvolá jen asi na 85 %, plně se vyvolá až v okamžiku načtení, takže nikdy neslibuje víc, než ví.",
+  "tech": "Canvas 2D: pole je mřížka fillRect, logo se kreslí přes setTransform s interpolovanými úhly os a koncový stav je přesně matice loga, takže výměna za SVG je bez skoku. V Astru stejný inline loader v layoutu, spouštěný jen při první návštěvě. Průběh vyvolání lze napojit na skutečné události (fonty, dekódování hero fotky).",
+  "risks": "Přechod z tmy do světla na chvíli projde střední šedí a padající čtverce jsou na mobilu docela živé, takže choulostivější lidé to můžou vnímat jako záblesk (při prefers-reduced-motion se nespouští).",
+  "id": "a-2",
+  "angle": "Tvoje poznámka",
+  "selected": true
+ },
+ {
+  "file": "b-1.html",
+  "name": "Práh",
+  "idea": "Celou obrazovku pokryje nekonečně protažený roh krychle z dlaždic loga a průběh načítání je doslova práh ditheringu: dlaždice naskakují v pořadí Bayerovy matice, až je stránka skoro černá. Po načtení se hustota stáhne zvenku dovnitř a zůstane jen logo, takže logo vypadá jako zastavený okamžik toho ditheringu.",
+  "flow": [
+   "Světlý papír, u rohu krychle se objeví první tmavé dlaždice (roh má malý náskok).",
+   "Hustota roste s průběhem načítání v pořadí Bayerovy matice 8×8 (počítadlo 00/64 až 64/64), obrazovka zhoustne do téměř černé izometrické mřížky.",
+   "Po načtení se okraj hustoty stahuje k rohu: vzdálené dlaždice zesvětlají a zmizí, uvnitř 7×7 odpadnou poslední navíc.",
+   "Zůstanou přesně dlaždice loga, které přejdou do skutečných šedí loga.",
+   "Logo odletí do hlavičky (FLIP) a pod ním vyjede nadpis a fotky."
+  ],
+  "timing": "Rychlé načtení: naplnění trvá nejméně 0,55 s, stažení 0,9 s, obsah stránky začne najíždět kolem 1,7 s a vše je dojeté zhruba za 2,5 s. Pomalé načtení: hustota se plazí asymptoticky k 80 % a od rohu se šíří vlny prahu (soustředné krychle), takže scéna žije; jakmile je hotovo, dorovná se na 64/64 a do 2 s od načtení je web vidět celý.",
+  "tech": "Jeden canvas 2D (2–3 tisíce mnohoúhelníků za snímek, bez layoutu), na konci se zamění za inline SVG loga se stejnými pixely a to se přesune transformací do hlavičky. V Astru jako inline skript v layoutu: `loaded` = Promise.all([document.fonts.ready, hero.decode()]), zobrazit jen při první návštěvě v relaci (příznak v sessionStorage, bez cookies) a při navigaci přes View Transitions už ne.",
+  "risks": "Husté celoobrazovkové vzory mohou na některých displejích tvořit moiré, při plné hustotě je obrazovka na chvíli skoro černá (na světlém webu to může působit jako probliknutí) a na slabých mobilech je potřeba hlídat počet dlaždic.",
+  "id": "b-1",
+  "angle": "Geometrie a dithering",
+  "selected": true
+ },
+ {
+  "file": "b-2.html",
+  "name": "Závěrka",
+  "idea": "Logo se skutečně složí z rovné sítě do prostoru: tři plochy 7×7 leží rozložené jako vystřihovánka, přehnou se v rozích do krychle a ta se při čekání pomalu natáčí a dýchá. Po načtení dosedne přesně do izometrického pohledu, přebytečné dlaždice odpadnou a tmavá scéna se rozevře podél tří hran krychle jako závěrka.",
+  "flow": [
+   "Na tmavé scéně naskočí v Bayerově pořadí rozložená síť tří čtverců, která připomíná zploštělé logo.",
+   "Levá a hned po ní pravá plocha se přehnou, celek se otočí do prostoru s perspektivou a světlem.",
+   "Při čekání se roh kolébá kolem svislé hrany a plochy se lehce otevírají a zavírají.",
+   "Po načtení zmizí perspektiva i stínování, roh dosedne do přesné izometrie a dlaždice mimo logo se zvenku dovnitř zmenší do ztracena.",
+   "Scéna se rozdělí podél hran rohu na tři díly (Y) a každý odjede se svou plochou loga, pod nimi je web."
+  ],
+  "timing": "Rychlé načtení: síť a skládání trvají 0,95 s, dosednutí s prořezáním 0,4 s, závěrka se otevírá zhruba od 1,6 s a vše je dojeté asi za 2,4 s. Pomalé načtení: po složení přejde roh plynule do smyčky kolébání a dýchání, která může běžet libovolně dlouho; po načtení se z aktuální polohy za 0,78 s vrátí do izometrie bez skoku rychlosti a web je celý vidět asi 1,8 s od načtení.",
+  "tech": "Vlastní malá 3D projekce v canvasu (147 dlaždic, kvaterniony, perspektiva se na konci vypne), takže klidová poloha sedí na pixel s SVG. Závěrka jsou tři vrstvy s clip-path a transformací, v každé je SVG jedné plochy loga. V Astru stejný inline skript a stejná pravidla zobrazení jako u Práhu (jen první návštěva, `fonts.ready` a dekódování hero fotky), vše bez GSAP a bez závislostí.",
+  "risks": "Konečné logo je v jednobarevné variantě (světlé na tmavé), ne šedé, a otevírání závěrky stojí asi 0,8 s navíc, než je web celý vidět.",
+  "id": "b-2",
+  "angle": "Geometrie a dithering",
+  "selected": false
+ },
+ {
+  "file": "c-1.html",
+  "name": "Latentní obraz",
+  "idea": "Celá obrazovka je tmavá mozaika ze stejné izometrické mřížky jako logo, protože tři stěny krychle pokryjí celou rovinu. Logo se v ní během čekání vyvolává jako negativ. Po načtení tmavé pole vyhoří od okrajů dovnitř podle ordered ditheringu, tedy stejnou technikou, jakou se logo rozpadá. Zbude přesně logo, jeho dlaždice se překlopí z negativu na pozitiv a logo odjede do navigace.",
+  "flow": [
+   "Černá obrazovka, dlaždice tmavé mozaiky naskočí a uprostřed se slabě rozsvítí logo jako negativ.",
+   "Čekání: logo se dovyvolá a pomalu dýchá. Od rohu se šíří obrysy krychle („odečítání senzoru“) a mozaikou probleskuje šum.",
+   "Načteno: pozadí se změní na papír, tmavé dlaždice zesvětlají a zmizí od okrajů k rohu v ditheringovém vzoru.",
+   "Dlaždice loga se od rohu otočí kolem osy a z negativu se stane přesný pozitiv loga.",
+   "Logo se zmenší do levého horního rohu navigace, vyjede nadpis „Martin Růžek“ a odkryjí se fotky."
+  ],
+  "timing": "Rychlé načtení (0,3 s): úvod trvá nejméně 0,55 s, odchod 0,72 s, web je vidět zhruba za 1,3 s a obsah je usazený kolem 2,3 s. Pomalé načtení (5 s): smyčka „vyvolávání“ běží libovolně dlouho bez zjevného opakování a odchod začne hned po načtení.",
+  "tech": "Canvas 2D (6–7 tisíc dlaždic na 1440 px, jeden fill na odstín, žádné DOM operace na snímek) a na konci výměna za inline SVG loga a GSAP FLIP do navigace. V Astru inline v layoutu s kritickým CSS. Signál „načteno“ je Promise.race([fonts.ready + decode() hero fotky, timeout 4 s]), loader se ukáže jen při první návštěvě v relaci a při view transitions se přeskočí.",
+  "risks": "Plné tmavé pole je dramatický vstup na jinak světlý web. Při každé návštěvě by brzy otravovalo, proto jen při první. Canvas na velmi slabých telefonech může mírně trhat.",
+  "id": "c-1",
+  "angle": "Fotografie",
+  "selected": true
+ },
+ {
+  "file": "c-2.html",
+  "name": "Okno do fotky",
+  "idea": "Dlaždice loga jsou zároveň ořezová maska úvodní fotky. Během čekání přes logo přejíždí rytmus sériového snímání (tři „cvaky“ závěrky odshora dolů) a v dlaždicích na zlomek vteřiny problikne fotka, přitom běží počítadlo souborů ruzek_0001.jpg. Po načtení se dlaždice změní v okna a kamera se ponoří do rohové dlaždice, až ta vyplní celý rámeček úvodní fotky.",
+  "flow": [
+   "Světlá stránka, dlaždice loga naskočí od rohu ven, pod logem se objeví ruzek_0001.jpg.",
+   "Čekání: série tří cvaků závěrky, každý stáhne přes logo „lamelu“, ve které problikne fotka. Počítadlo přičte snímek a série se opakuje.",
+   "Načteno: dlaždice od nejtmavší zprůhlední a stanou se okny do fotky.",
+   "Ponor: logo se zvětšuje (zhruba 100×) do rohové dlaždice, okna odlétají mimo obraz a fotka se jemně usazuje.",
+   "Rohová dlaždice přesně pokryje rámeček fotky, maska zmizí, vyjede nadpis a objeví se navigace."
+  ],
+  "timing": "Rychlé načtení (0,3 s): intro trvá nejméně 0,62 s, ponor 1,2 s, fotka vyplní rámeček zhruba za 1,8 s a nadpis je usazený kolem 2,6 s. Pomalé načtení (5 s): série cvaků se opakuje každých ~1,1 s, počítadlo ukazuje, že web žije, a odchod začne ihned po načtení.",
+  "tech": "Inline SVG se 74 cestami loga a stejné cesty jako clipPath přímo na skutečné hero sekci, žádná kopie, takže předání je bezešvé. GSAP animuje jednu transformaci (zoom v log. škále). V Astru: loader v layoutu, ponor začne až po decode() skutečné hero fotky, cvaky při čekání mohou ukazovat LQIP. Jen první návštěva, při view transitions se přeskočí.",
+  "risks": "clip-path s url() na velké ploše se při ponoru překresluje každý snímek, na slabých zařízeních to chce test. Počítadlo ruzek_0001.jpg je hravý vtip, který nemusí sednout každému.",
+  "id": "c-2",
+  "angle": "Fotografie",
+  "selected": true
+ },
+ {
+  "file": "d-1.html",
+  "name": "Rejstřík 74",
+  "idea": "Na světlém papíře se objeví konstrukční mřížka celého rohu krychle (3 × 49 polí) a 74 dlaždic loga se rozsvěcuje podle skutečného postupu načítání, od rohu ven, tedy ve stejném pořadí, v jakém v logu ubývá hustota. Pak zbylá pole zmizí a stránka se objeví ordered ditheringem, tedy stejným principem, ze kterého vzniklo logo.",
+  "flow": [
+   "Prázdná mřížka 147 polí, čítač 000/074, vlevo dole seznam toho, co se načítá",
+   "Dlaždice se rozsvěcují od rohu ven podle skutečného postupu; když nic nepřichází, další pole bliká jako kurzor",
+   "074/074: zbytek mřížky zmizí a zůstane přesné logo (asi 0,4 s)",
+   "Bayerův dithering rozpustí plochu shora dolů, nadpis vyjede zespodu"
+  ],
+  "timing": "Rychlé načtení: dlaždice nikdy nenaskočí rychleji než za 0,72 s, takže celek trvá asi 1,7 s. Pomalé načtení: čítač poctivě stojí, dokud nepřijde další soubor, bliká jen kurzor a nic se nepředstírá. Přechod mezi stránkami: stránka se zadithruje, logo se doplní za 0,36 s a stránka se zase rozpustí.",
+  "tech": "SVG logo je složené z 74 dlaždic se stejnými maticemi jako originál, závoj je canvas s Bayerovou maticí 8 × 8 a animuje se jen opacity a kreslení do canvasu. V Astru by postup počítal inline skript z document.fonts.ready a decode() úvodní fotky a obrázků nad ohybem. Plná verze by běžela jen při první návštěvě (sessionStorage jen jako vylepšení), při dalších navigacích by stačil dither přechod přes Astro View Transitions (astro:before-swap / after-swap).",
+  "risks": "Poctivý čítač u velmi pomalého připojení dlouho stojí u jednoho souboru a může působit zaseknutě; dithering na canvasu je při plné šířce 4K na slabém mobilu nejnáročnější část.",
+  "id": "d-1",
+  "angle": "Střídmost a funkce",
+  "selected": true
+ },
+ {
+  "file": "d-2.html",
+  "name": "Roh domů",
+  "idea": "Celá úvodní tma je jen malý svítící roh krychle v levém dolním rohu. Světlo z něj pulzuje od vrcholu ven. Po načtení logo odletí na své místo v hlavičce (FLIP) a celá noc se za ním složí do jeho rámečku a nakonec zmizí ve vrcholu krychle.",
+  "flow": [
+   "Tmavá plocha, vlevo dole logo v inverzních šedích, vedle jméno a procenta",
+   "Čekání: vlna světla běží od rohu krychle k rozpadlým okrajům (0,6 s minimum)",
+   "Logo letí do hlavičky a tmavá plocha se smršťuje se stejnou křivkou do jeho rámečku",
+   "Rámeček zmizí ve vrcholu krychle, dlaždice přejdou do skutečných šedí, nadpis vyjede"
+  ],
+  "timing": "Rychlé načtení: minimálně jeden nádech pulzu (0,6 s) a přelet 1,3 s, celkem asi 1,9 s. Pomalé načtení: pulz běží libovolně dlouho, procenta rostou podle souborů a malý roh neruší. Přechod mezi stránkami: stejný pohyb pozpátku, tma vyroste z vrcholu loga, logo slétne do rohu, chvíli dýchá a vrátí se.",
+  "tech": "Loader nemá vlastní logo, je to přímo SVG v hlavičce, které je transformem (translate + scale) posunuté do rohu. Tmavý závoj je jeden div škálovaný transformem do obdélníku loga, takže vše běží na kompozitoru. V Astru by stačil inline skript, který před prvním vykreslením nastaví počáteční transform (bez probliknutí), a pro navigace transition:persist na logu s hooky View Transitions.",
+  "risks": "Na velkém monitoru je 92px roh skromný a méně efektní než celoplošné intro; skok mezi inverzní a skutečnou šedí na konci je velmi krátký, a když se načasuje špatně, dlaždice na zlomek vteřiny ztmavnou na tmavém pozadí.",
+  "id": "d-2",
+  "angle": "Střídmost a funkce",
+  "selected": true
+ }
+]

@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roh domů</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Notch:wght@600&family=Stack+Sans+Text:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f1f0ec;
+    --ink: #111111;
+    --night: #0d0d0d;
+    --mute: #86857f;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "Stack Sans Text", "Helvetica Neue", Arial, sans-serif;
+    --display: "Stack Sans Notch", "Stack Sans Text", "Helvetica Neue", Arial, sans-serif;
+    --gut: clamp(16px, 2.4vw, 32px);
+    --lift: 0px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: var(--sans); overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  body.locked { overflow: hidden; }
+
+  /* ---------- placeholder page ---------- */
+  .site-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px var(--gut); font-size: 13px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  /* The header logo IS the loader: it is FLIP-transformed into the corner while
+     loading, and released back to its natural place. z-index lifts it above the veil. */
+  #headMark {
+    width: 30px; height: 34px; display: block; position: relative; z-index: 12;
+    transform-origin: 0 0; overflow: visible;
+  }
+  .site-head nav { display: flex; gap: 22px; color: var(--mute); }
+  .hero { padding: clamp(18px, 5vh, 64px) var(--gut) 0; }
+  .hero h1 {
+    font-family: var(--display); font-weight: 600;
+    font-size: clamp(64px, 15.5vw, 236px);
+    line-height: .86; letter-spacing: -.035em;
+  }
+  .hero h1 span { display: block; overflow: hidden; }
+  .hero h1 span i { display: block; font-style: normal; }
+  .hero .sig { margin-top: 14px; font-size: 13px; color: var(--mute); font-family: var(--mono); }
+  .photos {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: start;
+    padding: clamp(20px, 5vh, 56px) var(--gut) 80px;
+  }
+  .photos div { background: #c9c7c1; aspect-ratio: 4 / 5; }
+  .photos div:nth-child(2) { background: #b4b2ac; aspect-ratio: 4 / 6; }
+  .photos div:nth-child(3) { background: #d6d4ce; }
+  .photos div:nth-child(4) { background: #a9a7a1; aspect-ratio: 3 / 4; }
+  @media (max-width: 600px) {
+    .photos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .site-head nav { gap: 14px; }
+  }
+
+  /* ---------- loader ---------- */
+  .veil {
+    position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 10;
+    background: var(--night); transform-origin: 0 0; pointer-events: none;
+  }
+  .tag {
+    position: fixed; z-index: 13; pointer-events: none;
+    bottom: calc(var(--gut) + var(--lift));
+    color: #eeeeea; font-size: 12px; line-height: 1.45;
+  }
+  .tag .pct { font-family: var(--mono); color: #7d7d78; font-variant-numeric: tabular-nums; letter-spacing: .03em; }
+
+  /* ---------- demo controls ---------- */
+  .controls {
+    position: fixed; right: var(--gut); bottom: 14px; z-index: 20;
+    display: flex; gap: 4px; padding: 4px;
+    background: rgba(128, 128, 124, .28); border: 1px solid rgba(128, 128, 124, .3);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-radius: 999px; font-family: var(--mono); font-size: 11px;
+  }
+  .controls button {
+    appearance: none; border: 0; background: rgba(13, 13, 13, .78); color: #eee;
+    font: inherit; padding: 6px 10px; border-radius: 999px; cursor: pointer;
+  }
+  .controls button:hover, .controls button:focus-visible { background: #333; outline: none; }
+  .controls button[aria-pressed="true"] { background: #f1f0ec; color: #111; }
+  @media (max-width: 480px) {
+    :root { --lift: 46px; }
+    .controls { left: 16px; right: 16px; justify-content: space-between; }
+  }
+</style>
+</head>
+<body class="locked">
+
+<div class="site">
+  <header class="site-head">
+    <div class="brand"><svg id="headMark" viewBox="56 28 208 236" role="img" aria-label="Martin Růžek"></svg><span>Martin Růžek</span></div>
+    <nav><span>Práce</span><span>Kontakt</span></nav>
+  </header>
+  <main class="hero">
+    <h1><span><i>Martin</i></span><span><i>Růžek</i></span></h1>
+    <p class="sig">ruzek.jpg</p>
+  </main>
+  <section class="photos" aria-hidden="true"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></section>
+</div>
+
+<div class="veil" id="veil"></div>
+<div class="tag" id="tag" aria-live="polite"><div>Martin Růžek</div><div class="pct"><span id="pct">000</span> %</div></div>
+
+<div class="controls" role="group" aria-label="Ovládání ukázky">
+  <button id="bReplay" type="button">Znovu</button>
+  <button id="bFast" type="button" aria-pressed="true">Rychle</button>
+  <button id="bSlow" type="button" aria-pressed="false">Pomalu</button>
+  <button id="bNav" type="button">Přechod</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script>
+(() => {
+  /* ---------- logo data: [face, i, j, grey] — identical to prostorovy-roh-seda.svg ---------- */
+  const GREYS = ['#181818', '#383838', '#585858', '#787878', '#989898', '#b8b8b8', '#d0d0d0'];
+  // Night version used only while on the dark veil: same ramp, mirrored (corner brightest).
+  const NIGHT = ['#f2f2ee', '#d4d4d0', '#b2b2ae', '#91918d', '#71716d', '#545450', '#3c3c39'];
+  const FACES = [
+    'matrix(13.8564 -8 -13.8564 -8 160 146)',
+    'matrix(-13.8564 -8 0 16 160 146)',
+    'matrix(0 16 13.8564 -8 160 146)'
+  ];
+  const TILES = [[0,0,0,0],[0,1,0,2],[0,2,0,4],[0,3,0,3],[0,4,0,5],[0,0,1,1],[0,1,1,2],[0,3,1,3],[0,5,1,4],[0,0,2,2],[0,1,2,3],[0,2,2,2],[0,3,2,4],[0,4,2,3],[0,6,2,6],[0,1,3,4],[0,3,3,4],[0,0,4,4],[0,1,4,3],[0,2,4,4],[0,4,4,4],[0,1,5,4],[0,5,5,6],[0,2,6,6],[0,6,6,5],[1,0,0,0],[1,1,0,0],[1,3,0,3],[1,5,0,4],[1,0,1,2],[1,1,1,0],[1,2,1,2],[1,3,1,1],[1,4,1,3],[1,6,1,4],[1,1,2,1],[1,2,2,2],[1,3,2,1],[1,0,3,1],[1,1,3,2],[1,2,3,3],[1,3,3,2],[1,4,3,4],[1,1,4,3],[1,3,4,3],[1,5,4,3],[1,0,5,3],[1,2,5,3],[1,4,5,2],[1,6,5,6],[2,0,0,0],[2,1,0,2],[2,2,0,1],[2,3,0,3],[2,4,0,5],[2,6,0,6],[2,1,1,2],[2,2,1,1],[2,3,1,3],[2,0,2,2],[2,1,2,3],[2,2,2,2],[2,3,2,4],[2,4,2,3],[2,1,3,1],[2,3,3,4],[2,5,3,5],[2,0,4,4],[2,2,4,4],[2,4,4,3],[2,6,4,4],[2,3,5,3],[2,0,6,4],[2,4,6,6]];
+  const NS = 'http://www.w3.org/2000/svg';
+  const VB = { x: 56, y: 28, w: 208, h: 236 }, CORNER = { x: 160, y: 146 };
+
+  const svg = document.getElementById('headMark');
+  const groups = FACES.map(m => { const g = document.createElementNS(NS, 'g'); g.setAttribute('transform', m); svg.appendChild(g); return g; });
+  const tiles = TILES.map(([f, i, j, g]) => {
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', `M${i + .105} ${j + .105}h.79v.79h-.79z`);
+    p.setAttribute('fill', GREYS[g]);
+    groups[f].appendChild(p);
+    return { el: p, f, i, j, g, d: i + j };
+  });
+
+  const $ = id => document.getElementById(id);
+  const veil = $('veil'), tag = $('tag'), pctEl = $('pct');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- geometry for the FLIP ---------- */
+  let home = null; // natural rect of the header logo (transform-free)
+  function measure() {
+    const prev = svg.style.transform;
+    svg.style.transform = 'none';
+    const r = svg.getBoundingClientRect();
+    svg.style.transform = prev;
+    home = { x: r.left, y: r.top, w: r.width, h: r.height };
+  }
+  function cornerState() {
+    const W = innerWidth, H = innerHeight;
+    const gutPx = Math.max(16, Math.min(32, W * .024));
+    const lift = W <= 480 ? 46 : 0;
+    const size = W < 600 || H < 500 ? 64 : 92;       // loader height in px
+    const s = size / home.h;
+    tag.style.left = (gutPx + home.w * s + 14) + 'px';
+    return { x: gutPx - home.x, y: H - gutPx - lift - size - home.y, scale: s };
+  }
+  function veilTo(rect) { // map the full-screen veil onto a rect using transforms only
+    return { x: rect.x, y: rect.y, scaleX: rect.w / innerWidth, scaleY: rect.h / innerHeight };
+  }
+  const pad = 7;
+  const homeBox = () => ({ x: home.x - pad, y: home.y - pad, w: home.w + 2 * pad, h: home.h + 2 * pad });
+  const cornerPoint = () => {
+    const x = home.x + (CORNER.x - VB.x) / VB.w * home.w, y = home.y + (CORNER.y - VB.y) / VB.h * home.h;
+    return { x, y, w: .01, h: .01 };
+  };
+
+  /* ---------- idle loop: light pulses outward from the cube's corner ---------- */
+  const wave = { amp: 0 };
+  let waveT0 = performance.now();
+  function pulse() {
+    if (wave.amp <= 0.001) return;
+    const t = (performance.now() - waveT0) / 1000;
+    for (const tl of tiles) {
+      const w = .5 + .5 * Math.sin(Math.PI * 2 * (t / 1.35 - tl.d / 10));
+      tl.el.style.opacity = (1 - wave.amp * .78 * w).toFixed(3);
+    }
+  }
+  gsap.ticker.add(pulse);
+  const setFills = arr => tiles.forEach(t => t.el.setAttribute('fill', arr[t.g]));
+
+  /* ---------- simulated loading (stand-in for fonts.ready + hero decode) ---------- */
+  const PROFILES = { fast: [120, 260, 340], slow: [700, 2600, 5000], nav: [250, 450, 600] };
+  let profile = 'fast';
+  function simulateLoad(times, onProgress) {
+    return new Promise(res => {
+      let n = 0;
+      times.forEach(t => setTimeout(() => { n++; onProgress(n / times.length); if (n === times.length) res(); }, t));
+    });
+  }
+
+  let run = 0;
+  function killAll() { gsap.globalTimeline.getChildren().forEach(t => t.kill()); }
+
+  function setLoadingState() {
+    measure();
+    const c = cornerState();
+    document.body.classList.add('locked');
+    gsap.set(veil, { x: 0, y: 0, scaleX: 1, scaleY: 1, opacity: 1, display: 'block' });
+    gsap.set(svg, c);
+    gsap.set(tag, { opacity: 1, display: 'block' });
+    gsap.set('.hero h1 i, .hero .sig, .photos div', { yPercent: 0, y: 0, opacity: 1 });
+    setFills(NIGHT);
+    tiles.forEach(t => t.el.style.opacity = 1);
+  }
+
+  async function boot(times, { fromPage = false } = {}) {
+    const id = ++run;
+    killAll();
+    pctEl.textContent = '000';
+    const t0 = performance.now();
+
+    if (fromPage && !reduce) {
+      // Page-to-page: the motif runs backwards. The veil grows out of the cube's
+      // corner, the logo walks back down to the corner and starts breathing.
+      measure();
+      const c = cornerState();
+      gsap.set(veil, { ...veilTo(cornerPoint()), opacity: 1, display: 'block' });
+      gsap.set(tag, { opacity: 0, display: 'block' });
+      const tl = gsap.timeline();
+      tl.to(veil, { ...veilTo(homeBox()), duration: .22, ease: 'power2.in' })
+        .add(() => setFills(NIGHT))
+        .to(veil, { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: .6, ease: 'expo.inOut' })
+        .to(svg, { ...c, duration: .6, ease: 'expo.inOut' }, '<')
+        .to(tag, { opacity: 1, duration: .2 }, '-=.15');
+      document.body.classList.add('locked');
+      await tl.then();
+      if (id !== run) return;
+    } else {
+      setLoadingState();
+    }
+
+    waveT0 = performance.now();
+    gsap.to(wave, { amp: reduce ? 0 : 1, duration: .3 });
+
+    await simulateLoad(times, p => { if (id === run) pctEl.textContent = String(Math.round(p * 100)).padStart(3, '0'); });
+    // Minimum display: one full breath of the corner (~0.6 s). Never longer.
+    const min = reduce ? 250 : 600;
+    const left = min - (performance.now() - t0);
+    if (left > 0) await new Promise(r => setTimeout(r, left));
+    if (id !== run) return;
+    exit();
+  }
+
+  function exit() {
+    measure();
+    if (reduce) {
+      // Calm version: no flight. Cross-fade the veil away and the logo into place.
+      const tl = gsap.timeline({ onComplete: unlock });
+      tl.to([tag, svg], { opacity: 0, duration: .2 })
+        .add(() => { gsap.set(svg, { x: 0, y: 0, scale: 1 }); setFills(GREYS); tiles.forEach(t => t.el.style.opacity = 1); })
+        .to(veil, { opacity: 0, duration: .35 })
+        .to(svg, { opacity: 1, duration: .35 }, '<');
+      return;
+    }
+    const tl = gsap.timeline({ onComplete: unlock });
+    // 1) stop breathing, label goes
+    tl.to(wave, { amp: 0, duration: .25 }, 0)
+      .to(tag, { opacity: 0, duration: .2 }, 0)
+    // 2) FLIP: logo flies home, the whole night folds into the logo's box
+      .to(svg, { x: 0, y: 0, scale: 1, duration: .95, ease: 'expo.inOut' }, .05)
+      .to(veil, { ...veilTo(homeBox()), duration: .95, ease: 'expo.inOut' }, .05)
+    // 3) the folded veil collapses into the cube's vertex; tiles take their real greys
+      .to(veil, { ...veilTo(cornerPoint()), duration: .32, ease: 'power3.in' }, 1.0)
+      .add(() => tiles.forEach(t => gsap.to(t.el, { attr: { fill: GREYS[t.g] }, duration: .3, ease: 'power1.out', delay: t.d * .012 })), .98)
+    // page settles in behind
+      .from('.hero h1 i', { yPercent: 100, duration: .9, ease: 'expo.out', stagger: .08 }, .55)
+      .from('.hero .sig, .photos div', { y: 18, opacity: 0, duration: .6, ease: 'power2.out', stagger: .03 }, .75);
+  }
+
+  function unlock() {
+    gsap.set(veil, { display: 'none' });
+    gsap.set(tag, { display: 'none' });
+    gsap.set(svg, { clearProps: 'transform,opacity' });
+    document.body.classList.remove('locked');
+  }
+
+  addEventListener('resize', () => {
+    // keep the corner loader pinned while waiting
+    if (veil.style.display !== 'none' && wave.amp > 0) { measure(); gsap.set(svg, cornerState()); }
+  });
+
+  const setProfile = p => {
+    profile = p;
+    $('bFast').setAttribute('aria-pressed', p === 'fast');
+    $('bSlow').setAttribute('aria-pressed', p === 'slow');
+  };
+  $('bReplay').onclick = () => boot(PROFILES[profile]);
+  $('bFast').onclick = () => { setProfile('fast'); boot(PROFILES.fast); };
+  $('bSlow').onclick = () => { setProfile('slow'); boot(PROFILES.slow); };
+  $('bNav').onclick = () => boot(profile === 'slow' ? PROFILES.slow.map(t => t * .5) : PROFILES.nav, { fromPage: true });
+
+  boot(PROFILES.fast);
+})();
+</script>
+</body>
+</html>

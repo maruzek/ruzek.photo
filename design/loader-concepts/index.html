@@ -1,0 +1,192 @@
+<title>Načítání z kostky</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Stack+Sans+Notch:wght@600;700&family=Stack+Sans+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column of wide "contact frames"; each concept = poster/player left, notes right; logo greys only */
+:root{
+  --bg:#efeeeb; --surface:#f8f7f5; --ink:#181818; --muted:#585858; --faint:#989898; --line:#d0d0d0; --stage:#0e0e0e;
+  --display:'Stack Sans Notch','Stack Sans Text',system-ui,sans-serif;
+  --text:'Stack Sans Text',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121212;--surface:#1b1b1b;--ink:#ececea;--muted:#a8a8a8;--faint:#787878;--line:#383838;--stage:#000;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#121212;--surface:#1b1b1b;--ink:#ececea;--muted:#a8a8a8;--faint:#787878;--line:#383838;--stage:#000;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--text);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 96px}
+.wrap{max-width:1180px;margin:0 auto}
+header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:32px;align-items:end;padding-block:56px 40px;border-bottom:1px solid var(--line)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+h1{font:700 clamp(48px,9vw,112px)/.92 var(--display);letter-spacing:-.035em;margin:0;text-wrap:balance}
+.lede{max-width:62ch;color:var(--muted);margin:22px 0 0}
+.logo{width:clamp(110px,16vw,180px);color:var(--ink);display:block}
+.note{margin:32px 0 0;padding:18px 20px;background:var(--surface);border-left:3px solid var(--ink);max-width:70ch}
+.note p{margin:0}
+.note .src{font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.how{display:flex;flex-wrap:wrap;gap:8px 24px;margin:24px 0 0;padding:0;list-style:none;font:400 13px/1.4 var(--mono);color:var(--muted)}
+.list{display:grid;gap:56px;padding-top:48px}
+.concept{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:28px;align-items:start}
+.frame{position:relative;aspect-ratio:16/10;max-width:100%;background:var(--stage);overflow:hidden;border:1px solid var(--line)}
+.frame img,.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover;display:block}
+.play{position:absolute;inset:0;width:100%;border:0;padding:0;background:none;cursor:pointer}
+.play span{position:absolute;left:14px;bottom:14px;display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);font:500 13px/1 var(--text);padding:11px 14px 11px 12px}
+.play span::before{content:"";width:0;height:0;border-left:9px solid currentColor;border-top:6px solid transparent;border-bottom:6px solid transparent}
+.play:hover span,.play:focus-visible span{outline:2px solid var(--bg);outline-offset:-4px}
+.frame-bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{font:500 13px/1 var(--text);color:var(--ink);background:transparent;border:1px solid var(--line);padding:9px 12px;cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn:focus-visible,.pick:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.meta{display:flex;align-items:baseline;gap:12px;font:500 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.meta b{color:var(--ink);font-weight:500}
+h2{font:600 clamp(28px,3.4vw,38px)/1.05 var(--text);letter-spacing:-.02em;margin:12px 0 12px;text-wrap:balance}
+.idea{margin:0 0 16px}
+ol.flow{margin:0 0 16px;padding:0;list-style:none;counter-reset:s;display:grid;gap:8px}
+ol.flow li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);font-size:14.5px;color:var(--muted)}
+ol.flow li::before{content:counter(s,decimal-leading-zero);font:500 12px/1.9 var(--mono);color:var(--faint)}
+details{border-top:1px solid var(--line)}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;padding:10px 0;font:500 13px/1.3 var(--text);list-style:none;display:flex;justify-content:space-between}
+summary::after{content:"+";font-family:var(--mono);color:var(--muted)}
+details[open] summary::after{content:"–"}
+details p{margin:0 0 12px;font-size:14.5px;color:var(--muted)}
+.pick{margin-top:16px;display:inline-flex;align-items:center;gap:10px;font:500 14px/1 var(--text);color:var(--ink);background:transparent;border:1px solid var(--ink);padding:11px 14px;cursor:pointer}
+.pick svg{width:16px;height:16px}
+.pick[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tray{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);color:var(--bg);padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.tray-in{max-width:1180px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.tray-in .count{font:500 13px/1.3 var(--mono);flex:1 1 220px;min-width:0}
+.tray input{flex:2 1 260px;min-width:0;background:transparent;border:1px solid var(--muted);color:var(--bg);font:400 14px/1 var(--text);padding:10px 12px}
+.tray input::placeholder{color:var(--faint)}
+.tray .btn{color:var(--bg);border-color:var(--muted)}
+.tray .btn:hover{border-color:var(--bg)}
+.tray .ok{font:400 12px/1 var(--mono);color:var(--faint)}
+dialog{border:0;padding:0;background:var(--stage);width:min(96vw,1440px);height:min(90vh,900px);max-width:none;max-height:none}
+dialog::backdrop{background:rgba(0,0,0,.72)}
+dialog iframe{width:100%;height:100%;border:0;display:block}
+dialog .close{position:absolute;top:10px;right:10px;z-index:2;background:var(--ink);color:var(--bg);border:0}
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);max-width:75ch}
+@media (max-width:820px){
+  header{grid-template-columns:minmax(0,1fr)}
+  header .logo{order:-1}
+  .concept{grid-template-columns:minmax(0,1fr);gap:18px}
+  .list{gap:48px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">ruzek.jpg · návrhy načítání stránky</p>
+      <h1>Načítání z kostky</h1>
+      <p class="lede">Osm konceptů od čtyř subagentů. Každý dostal stejné zadání, data přesného loga a volnou ruku, jen s jiným výchozím úhlem. Všechny končí přesně na tvém logu a umí rychlé i pomalé načtení.</p>
+    </div>
+    <svg class="logo" viewBox="0 0 320 320" role="img" aria-label="Logo Martin Růžek, prostorový roh"><g fill="currentColor">
+    <path transform="matrix(13.8564 -8 -13.8564 -8 160 146)" d="M0.105 0.105h.79v.79h-.79zM1.105 0.105h.79v.79h-.79zM2.105 0.105h.79v.79h-.79zM3.105 0.105h.79v.79h-.79zM4.105 0.105h.79v.79h-.79zM0.105 1.105h.79v.79h-.79zM1.105 1.105h.79v.79h-.79zM3.105 1.105h.79v.79h-.79zM5.105 1.105h.79v.79h-.79zM0.105 2.105h.79v.79h-.79zM1.105 2.105h.79v.79h-.79zM2.105 2.105h.79v.79h-.79zM3.105 2.105h.79v.79h-.79zM4.105 2.105h.79v.79h-.79zM6.105 2.105h.79v.79h-.79zM1.105 3.105h.79v.79h-.79zM3.105 3.105h.79v.79h-.79zM0.105 4.105h.79v.79h-.79zM1.105 4.105h.79v.79h-.79zM2.105 4.105h.79v.79h-.79zM4.105 4.105h.79v.79h-.79zM1.105 5.105h.79v.79h-.79zM5.105 5.105h.79v.79h-.79zM2.105 6.105h.79v.79h-.79zM6.105 6.105h.79v.79h-.79z"/>
+    <path transform="matrix(-13.8564 -8 0 16 160 146)" d="M0.105 0.105h.79v.79h-.79zM1.105 0.105h.79v.79h-.79zM3.105 0.105h.79v.79h-.79zM5.105 0.105h.79v.79h-.79zM0.105 1.105h.79v.79h-.79zM1.105 1.105h.79v.79h-.79zM2.105 1.105h.79v.79h-.79zM3.105 1.105h.79v.79h-.79zM4.105 1.105h.79v.79h-.79zM6.105 1.105h.79v.79h-.79zM1.105 2.105h.79v.79h-.79zM2.105 2.105h.79v.79h-.79zM3.105 2.105h.79v.79h-.79zM0.105 3.105h.79v.79h-.79zM1.105 3.105h.79v.79h-.79zM2.105 3.105h.79v.79h-.79zM3.105 3.105h.79v.79h-.79zM4.105 3.105h.79v.79h-.79zM1.105 4.105h.79v.79h-.79zM3.105 4.105h.79v.79h-.79zM5.105 4.105h.79v.79h-.79zM0.105 5.105h.79v.79h-.79zM2.105 5.105h.79v.79h-.79zM4.105 5.105h.79v.79h-.79zM6.105 5.105h.79v.79h-.79z"/>
+    <path transform="matrix(0 16 13.8564 -8 160 146)" d="M0.105 0.105h.79v.79h-.79zM1.105 0.105h.79v.79h-.79zM2.105 0.105h.79v.79h-.79zM3.105 0.105h.79v.79h-.79zM4.105 0.105h.79v.79h-.79zM6.105 0.105h.79v.79h-.79zM1.105 1.105h.79v.79h-.79zM2.105 1.105h.79v.79h-.79zM3.105 1.105h.79v.79h-.79zM0.105 2.105h.79v.79h-.79zM1.105 2.105h.79v.79h-.79zM2.105 2.105h.79v.79h-.79zM3.105 2.105h.79v.79h-.79zM4.105 2.105h.79v.79h-.79zM1.105 3.105h.79v.79h-.79zM3.105 3.105h.79v.79h-.79zM5.105 3.105h.79v.79h-.79zM0.105 4.105h.79v.79h-.79zM2.105 4.105h.79v.79h-.79zM4.105 4.105h.79v.79h-.79zM6.105 4.105h.79v.79h-.79zM3.105 5.105h.79v.79h-.79zM0.105 6.105h.79v.79h-.79zM4.105 6.105h.79v.79h-.79z"/>
+  </g></svg>
+  </header>
+
+  <div class="note">
+    <p class="src">Tvoje původní poznámka</p>
+    <p>Loading scéna by vypadala tak, že bude složená z celé černé stránky, ale spíš ze čtverců stejných barev jako moje logo s nějakou drobnou animací. Po načtení by se zobrazilo moje logo, prostě by zbytek čtverců zmizel.</p>
+  </div>
+
+  <ul class="how">
+    <li>▶ přehraje koncept přímo v kartě</li>
+    <li>Uvnitř: Znovu · Rychlé načtení · Pomalé načtení</li>
+    <li>„Líbí se mi“ a dole zkopíruješ výběr do chatu</li>
+  </ul>
+
+  <main class="list" id="list"></main>
+
+  <footer>Prototypy jsou návrhy pohybu, ne hotový kód webu. Načítání je simulované časovačem. Ověřené jsou v Chromiu na šířce 390, 720 a 1440 px, ne na skutečných telefonech ani v Safari. Popisky u jednotlivých konceptů napsali subagenti.</footer>
+</div>
+
+<div class="tray" role="region" aria-label="Můj výběr">
+  <div class="tray-in">
+    <span class="count" id="count">Zatím nic nevybráno</span>
+    <input id="note" type="text" aria-label="Poznámka k výběru" placeholder="Poznámka, např. a-1 vstup + d-2 odchod do hlavičky">
+    <button class="btn" id="copy" type="button">Zkopírovat do chatu</button>
+    <span class="ok" id="ok" aria-live="polite"></span>
+  </div>
+</div>
+
+<dialog id="dlg" aria-label="Koncept na celou plochu">
+  <button class="btn close" type="button" id="dlgClose">Zavřít · Esc</button>
+  <iframe id="dlgFrame" title="Koncept načítání"></iframe>
+</dialog>
+
+<script>
+const DATA = [{"file": "a-1.html", "name": "Pole světla", "idea": "Celá obrazovka je logo protažené do nekonečna: tři izometrické plochy kosočtverců vyrůstají z rohu loga a po nich krouží studiové světlo, které se ordered ditheringem lomí do sedmi šedí loga. Po načtení se pole rozpadá stejným ditheringem, ze kterého je logo postavené, a smršťuje se z okrajů obrazovky do loga.", "flow": ["Pole vyroste z rohu krychle ven, dlaždice se rodí v pořadí Bayerovy matice (cca 0,5 s).", "Během čekání krouží světlo kolem rohu a po ploše putuje měkké bodové světlo, šedi přeskakují v ditheru.", "Po načtení se pole v šestiúhelníkové vlně z okrajů obrazovky rozpustí do loga, dlaždice loga dosednou na své přesné šedi (0,8 s).", "Plátno se beze švu vymění za skutečné SVG loga, které odletí do navigace, nadpis a fotky vyjedou zespodu."], "timing": "Rychlé načtení: pole je vidět minimálně 0,65 s, logo dosedne do navigace po cca 2,25 s a stránka je ovladatelná už po 1,45 s. Pomalé načtení: světlo krouží ve smyčce (perioda 7 s) a počítadlo se jen asymptoticky blíží 92 %, odchod začne hned ve chvíli načtení, bez čekání na konec cyklu.", "tech": "Jeden canvas 2D, dlaždice se kreslí stejnou afinní maticí jako SVG (21 výplní na snímek, cca 2–3 tisíce dlaždic), předání do navigace dělá GSAP technikou FLIP. V Astru by šlo o inline skript v layoutu, který čeká na Promise.all([document.fonts.ready, hero.decode()]), spouští se jen při první návštěvě (sessionStorage s try/catch) a při navigaci přes View Transitions se už nezobrazuje.", "risks": "Hustá šedá mozaika přes celou obrazovku je výrazná a na velkých monitorech může krátce působit těžce, takže by si zasloužila test na skutečném displeji a jemnější kontrast.", "id": "a-1", "angle": "Tvoje poznámka"}, {"file": "a-2.html", "name": "Složená síť", "idea": "Černá stránka z drobných čtverců jako v temné komoře nebo na senzoru: přes pole přejíždí čtecí pás a uprostřed se s postupem načítání vyvolává logo jako negativ, rozložené naplocho jako síť rohu krychle. Po načtení zbytek čtverců spadne, rozsvítí se, negativ se přepne na pozitiv a síť se složí do izometrického rohu.", "flow": ["Černé pole čtverců, přes ně pomalu přejíždí diagonální čtecí pás v ditheru.", "Uprostřed se s odhadem průběhu vyvolává negativ loga (tři ploché 7×7 mřížky s 90° mezerou), takže logo samo slouží jako ukazatel načítání.", "Po načtení se čtverce uvolňují v pořadí ditheru a padají gravitací (0,5 s), potom se rozsvítí: pozadí přejde z černé do papírové a dlaždice loga se rozditherovaně přepnou na pozitiv.", "Síť se zavře: osy ploch se pootočí z 90° do 120° izometrie a vznikne přesné logo (0,55 s).", "Logo odletí do navigace a stránka vyjede."], "timing": "Rychlé načtení: pole je vidět minimálně 0,5 s, celkem cca 2,35 s a stránka je ovladatelná po 1,6 s. Pomalé načtení: čtecí pás běží ve smyčce a negativ se vyvolá jen asi na 85 %, plně se vyvolá až v okamžiku načtení, takže nikdy neslibuje víc, než ví.", "tech": "Canvas 2D: pole je mřížka fillRect, logo se kreslí přes setTransform s interpolovanými úhly os a koncový stav je přesně matice loga, takže výměna za SVG je bez skoku. V Astru stejný inline loader v layoutu, spouštěný jen při první návštěvě. Průběh vyvolání lze napojit na skutečné události (fonty, dekódování hero fotky).", "risks": "Přechod z tmy do světla na chvíli projde střední šedí a padající čtverce jsou na mobilu docela živé, takže choulostivější lidé to můžou vnímat jako záblesk (při prefers-reduced-motion se nespouští).", "id": "a-2", "angle": "Tvoje poznámka"}, {"file": "b-1.html", "name": "Práh", "idea": "Celou obrazovku pokryje nekonečně protažený roh krychle z dlaždic loga a průběh načítání je doslova práh ditheringu: dlaždice naskakují v pořadí Bayerovy matice, až je stránka skoro černá. Po načtení se hustota stáhne zvenku dovnitř a zůstane jen logo, takže logo vypadá jako zastavený okamžik toho ditheringu.", "flow": ["Světlý papír, u rohu krychle se objeví první tmavé dlaždice (roh má malý náskok).", "Hustota roste s průběhem načítání v pořadí Bayerovy matice 8×8 (počítadlo 00/64 až 64/64), obrazovka zhoustne do téměř černé izometrické mřížky.", "Po načtení se okraj hustoty stahuje k rohu: vzdálené dlaždice zesvětlají a zmizí, uvnitř 7×7 odpadnou poslední navíc.", "Zůstanou přesně dlaždice loga, které přejdou do skutečných šedí loga.", "Logo odletí do hlavičky (FLIP) a pod ním vyjede nadpis a fotky."], "timing": "Rychlé načtení: naplnění trvá nejméně 0,55 s, stažení 0,9 s, obsah stránky začne najíždět kolem 1,7 s a vše je dojeté zhruba za 2,5 s. Pomalé načtení: hustota se plazí asymptoticky k 80 % a od rohu se šíří vlny prahu (soustředné krychle), takže scéna žije; jakmile je hotovo, dorovná se na 64/64 a do 2 s od načtení je web vidět celý.", "tech": "Jeden canvas 2D (2–3 tisíce mnohoúhelníků za snímek, bez layoutu), na konci se zamění za inline SVG loga se stejnými pixely a to se přesune transformací do hlavičky. V Astru jako inline skript v layoutu: `loaded` = Promise.all([document.fonts.ready, hero.decode()]), zobrazit jen při první návštěvě v relaci (příznak v sessionStorage, bez cookies) a při navigaci přes View Transitions už ne.", "risks": "Husté celoobrazovkové vzory mohou na některých displejích tvořit moiré, při plné hustotě je obrazovka na chvíli skoro černá (na světlém webu to může působit jako probliknutí) a na slabých mobilech je potřeba hlídat počet dlaždic.", "id": "b-1", "angle": "Geometrie a dithering"}, {"file": "b-2.html", "name": "Závěrka", "idea": "Logo se skutečně složí z rovné sítě do prostoru: tři plochy 7×7 leží rozložené jako vystřihovánka, přehnou se v rozích do krychle a ta se při čekání pomalu natáčí a dýchá. Po načtení dosedne přesně do izometrického pohledu, přebytečné dlaždice odpadnou a tmavá scéna se rozevře podél tří hran krychle jako závěrka.", "flow": ["Na tmavé scéně naskočí v Bayerově pořadí rozložená síť tří čtverců, která připomíná zploštělé logo.", "Levá a hned po ní pravá plocha se přehnou, celek se otočí do prostoru s perspektivou a světlem.", "Při čekání se roh kolébá kolem svislé hrany a plochy se lehce otevírají a zavírají.", "Po načtení zmizí perspektiva i stínování, roh dosedne do přesné izometrie a dlaždice mimo logo se zvenku dovnitř zmenší do ztracena.", "Scéna se rozdělí podél hran rohu na tři díly (Y) a každý odjede se svou plochou loga, pod nimi je web."], "timing": "Rychlé načtení: síť a skládání trvají 0,95 s, dosednutí s prořezáním 0,4 s, závěrka se otevírá zhruba od 1,6 s a vše je dojeté asi za 2,4 s. Pomalé načtení: po složení přejde roh plynule do smyčky kolébání a dýchání, která může běžet libovolně dlouho; po načtení se z aktuální polohy za 0,78 s vrátí do izometrie bez skoku rychlosti a web je celý vidět asi 1,8 s od načtení.", "tech": "Vlastní malá 3D projekce v canvasu (147 dlaždic, kvaterniony, perspektiva se na konci vypne), takže klidová poloha sedí na pixel s SVG. Závěrka jsou tři vrstvy s clip-path a transformací, v každé je SVG jedné plochy loga. V Astru stejný inline skript a stejná pravidla zobrazení jako u Práhu (jen první návštěva, `fonts.ready` a dekódování hero fotky), vše bez GSAP a bez závislostí.", "risks": "Konečné logo je v jednobarevné variantě (světlé na tmavé), ne šedé, a otevírání závěrky stojí asi 0,8 s navíc, než je web celý vidět.", "id": "b-2", "angle": "Geometrie a dithering"}, {"file": "c-1.html", "name": "Latentní obraz", "idea": "Celá obrazovka je tmavá mozaika ze stejné izometrické mřížky jako logo, protože tři stěny krychle pokryjí celou rovinu. Logo se v ní během čekání vyvolává jako negativ. Po načtení tmavé pole vyhoří od okrajů dovnitř podle ordered ditheringu, tedy stejnou technikou, jakou se logo rozpadá. Zbude přesně logo, jeho dlaždice se překlopí z negativu na pozitiv a logo odjede do navigace.", "flow": ["Černá obrazovka, dlaždice tmavé mozaiky naskočí a uprostřed se slabě rozsvítí logo jako negativ.", "Čekání: logo se dovyvolá a pomalu dýchá. Od rohu se šíří obrysy krychle („odečítání senzoru“) a mozaikou probleskuje šum.", "Načteno: pozadí se změní na papír, tmavé dlaždice zesvětlají a zmizí od okrajů k rohu v ditheringovém vzoru.", "Dlaždice loga se od rohu otočí kolem osy a z negativu se stane přesný pozitiv loga.", "Logo se zmenší do levého horního rohu navigace, vyjede nadpis „Martin Růžek“ a odkryjí se fotky."], "timing": "Rychlé načtení (0,3 s): úvod trvá nejméně 0,55 s, odchod 0,72 s, web je vidět zhruba za 1,3 s a obsah je usazený kolem 2,3 s. Pomalé načtení (5 s): smyčka „vyvolávání“ běží libovolně dlouho bez zjevného opakování a odchod začne hned po načtení.", "tech": "Canvas 2D (6–7 tisíc dlaždic na 1440 px, jeden fill na odstín, žádné DOM operace na snímek) a na konci výměna za inline SVG loga a GSAP FLIP do navigace. V Astru inline v layoutu s kritickým CSS. Signál „načteno“ je Promise.race([fonts.ready + decode() hero fotky, timeout 4 s]), loader se ukáže jen při první návštěvě v relaci a při view transitions se přeskočí.", "risks": "Plné tmavé pole je dramatický vstup na jinak světlý web. Při každé návštěvě by brzy otravovalo, proto jen při první. Canvas na velmi slabých telefonech může mírně trhat.", "id": "c-1", "angle": "Fotografie"}, {"file": "c-2.html", "name": "Okno do fotky", "idea": "Dlaždice loga jsou zároveň ořezová maska úvodní fotky. Během čekání přes logo přejíždí rytmus sériového snímání (tři „cvaky“ závěrky odshora dolů) a v dlaždicích na zlomek vteřiny problikne fotka, přitom běží počítadlo souborů ruzek_0001.jpg. Po načtení se dlaždice změní v okna a kamera se ponoří do rohové dlaždice, až ta vyplní celý rámeček úvodní fotky.", "flow": ["Světlá stránka, dlaždice loga naskočí od rohu ven, pod logem se objeví ruzek_0001.jpg.", "Čekání: série tří cvaků závěrky, každý stáhne přes logo „lamelu“, ve které problikne fotka. Počítadlo přičte snímek a série se opakuje.", "Načteno: dlaždice od nejtmavší zprůhlední a stanou se okny do fotky.", "Ponor: logo se zvětšuje (zhruba 100×) do rohové dlaždice, okna odlétají mimo obraz a fotka se jemně usazuje.", "Rohová dlaždice přesně pokryje rámeček fotky, maska zmizí, vyjede nadpis a objeví se navigace."], "timing": "Rychlé načtení (0,3 s): intro trvá nejméně 0,62 s, ponor 1,2 s, fotka vyplní rámeček zhruba za 1,8 s a nadpis je usazený kolem 2,6 s. Pomalé načtení (5 s): série cvaků se opakuje každých ~1,1 s, počítadlo ukazuje, že web žije, a odchod začne ihned po načtení.", "tech": "Inline SVG se 74 cestami loga a stejné cesty jako clipPath přímo na skutečné hero sekci, žádná kopie, takže předání je bezešvé. GSAP animuje jednu transformaci (zoom v log. škále). V Astru: loader v layoutu, ponor začne až po decode() skutečné hero fotky, cvaky při čekání mohou ukazovat LQIP. Jen první návštěva, při view transitions se přeskočí.", "risks": "clip-path s url() na velké ploše se při ponoru překresluje každý snímek, na slabých zařízeních to chce test. Počítadlo ruzek_0001.jpg je hravý vtip, který nemusí sednout každému.", "id": "c-2", "angle": "Fotografie"}, {"file": "d-1.html", "name": "Rejstřík 74", "idea": "Na světlém papíře se objeví konstrukční mřížka celého rohu krychle (3 × 49 polí) a 74 dlaždic loga se rozsvěcuje podle skutečného postupu načítání, od rohu ven, tedy ve stejném pořadí, v jakém v logu ubývá hustota. Pak zbylá pole zmizí a stránka se objeví ordered ditheringem, tedy stejným principem, ze kterého vzniklo logo.", "flow": ["Prázdná mřížka 147 polí, čítač 000/074, vlevo dole seznam toho, co se načítá", "Dlaždice se rozsvěcují od rohu ven podle skutečného postupu; když nic nepřichází, další pole bliká jako kurzor", "074/074: zbytek mřížky zmizí a zůstane přesné logo (asi 0,4 s)", "Bayerův dithering rozpustí plochu shora dolů, nadpis vyjede zespodu"], "timing": "Rychlé načtení: dlaždice nikdy nenaskočí rychleji než za 0,72 s, takže celek trvá asi 1,7 s. Pomalé načtení: čítač poctivě stojí, dokud nepřijde další soubor, bliká jen kurzor a nic se nepředstírá. Přechod mezi stránkami: stránka se zadithruje, logo se doplní za 0,36 s a stránka se zase rozpustí.", "tech": "SVG logo je složené z 74 dlaždic se stejnými maticemi jako originál, závoj je canvas s Bayerovou maticí 8 × 8 a animuje se jen opacity a kreslení do canvasu. V Astru by postup počítal inline skript z document.fonts.ready a decode() úvodní fotky a obrázků nad ohybem. Plná verze by běžela jen při první návštěvě (sessionStorage jen jako vylepšení), při dalších navigacích by stačil dither přechod přes Astro View Transitions (astro:before-swap / after-swap).", "risks": "Poctivý čítač u velmi pomalého připojení dlouho stojí u jednoho souboru a může působit zaseknutě; dithering na canvasu je při plné šířce 4K na slabém mobilu nejnáročnější část.", "id": "d-1", "angle": "Střídmost a funkce"}, {"file": "d-2.html", "name": "Roh domů", "idea": "Celá úvodní tma je jen malý svítící roh krychle v levém dolním rohu. Světlo z něj pulzuje od vrcholu ven. Po načtení logo odletí na své místo v hlavičce (FLIP) a celá noc se za ním složí do jeho rámečku a nakonec zmizí ve vrcholu krychle.", "flow": ["Tmavá plocha, vlevo dole logo v inverzních šedích, vedle jméno a procenta", "Čekání: vlna světla běží od rohu krychle k rozpadlým okrajům (0,6 s minimum)", "Logo letí do hlavičky a tmavá plocha se smršťuje se stejnou křivkou do jeho rámečku", "Rámeček zmizí ve vrcholu krychle, dlaždice přejdou do skutečných šedí, nadpis vyjede"], "timing": "Rychlé načtení: minimálně jeden nádech pulzu (0,6 s) a přelet 1,3 s, celkem asi 1,9 s. Pomalé načtení: pulz běží libovolně dlouho, procenta rostou podle souborů a malý roh neruší. Přechod mezi stránkami: stejný pohyb pozpátku, tma vyroste z vrcholu loga, logo slétne do rohu, chvíli dýchá a vrátí se.", "tech": "Loader nemá vlastní logo, je to přímo SVG v hlavičce, které je transformem (translate + scale) posunuté do rohu. Tmavý závoj je jeden div škálovaný transformem do obdélníku loga, takže vše běží na kompozitoru. V Astru by stačil inline skript, který před prvním vykreslením nastaví počáteční transform (bez probliknutí), a pro navigace transition:persist na logu s hooky View Transitions.", "risks": "Na velkém monitoru je 92px roh skromný a méně efektní než celoplošné intro; skok mezi inverzní a skutečnou šedí na konci je velmi krátký, a když se načasuje špatně, dlaždice na zlomek vteřiny ztmavnou na tmavém pozadí.", "id": "d-2", "angle": "Střídmost a funkce"}];
+const KEY='ruzek-loader-picks-v1', NKEY='ruzek-loader-note-v1';
+let picks=new Set();
+try{picks=new Set(JSON.parse(localStorage.getItem(KEY)||'[]'))}catch(e){}
+const list=document.getElementById('list');
+const star='<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 1.2l2 4.3 4.7.5-3.5 3.2 1 4.6L8 11.5l-4.2 2.3 1-4.6L1.3 6l4.7-.5z"/></svg>';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+DATA.forEach(c=>{
+  const el=document.createElement('article'); el.className='concept'; el.id=c.id;
+  el.innerHTML=`
+    <div>
+      <div class="frame">
+        <img src="posters/${c.id}.jpg" alt="Snímek konceptu ${esc(c.name)}" loading="lazy" width="720" height="450">
+        <button class="play" type="button" aria-label="Přehrát koncept ${esc(c.name)}"><span>Přehrát</span></button>
+      </div>
+      <div class="frame-bar">
+        <button class="btn full" type="button">Celá plocha</button>
+      </div>
+    </div>
+    <div>
+      <div class="meta"><b>${c.id}</b><span>${esc(c.angle)}</span></div>
+      <h2>${esc(c.name)}</h2>
+      <p class="idea">${esc(c.idea)}</p>
+      <ol class="flow">${c.flow.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>
+      <details><summary>Rychlé a pomalé načtení</summary><p>${esc(c.timing)}</p></details>
+      <details><summary>Jak je postavený a jak by šel do Astra</summary><p>${esc(c.tech)}</p></details>
+      <details><summary>Rizika</summary><p>${esc(c.risks)}</p></details>
+      <button class="pick" type="button" aria-pressed="${picks.has(c.id)}">${star}<span>Líbí se mi</span></button>
+    </div>`;
+  const frame=el.querySelector('.frame');
+  el.querySelector('.play').addEventListener('click',()=>{
+    stopOthers(frame);
+    frame.innerHTML=`<iframe src="concepts/${c.id}.html" title="Koncept ${esc(c.name)}" allow="fullscreen"></iframe>`;
+  });
+  el.querySelector('.full').addEventListener('click',()=>openDlg(c));
+  const pb=el.querySelector('.pick');
+  pb.addEventListener('click',()=>{picks.has(c.id)?picks.delete(c.id):picks.add(c.id);pb.setAttribute('aria-pressed',picks.has(c.id));save()});
+  list.appendChild(el);
+});
+function stopOthers(keep){
+  document.querySelectorAll('.frame').forEach(f=>{
+    if(f!==keep && f.querySelector('iframe')){
+      const id=f.closest('.concept').id, c=DATA.find(d=>d.id===id);
+      f.innerHTML=`<img src="posters/${id}.jpg" alt="Snímek konceptu ${esc(c.name)}" width="720" height="450"><button class="play" type="button" aria-label="Přehrát koncept ${esc(c.name)}"><span>Přehrát</span></button>`;
+      f.querySelector('.play').addEventListener('click',()=>{stopOthers(f);f.innerHTML=`<iframe src="concepts/${id}.html" title="Koncept ${esc(c.name)}"></iframe>`});
+    }
+  });
+}
+const dlg=document.getElementById('dlg'), dlgFrame=document.getElementById('dlgFrame');
+function openDlg(c){stopOthers(null);dlgFrame.src=`concepts/${c.id}.html`;dlgFrame.title='Koncept '+c.name;dlg.showModal()}
+document.getElementById('dlgClose').addEventListener('click',()=>dlg.close());
+dlg.addEventListener('close',()=>{dlgFrame.src='about:blank'});
+const note=document.getElementById('note');
+try{note.value=localStorage.getItem(NKEY)||''}catch(e){}
+note.addEventListener('input',()=>{try{localStorage.setItem(NKEY,note.value)}catch(e){}});
+function save(){try{localStorage.setItem(KEY,JSON.stringify([...picks]))}catch(e){};render()}
+function render(){
+  const n=picks.size;
+  document.getElementById('count').textContent=n?`Vybráno ${n}: ${DATA.filter(d=>picks.has(d.id)).map(d=>d.id).join(', ')}`:'Zatím nic nevybráno';
+}
+render();
+document.getElementById('copy').addEventListener('click',()=>{
+  const sel=DATA.filter(d=>picks.has(d.id));
+  let t='Načítání: moje volby\n'+(sel.length?sel.map(d=>`- ${d.id} ${d.name}`).join('\n'):'- (nic nevybráno)');
+  if(note.value.trim()) t+='\nPoznámka: '+note.value.trim();
+  const ok=document.getElementById('ok');
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');ok.textContent='Zkopírováno'}catch(e){ok.textContent='Označ a zkopíruj ručně'}ta.remove()};
+  try{navigator.clipboard.writeText(t).then(()=>ok.textContent='Zkopírováno',fallback)}catch(e){fallback()}
+});
+</script>

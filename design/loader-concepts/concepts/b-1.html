@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Práh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Notch:wght@200..700&family=Stack+Sans+Text:wght@200..700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f3f2ee;--ink:#141414;--mute:#86847f;--block:#d9d7d1;--block2:#c9c7c0}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--paper);color:var(--ink);overflow-x:hidden}
+body{font-family:"Stack Sans Text",system-ui,sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ---------- placeholder page ---------- */
+.bar{display:flex;align-items:center;justify-content:space-between;padding:18px clamp(16px,3vw,40px)}
+.mark{display:flex;align-items:center;gap:12px;font-weight:500;font-size:15px;letter-spacing:-.01em}
+.mark svg{width:30px;height:auto;display:block}
+.bar nav{display:flex;gap:22px;font-size:14px;color:var(--mute)}
+main{padding:0 clamp(16px,3vw,40px) 64px}
+.hero{font-family:"Stack Sans Notch",sans-serif;font-weight:650;font-size:clamp(72px,16.5vw,236px);line-height:.86;letter-spacing:-.045em;margin:clamp(24px,6vh,72px) 0 18px}
+.hero .ln{display:block;overflow:hidden;padding-bottom:.04em}
+.hero .ln span{display:block}
+.sig{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--mute);margin-bottom:28px}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(8px,1.2vw,16px)}
+.ph{background:var(--block);border-radius:2px;aspect-ratio:4/5}
+.ph:nth-child(1){grid-column:span 5;aspect-ratio:4/5}
+.ph:nth-child(2){grid-column:span 4;aspect-ratio:3/4;background:var(--block2)}
+.ph:nth-child(3){grid-column:span 3;aspect-ratio:2/3}
+.ph:nth-child(4){grid-column:span 7;aspect-ratio:16/9;background:var(--block2)}
+.ph:nth-child(5){grid-column:span 5;aspect-ratio:4/3}
+@media (max-width:640px){.ph:nth-child(n){grid-column:span 6}.ph:nth-child(4){grid-column:span 12}.bar nav{gap:14px}}
+
+/* page entrance (driven by the loader) */
+.page .hero .ln span,.page .sig,.page .ph,.page .mark svg{transition:transform .9s cubic-bezier(.2,.8,.2,1),opacity .7s ease}
+.page.pre .hero .ln span{transform:translateY(140%)}
+.page.pre .sig,.page.pre .ph{opacity:0;transform:translateY(24px)}
+.page.pre .mark svg{opacity:0}
+.page .hero .ln:nth-child(1) span{transition-delay:.3s}.page .hero .ln:nth-child(2) span{transition-delay:.37s}
+.page .sig{transition-delay:.45s}
+.page .ph:nth-child(1){transition-delay:.16s}.page .ph:nth-child(2){transition-delay:.22s}.page .ph:nth-child(3){transition-delay:.28s}.page .ph:nth-child(4){transition-delay:.34s}.page .ph:nth-child(5){transition-delay:.4s}
+.page.noanim *{transition:none!important}
+
+/* ---------- loader ---------- */
+#loader{position:fixed;inset:0;z-index:50;background:var(--paper);transition:opacity .55s ease}
+#loader.gone{opacity:0;pointer-events:none}
+#field{position:absolute;inset:0;width:100%;height:100%;display:block}
+#flyLogo{position:absolute;left:0;top:0;transform-origin:0 0;opacity:0;will-change:transform;z-index:60;pointer-events:none}
+#flyLogo.ease{transition:transform .72s cubic-bezier(.65,0,.2,1)}
+.lab{position:absolute;bottom:18px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;letter-spacing:.04em;color:var(--ink);transition:opacity .3s}
+.lab.l{left:clamp(16px,3vw,40px)}
+.lab.r{top:18px;bottom:auto;left:clamp(16px,3vw,40px);font-variant-numeric:tabular-nums}
+#loader.resolving .lab{opacity:.0}
+
+/* ---------- prototype controls ---------- */
+.ctl{position:fixed;z-index:100;right:12px;bottom:12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 24px);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+.ctl button{font:inherit;color:#fff;background:rgba(20,20,20,.86);border:0;border-radius:999px;padding:7px 11px;cursor:pointer;backdrop-filter:blur(6px)}
+.ctl button:hover{background:#000}
+.ctl button:focus-visible{outline:2px solid #6aa0ff;outline-offset:2px}
+.ctl .st{width:100%;text-align:right;color:var(--mute);padding-right:4px;order:-1}
+@media (prefers-reduced-motion:reduce){#loader{transition:opacity .4s ease}.page *{transition-property:opacity!important;transition-delay:0s!important}.page.pre .hero .ln span,.page.pre .sig,.page.pre .ph{transform:none}.page.pre .hero .ln span{opacity:0}}
+</style>
+</head>
+<body>
+
+<div class="page pre" id="page">
+  <header class="bar">
+    <div class="mark"><svg id="hdrLogo" viewBox="62 33 196 225" aria-hidden="true"></svg><span>Martin Růžek</span></div>
+    <nav><span>Portfolio</span><span>Kontakt</span></nav>
+  </header>
+  <main>
+    <h1 class="hero"><span class="ln"><span>Martin</span></span><span class="ln"><span>Růžek</span></span></h1>
+    <p class="sig">ruzek.jpg</p>
+    <div class="grid"><div class="ph"></div><div class="ph"></div><div class="ph"></div><div class="ph"></div><div class="ph"></div></div>
+  </main>
+</div>
+
+<div id="loader" role="status" aria-live="polite" aria-label="Načítání">
+  <canvas id="field" aria-hidden="true"></canvas>
+  <span class="lab l">ruzek.jpg</span>
+  <span class="lab r" id="count">00/64</span>
+</div>
+<svg id="flyLogo" viewBox="62 33 196 225" aria-hidden="true"></svg>
+
+<div class="ctl">
+  <button id="bReplay" type="button">↻ Znovu</button>
+  <button id="bFast" type="button">Rychlé 0,2 s</button>
+  <button id="bSlow" type="button">Pomalé 5 s</button>
+  <span class="st" id="status"></span>
+</div>
+
+<script>
+(() => {
+'use strict';
+/* ---------- logo data (exact, from prostorovy-roh-seda.svg) ---------- */
+const G  = ['#181818','#383838','#585858','#787878','#989898','#b8b8b8','#d0d0d0'];
+const GV = [0x18,0x38,0x58,0x78,0x98,0xb8,0xd0];
+// face affine maps (SVG matrix a b c d), origin = (160,146) in the 320x320 viewBox
+const MAT = [[13.8564,-8,-13.8564,-8],[-13.8564,-8,0,16],[0,16,13.8564,-8]];
+// [face(0 top,1 left,2 right), i, j, grey index]
+const LOGO = [[0,0,0,0],[0,1,0,2],[0,2,0,4],[0,3,0,3],[0,4,0,5],[0,0,1,1],[0,1,1,2],[0,3,1,3],[0,5,1,4],[0,0,2,2],[0,1,2,3],[0,2,2,2],[0,3,2,4],[0,4,2,3],[0,6,2,6],[0,1,3,4],[0,3,3,4],[0,0,4,4],[0,1,4,3],[0,2,4,4],[0,4,4,4],[0,1,5,4],[0,5,5,6],[0,2,6,6],[0,6,6,5],[1,0,0,0],[1,1,0,0],[1,3,0,3],[1,5,0,4],[1,0,1,2],[1,1,1,0],[1,2,1,2],[1,3,1,1],[1,4,1,3],[1,6,1,4],[1,1,2,1],[1,2,2,2],[1,3,2,1],[1,0,3,1],[1,1,3,2],[1,2,3,3],[1,3,3,2],[1,4,3,4],[1,1,4,3],[1,3,4,3],[1,5,4,3],[1,0,5,3],[1,2,5,3],[1,4,5,2],[1,6,5,6],[2,0,0,0],[2,1,0,2],[2,2,0,1],[2,3,0,3],[2,4,0,5],[2,6,0,6],[2,1,1,2],[2,2,1,1],[2,3,1,3],[2,0,2,2],[2,1,2,3],[2,2,2,2],[2,3,2,4],[2,4,2,3],[2,1,3,1],[2,3,3,4],[2,5,3,5],[2,0,4,4],[2,2,4,4],[2,4,4,3],[2,6,4,4],[2,3,5,3],[2,0,6,4],[2,4,6,6]];
+const LOGO_KEY = new Map(LOGO.map(t => [t[0]+','+t[1]+','+t[2], t[3]]));
+// 8x8 ordered-dither (Bayer) matrix
+const B8 = [[0,32,8,40,2,34,10,42],[48,16,56,24,50,18,58,26],[12,44,4,36,14,46,6,38],[60,28,52,20,62,30,54,22],[3,35,11,43,1,33,9,41],[51,19,59,27,49,17,57,25],[15,47,7,39,13,45,5,37],[63,31,55,23,61,29,53,21]];
+
+function logoMarkup(){
+  let s = '';
+  for (let f = 0; f < 3; f++){
+    const m = MAT[f];
+    s += `<g transform="matrix(${m[0]} ${m[1]} ${m[2]} ${m[3]} 160 146)">`;
+    for (const t of LOGO) if (t[0] === f) s += `<path fill="${G[t[3]]}" d="M${t[1]}.105 ${t[2]}.105h.79v.79h-.79z"/>`;
+    s += '</g>';
+  }
+  return s;
+}
+const $ = id => document.getElementById(id);
+const page = $('page'), loader = $('loader'), canvas = $('field'), fly = $('flyLogo'), hdr = $('hdrLogo');
+const countEl = $('count'), statusEl = $('status');
+hdr.innerHTML = logoMarkup();
+fly.innerHTML = logoMarkup();
+const ctx = canvas.getContext('2d');
+const GREY = Array.from({length:256}, (_, v) => `rgb(${v},${v},${v})`);
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- geometry ---------- */
+let vw, vh, dpr, k, cx, cy, tiles = [], rrMax = 1;
+function layout(){
+  vw = innerWidth; vh = innerHeight; dpr = Math.min(2, devicePixelRatio || 1);
+  canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
+  // logo occupies 191 x 220 viewBox units
+  k = Math.min(vw * 0.5 / 191, vh * 0.44 / 220);
+  // snap the logo box to whole pixels so canvas and vector logo land on the same pixels
+  cx = Math.round(vw / 2 - 98 * k) + 98 * k; cy = Math.round(vh / 2 - 113 * k) + 113 * k;
+  // resting logo position (tight viewBox 62 33 196 225)
+  fly.style.width = (196 * k) + 'px'; fly.style.height = (225 * k) + 'px';
+  fly.style.left = (cx - 98 * k) + 'px'; fly.style.top = (cy - 113 * k) + 'px';
+
+  const D = Math.hypot(vw, vh) / 2;
+  const N = Math.ceil(D / (16 * k) * 1.25) + 2;
+  tiles = []; rrMax = 7;
+  const pad = 20 * k;
+  for (let f = 0; f < 3; f++){
+    const [a, b, c, d] = MAT[f];
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++){
+      const mx = (u, v) => cx + k * (a * u + c * v);
+      const my = (u, v) => cy + k * (b * u + d * v);
+      const ex = mx(i + .5, j + .5), ey = my(i + .5, j + .5);
+      if (ex < -pad || ex > vw + pad || ey < -pad || ey > vh + pad) continue;
+      const u0 = i + .105, u1 = i + .895, v0 = j + .105, v1 = j + .895;
+      const p = [mx(u0,v0), my(u0,v0), mx(u1,v0), my(u1,v0), mx(u1,v1), my(u1,v1), mx(u0,v1), my(u0,v1)];
+      const key = f + ',' + i + ',' + j;
+      const rr = Math.hypot(i + .5, j + .5);
+      const b8 = (B8[(i + 3 * f) & 7][(j + 5 * f) & 7] + .5) / 64;
+      const inCore = i < 7 && j < 7;
+      rrMax = Math.max(rrMax, rr);
+      tiles.push({ p, rr, b: b8, inCore, logo: LOGO_KEY.has(key) ? LOGO_KEY.get(key) : -1, on: -1, die: 0,
+                   vLoad: Math.round(0x18 + Math.min(0x42, Math.max(0, rr - 4) * 2.4)) });
+    }
+  }
+  // death order for the resolve: outside-in, Bayer-jittered; core leftovers go last
+  for (const t of tiles){
+    if (t.logo >= 0) continue;
+    if (!t.inCore){
+      const s = (t.rr - 7) / Math.max(1, rrMax - 7);      // 0 near logo .. 1 far edge
+      t.die = 0.04 + 0.62 * (1 - s) + 0.1 * t.b;
+    } else t.die = 0.70 + 0.16 * t.b;
+  }
+}
+
+/* ---------- simulated page load ---------- */
+// In production: Promise.all([document.fonts.ready, heroImg.decode()]) resolves `loaded`.
+let loadMs = 1400, t0 = 0, loadedAt = Infinity, endAt = 0;
+const isLoaded = now => now - t0 >= loadMs;
+function targetProgress(now){
+  if (isLoaded(now)) return 1;
+  const t = (now - t0) / 1000;
+  return 0.8 * (1 - Math.exp(-t / 1.7));               // honest-ish crawl, never reaches 1 alone
+}
+
+/* ---------- state machine ---------- */
+let phase = 'idle', D = 0, last = 0, phaseT = 0, raf = 0;
+const FILL_RATE = 1 / 0.55;       // full density takes at least 0.55 s
+const RESOLVE = 920;             // ms
+const ease = x => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+const clamp01 = x => x < 0 ? 0 : x > 1 ? 1 : x;
+
+function draw(now){
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, vw, vh);
+  const tt = now / 1000;
+  const waiting = phase === 'fill' && !isLoaded(now) && (now - t0) > 500;
+  const waveAmp = waiting ? Math.min(1, (now - t0 - 500) / 700) : 0;
+  const q = phase === 'resolve' ? ease(clamp01((now - phaseT) / RESOLVE)) : 0;
+  for (let n = 0; n < tiles.length; n++){
+    const t = tiles[n];
+    let alpha = 0, v = t.vLoad;
+    if (phase === 'fill'){
+      // seed: the corner is a little ahead of the rest, so the logo region is the first to darken
+      let dl = D + (1 - D) * 0.24 * Math.exp(-t.rr / 3.2);
+      // idle: threshold ripples outward from the corner while we wait
+      if (waveAmp) dl += 0.10 * waveAmp * Math.sin(t.rr * 0.55 - tt * 3.2);
+      if (t.b < dl){ if (t.on < 0) t.on = now; alpha = Math.min(1, (now - t.on) / 140); }
+      else t.on = -1;
+    } else if (phase === 'resolve'){
+      if (t.logo >= 0){
+        const c = clamp01((q - 0.5 - t.rr * 0.012) / 0.36);
+        v = Math.round(t.vLoad + (GV[t.logo] - t.vLoad) * c);
+        alpha = 1;
+      } else {
+        const life = (q - t.die) / 0.07;
+        if (life >= 1) continue;
+        alpha = 1 - clamp01(life);
+        const light = clamp01((q - t.die + 0.13) / 0.13);
+        v = Math.round(t.vLoad + (0xd0 - t.vLoad) * light);
+      }
+    } else if (phase === 'logo'){
+      if (t.logo < 0) continue;
+      alpha = 1; v = GV[t.logo];
+    }
+    if (alpha <= 0) continue;
+    const p = t.p;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = GREY[v];
+    ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(p[2], p[3]); ctx.lineTo(p[4], p[5]); ctx.lineTo(p[6], p[7]); ctx.closePath(); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function tick(now){
+  raf = requestAnimationFrame(tick);
+  const dt = Math.min(64, now - last); last = now;
+  if (phase === 'fill'){
+    const target = targetProgress(now);
+    if (target === 1 && loadedAt === Infinity) loadedAt = now;
+    D = Math.min(target, D + FILL_RATE * dt / 1000);
+    countEl.textContent = String(Math.min(64, Math.floor(D * 64))).padStart(2, '0') + '/64';
+    if (D >= 1 && target === 1){ phase = 'resolve'; phaseT = now + 40; loader.classList.add('resolving'); }
+  } else if (phase === 'resolve' && now - phaseT >= RESOLVE){
+    phase = 'logo'; phaseT = now;
+    draw(now);
+    // swap canvas for the exact vector logo (identical pixels), then hand off
+    fly.style.opacity = 1; canvas.style.opacity = 0;
+    setTimeout(exit, 120);
+    cancelAnimationFrame(raf); return;
+  }
+  draw(Math.max(now, phaseT));
+}
+
+function exit(){
+  // FLIP the resting logo into the header slot
+  const a = fly.getBoundingClientRect(), b = hdr.getBoundingClientRect();
+  const s = b.width / a.width;
+  fly.classList.add('ease');
+  fly.style.transform = `translate(${b.left - a.left}px, ${b.top - a.top}px) scale(${s})`;
+  loader.classList.add('gone');
+  page.classList.remove('pre');
+  setTimeout(() => {
+    hdr.style.transition = 'none'; hdr.style.opacity = '1'; fly.style.opacity = 0;
+    endAt = performance.now();
+    statusEl.textContent = `stránka ${fmt(loadMs)} · loader ${fmt(endAt - t0)}`;
+  }, 740);
+}
+const fmt = ms => (ms / 1000).toFixed(1).replace('.', ',') + ' s';
+
+function reducedRun(){
+  // calm alternative: static logo fades in, fades out once loaded
+  canvas.style.opacity = 0; countEl.style.opacity = 0;
+  fly.style.transition = 'opacity .4s ease'; fly.style.opacity = 1;
+  const wait = Math.max(loadMs, 600);
+  setTimeout(() => {
+    loader.classList.add('gone'); fly.style.opacity = 0;
+    page.classList.remove('pre'); hdr.style.transition = ''; hdr.style.opacity = '1';
+    statusEl.textContent = `stránka ${fmt(loadMs)} · omezený pohyb`;
+  }, wait);
+}
+
+function start(ms){
+  cancelAnimationFrame(raf);
+  loadMs = ms;
+  page.classList.add('noanim', 'pre'); void page.offsetWidth; page.classList.remove('noanim');
+  loader.classList.remove('gone', 'resolving');
+  fly.classList.remove('ease'); fly.style.transition = ''; fly.style.transform = ''; fly.style.opacity = 0;
+  canvas.style.opacity = 1; countEl.style.opacity = '';
+  hdr.style.transition = 'none'; hdr.style.opacity = '0';
+  layout();
+  D = 0; phase = 'fill'; t0 = last = performance.now(); loadedAt = Infinity;
+  statusEl.textContent = `simulace: stránka se načte za ${fmt(ms)}`;
+  if (reduced){ phase = 'reduced'; reducedRun(); return; }
+  raf = requestAnimationFrame(tick);
+}
+
+addEventListener('resize', () => { if (phase === 'fill' || phase === 'resolve') layout(); else if (phase !== 'reduced') layout(); });
+$('bReplay').onclick = () => start(loadMs);
+$('bFast').onclick = () => start(200);
+$('bSlow').onclick = () => start(5000);
+window.__start = start;
+start(1400);
+})();
+</script>
+</body>
+</html>

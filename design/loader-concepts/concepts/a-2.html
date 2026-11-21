@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Latentní obraz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Notch:wght@400..700&family=Stack+Sans+Text:wght@400..600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<style>
+  :root {
+    --paper: #efeee9;
+    --ink: #141414;
+    --mute: #74736e;
+    --block: #d6d5cf;
+    --block-2: #c9c8c2;
+    --gutter: clamp(16px, 3.2vw, 44px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; overflow-x: hidden; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Stack Sans Text", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- placeholder page ---------- */
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px var(--gutter);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; font-size: 14px; letter-spacing: .01em; }
+  #navMark { width: 34px; height: auto; display: block; visibility: hidden; }
+  .nav nav { display: flex; gap: 22px; font-size: 14px; color: var(--mute); }
+  .hero { padding: clamp(8px, 4vh, 48px) var(--gutter) 64px; }
+  h1 {
+    font-family: "Stack Sans Notch", ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    font-size: clamp(64px, 14.5vw, 232px);
+    line-height: .86;
+    letter-spacing: -.035em;
+  }
+  .line { display: block; overflow: hidden; padding-bottom: .04em; }
+  .line > span { display: inline-block; }
+  .sub { margin-top: 18px; display: flex; justify-content: space-between; font-size: 14px; color: var(--mute); }
+  .grid {
+    margin-top: clamp(24px, 5vh, 56px);
+    display: grid; gap: clamp(8px, 1.2vw, 16px);
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .ph {
+    aspect-ratio: 4 / 5; background: var(--block); position: relative;
+  }
+  .ph:nth-child(even) { background: var(--block-2); aspect-ratio: 4 / 6; }
+  .ph span { position: absolute; left: 10px; bottom: 8px; font-size: 12px; color: var(--mute); }
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .nav nav { gap: 14px; }
+  }
+
+  /* initial hidden state (the loader covers it anyway) */
+  .js .line > span { transform: translateY(110%); }
+  .js .ph { clip-path: inset(100% 0 0 0); }
+  .js .fade { opacity: 0; }
+
+  /* ---------- loader ---------- */
+  #loader {
+    position: fixed; inset: 0; z-index: 50;
+    background: var(--paper);
+  }
+  #loader canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #mark { position: absolute; display: block; visibility: hidden; transform-origin: 0 0; will-change: transform; }
+  .meta {
+    position: absolute; top: 14px; left: var(--gutter); right: var(--gutter);
+    display: flex; justify-content: space-between; pointer-events: none;
+    font-size: 12px; letter-spacing: .04em; color: var(--ink);
+  }
+  .meta span { padding: 4px 0; font-variant-numeric: tabular-nums; color: #8a8a86; }
+  #loader { background: #0b0b0b; }
+
+  /* ---------- demo controls (not part of the design) ---------- */
+  .controls {
+    position: fixed; z-index: 100; left: 50%; bottom: 12px; transform: translateX(-50%);
+    display: flex; gap: 4px; align-items: center; padding: 4px;
+    background: rgba(20,20,20,.86); border-radius: 999px;
+    font: 500 12px/1 "Stack Sans Text", system-ui, sans-serif; color: #eee;
+    max-width: calc(100vw - 24px); white-space: nowrap;
+  }
+  .controls button, .controls label {
+    font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer;
+    padding: 7px 10px; border-radius: 999px; display: flex; align-items: center; gap: 6px;
+  }
+  .controls button:hover, .controls label:hover { background: rgba(255,255,255,.12); }
+  .controls button[aria-pressed="true"] { background: #efeee9; color: #141414; }
+  .controls input { accent-color: #efeee9; margin: 0; }
+  .controls .status { padding: 0 10px 0 6px; color: #9a9a96; min-width: 7.5em; }
+  @media (max-width: 480px) { .controls .status { display: none; } }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js');</script>
+
+<div class="page" id="page">
+  <header class="nav">
+    <div class="brand"><svg id="navMark" viewBox="63 34 194 224" aria-hidden="true"></svg><span class="fade">ruzek.jpg</span></div>
+    <nav class="fade"><span>Portfolio</span><span>Kontakt</span></nav>
+  </header>
+  <main class="hero">
+    <h1 aria-label="Martin Růžek"><span class="line"><span>Martin</span></span><span class="line"><span>Růžek</span></span></h1>
+    <div class="sub fade"><span>ruzek.jpg</span><span>Praha</span></div>
+    <div class="grid">
+      <figure class="ph"><span>Foto 01</span></figure>
+      <figure class="ph"><span>Foto 02</span></figure>
+      <figure class="ph"><span>Foto 03</span></figure>
+      <figure class="ph"><span>Foto 04</span></figure>
+    </div>
+  </main>
+</div>
+
+<div id="loader" aria-hidden="true">
+  <canvas id="cv"></canvas>
+  <svg id="mark" viewBox="63 34 194 224"></svg>
+  <div class="meta"><span>ruzek.jpg</span><span id="pct">000</span></div>
+</div>
+
+<div class="controls" role="group" aria-label="Ukázka načítání">
+  <button id="bReplay" type="button">Znovu</button>
+  <button id="bFast" type="button" aria-pressed="false">Rychle 0,2 s</button>
+  <button id="bSlow" type="button" aria-pressed="false">Pomalu 5 s</button>
+  <label><input id="bReduce" type="checkbox"> Bez pohybu</label>
+  <span class="status" id="status"></span>
+</div>
+
+<script>
+(() => {
+  /* ---------- logo data: face + i + j + grey index (exactly the logo) ---------- */
+  const RAW = 't000 t102 t204 t303 t405 t011 t112 t313 t514 t022 t123 t222 t324 t423 t626 t134 t334 t044 t143 t244 t444 t154 t556 t266 t665 l000 l100 l303 l504 l012 l110 l212 l311 l413 l614 l121 l222 l321 l031 l132 l233 l332 l434 l143 l343 l543 l053 l253 l452 l656 r000 r102 r201 r303 r405 r606 r112 r211 r313 r022 r123 r222 r324 r423 r131 r334 r535 r044 r244 r443 r644 r353 r064 r466';
+  const GREYS = ['#181818', '#383838', '#585858', '#787878', '#989898', '#b8b8b8', '#d0d0d0'];
+  const GV = [0x18, 0x38, 0x58, 0x78, 0x98, 0xb8, 0xd0];
+  const FACES = ['t', 'l', 'r'];
+  const MAT = { t: [13.8564, -8, -13.8564, -8], l: [-13.8564, -8, 0, 16], r: [0, 16, 13.8564, -8] };
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  const LOGO = RAW.split(' ').map(s => ({ f: s[0], i: +s[1], j: +s[2], g: +s[3] }));
+  const BLACK = 0x0b, PAPER = [0xef, 0xee, 0xe9];
+
+  /* Flat state: the three faces lie in one square grid (a cube-corner net with a 90° gap).
+     Each face axis is an angle; folding = rotating the axes to the isometric 120° fan.
+     axis(pr, pf) = diamond + 45°·(1-pr) + fold·pf   →   flat (0,-90,90,180) … iso (-30,-150,90,90) */
+  const AX = { u1: [-45, 15], u2: [-135, -15], dR: [45, 45], dL: [135, -45] };
+  const FACE_AX = { t: ['u1', 'u2'], l: ['u2', 'dL'], r: ['dR', 'u1'] };
+  // logo tile → cell of the flat grid
+  const cellOf = t => t.f === 't' ? [t.i, -t.j - 1] : t.f === 'r' ? [t.j, t.i] : [-t.j - 1, -t.i - 1];
+  const LOGO_CELLS = new Map(LOGO.map(t => [cellOf(t).join(','), t]));
+
+  const markMarkup = FACES.map(f => {
+    const m = MAT[f];
+    return `<g transform="matrix(${m.join(' ')} 160 146)">` + LOGO.filter(t => t.f === f)
+      .map(t => `<path fill="${GREYS[t.g]}" d="M${t.i}.105 ${t.j}.105h.79v.79h-.79z"/>`).join('') + '</g>';
+  }).join('');
+  const $ = id => document.getElementById(id);
+  $('mark').innerHTML = markMarkup;
+  $('navMark').innerHTML = markMarkup;
+
+  const loader = $('loader'), cv = $('cv'), ctx = cv.getContext('2d'), mark = $('mark'), pctEl = $('pct');
+  const meta = loader.querySelector('.meta');
+  const mq = matchMedia('(prefers-reduced-motion: reduce)');
+  $('bReduce').checked = mq.matches;
+
+  const MIN_SHOW = 0.5;
+  const EXIT = 1.1;   // drop 0–.5, lights on .42–.62, fold .52–1.08
+  const LOAD_MS = { normal: 900, fast: 200, slow: 5000 };
+
+  const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+  const smooth = v => { v = clamp01(v); return v * v * (3 - 2 * v); };
+  const inOut3 = v => { v = clamp01(v); return v < .5 ? 4 * v * v * v : 1 - Math.pow(-2 * v + 2, 3) / 2; };
+  const inOut2 = v => { v = clamp01(v); return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; };
+  const rgb = (r, g, b) => `rgb(${r | 0},${g | 0},${b | 0})`;
+  const mix = (a, b, m) => a + (b - a) * m;
+  // seeded random so every replay looks the same
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+  /* ---------- layout ---------- */
+  let W, H, dpr, k, P, ox, oy, field = [], logo = [];
+  function layout() {
+    W = innerWidth; H = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2);
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    k = Math.min(W * 0.5 / 194, H * 0.4 / 224);
+    P = 16 * k; ox = W / 2; oy = H * 0.49;
+    Object.assign(mark.style, {
+      width: 194 * k + 'px', height: 224 * k + 'px',
+      left: ox - 97 * k + 'px', top: oy - 112 * k + 'px'
+    });
+    field = []; logo = []; seed = 7;
+    const x0 = Math.floor(-ox / P) - 1, x1 = Math.ceil((W - ox) / P);
+    const y0 = Math.floor(-oy / P) - 1, y1 = Math.ceil((H - oy) / P);
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const b = (BAYER[((y & 3) * 4) + (x & 3)] + .5) / 16;
+      const lt = LOGO_CELLS.get(x + ',' + y);
+      if (lt) { logo.push({ ...lt, b }); continue; }
+      field.push({ cx: ox + (x + .5) * P, cy: oy + (y + .5) * P, b,
+        rv: (rnd() - .5) * 1.1, vx: (rnd() - .5) * 40, n: rnd() });
+    }
+  }
+
+  /* ---------- drawing ---------- */
+  function axis(name, pr, pf) {
+    const [base, fold] = AX[name];
+    const a = (base + 45 * (1 - pr) + fold * pf) * Math.PI / 180;
+    return [P * Math.cos(a), P * Math.sin(a)];
+  }
+
+  function draw(st) {
+    const { t, E, dev, flip, pr, pf } = st;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // background: darkroom black → paper (lights on)
+    const bgm = smooth(flip);
+    ctx.fillStyle = rgb(mix(BLACK, PAPER[0], bgm), mix(BLACK, PAPER[1], bgm), mix(BLACK, PAPER[2], bgm));
+    ctx.fillRect(0, 0, cv.width, cv.height);
+
+    // field: the black page made of squares. Idle = slow readout sweep, dithered
+    const band = ((t * 0.32) % 1.5) - 0.25;               // diagonal position 0..1 across the screen
+    const h = .395 * P;
+    for (const p of field) {
+      let dy = 0, rot = 0, a = 1, falling = false;
+      if (E >= 0) {
+        // released in ordered-dither order, then dropped by gravity
+        const e = E - (0.02 + 0.3 * p.b + 0.06 * p.n);
+        if (e > 0) {
+          falling = true;
+          dy = 0.5 * 5.5 * H * e * e;
+          rot = p.rv * e * 0.5;
+          a = 1 - clamp01(e / 0.3);
+          if (a <= 0) continue;
+        }
+      }
+      let lvl;
+      if (falling) lvl = 1;                                // the square catches the light as it drops
+      else {
+        const diag = (p.cx / W) * 0.55 + (p.cy / H) * 0.45;
+        const glow = Math.exp(-Math.pow((diag - band) / 0.12, 2));
+        const flick = (Math.sin(t * 3.1 + p.n * 40) > 0.985) ? 0.6 : 0;
+        lvl = (glow * 1.15 + flick) > p.b + 0.2 ? 1 : 0;
+      }
+      ctx.globalAlpha = a;
+      ctx.fillStyle = GREYS[lvl];
+      if (!falling) {
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.fillRect(p.cx - h, p.cy - h, 2 * h, 2 * h);
+      } else {
+        const c = Math.cos(rot) * dpr, sn = Math.sin(rot) * dpr;
+        ctx.setTransform(c, sn, -sn, c, dpr * p.cx, dpr * (p.cy + dy));
+        ctx.fillRect(-h, -h, 2 * h, 2 * h);
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // latent logo: develops as a negative while loading, flips to positive, then folds
+    for (const f of FACES) {
+      const [an, bn] = FACE_AX[f], A = axis(an, pr, pf), B = axis(bn, pr, pf);
+      ctx.setTransform(dpr * A[0], dpr * A[1], dpr * B[0], dpr * B[1], dpr * ox, dpr * oy);
+      for (const q of logo) {
+        if (q.f !== f) continue;
+        const pos = GV[q.g], neg = 255 - GV[q.g];
+        const flipped = flip > 0.15 + 0.6 * q.b;            // dithered negative → positive
+        const target = flipped ? pos : neg;
+        const v = flipped ? pos : mix(GV[0], target, dev);
+        ctx.fillStyle = rgb(v, v, v);
+        ctx.fillRect(q.i + .105, q.j + .105, .79, .79);
+      }
+    }
+  }
+
+  /* ---------- page hand-off ---------- */
+  const pageEls = () => ({
+    lines: document.querySelectorAll('.line > span'),
+    phs: document.querySelectorAll('.ph'),
+    fades: document.querySelectorAll('.fade'),
+    navMark: $('navMark')
+  });
+  function resetPage() {
+    const e = pageEls();
+    gsap.killTweensOf([mark, loader, meta, ...e.lines, ...e.phs, ...e.fades]);
+    gsap.set(e.lines, { y: 0, yPercent: 110 });
+    gsap.set(e.phs, { clipPath: 'inset(100% 0% 0% 0%)' });
+    gsap.set(e.fades, { opacity: 0 });
+    e.navMark.style.visibility = 'hidden';
+    gsap.set(mark, { x: 0, y: 0, scale: 1, opacity: 1, visibility: 'hidden' });
+    gsap.set(loader, { display: 'block', opacity: 1, backgroundColor: '#0b0b0b' });
+    gsap.set(meta, { opacity: 1 });
+    loader.style.pointerEvents = 'auto';
+    cv.style.display = 'block';
+  }
+
+  function handoff(s) {
+    const e = pageEls();
+    loader.style.pointerEvents = 'none';
+    const r1 = mark.getBoundingClientRect(), r2 = e.navMark.getBoundingClientRect();
+    gsap.timeline({ onComplete: () => {
+      e.navMark.style.visibility = 'visible';
+      gsap.set(loader, { display: 'none' });
+      setStatus(s, 'hotovo');
+    } })
+      .set(loader, { backgroundColor: 'rgba(0,0,0,0)' })
+      .to(mark, { x: r2.left - r1.left, y: r2.top - r1.top, scale: r2.width / r1.width,
+        duration: .75, ease: 'expo.inOut' }, 0)
+      .to(e.lines, { yPercent: 0, duration: .9, ease: 'expo.out', stagger: .07 }, .34)
+      .to(e.phs, { clipPath: 'inset(0% 0% 0% 0%)', duration: .9, ease: 'expo.out', stagger: .06 }, .44)
+      .to(e.fades, { opacity: 1, duration: .5, stagger: .05 }, .45);
+  }
+
+  /* ---------- run ---------- */
+  let S = null, lastMode = 'normal';
+  function setStatus(s, txt) { if (s === S) $('status').textContent = txt; }
+  function start(mode) {
+    if (S) S.dead = true;
+    lastMode = mode;
+    $('bFast').setAttribute('aria-pressed', mode === 'fast');
+    $('bSlow').setAttribute('aria-pressed', mode === 'slow');
+    resetPage(); layout();
+    const s = S = { mode, t0: performance.now(), readyAt: 0, phase: 'idle', exitAt: 0, dead: false,
+      reduced: $('bReduce').checked, dev0: 0 };
+    setStatus(s, 'načítám…');
+    Promise.all([new Promise(r => setTimeout(r, LOAD_MS[mode])), document.fonts.ready]).then(() => {
+      if (s.dead) return;
+      s.readyAt = performance.now();
+      setStatus(s, 'načteno ' + ((s.readyAt - s.t0) / 1000).toFixed(1).replace('.', ',') + ' s');
+    });
+    if (s.reduced) return runReduced(s);
+    requestAnimationFrame(now => frame(s, now));
+  }
+
+  const estimate = t => 1 - Math.exp(-t / 1.6);          // honest asymptote, never claims 100 early
+
+  function frame(s, now) {
+    if (s.dead) return;
+    const t = (now - s.t0) / 1000;
+    if (s.phase === 'idle' && s.readyAt && t >= MIN_SHOW) {
+      s.phase = 'exit'; s.exitAt = t; s.dev0 = 0.9 * estimate(t);
+      gsap.to(meta, { opacity: 0, duration: .2 });
+      loader.style.backgroundColor = '#efeee9';
+    }
+    const E = s.phase === 'exit' ? t - s.exitAt : -1;
+    const p = s.readyAt ? 1 : estimate(t);
+    pctEl.textContent = String(Math.round(s.readyAt ? 100 : 92 * p)).padStart(3, '0');
+
+    const st = { t, E, dev: 0, flip: 0, pr: 0, pf: 0 };
+    if (E < 0) st.dev = 0.9 * estimate(t) * smooth(t / 0.25);
+    else {
+      st.dev = mix(s.dev0, 1, smooth(E / 0.12));
+      st.flip = clamp01((E - 0.42) / 0.2);
+      st.pr = inOut2((E - 0.52) / 0.56);
+      st.pf = inOut3((E - 0.56) / 0.52);
+    }
+    draw(st);
+
+    if (E >= EXIT) {
+      mark.style.visibility = 'visible';
+      cv.style.display = 'none';
+      s.phase = 'handoff';
+      handoff(s);
+      return;
+    }
+    requestAnimationFrame(n => frame(s, n));
+  }
+
+  function runReduced(s) {
+    cv.style.display = 'none';
+    gsap.set(loader, { backgroundColor: '#efeee9' });
+    gsap.set(meta, { opacity: 0 });
+    gsap.fromTo(mark, { opacity: 0, visibility: 'visible' }, { opacity: 1, duration: .3 });
+    const e = pageEls();
+    const tick = () => {
+      if (s.dead) return;
+      const t = (performance.now() - s.t0) / 1000;
+      if (!(s.readyAt && t >= 0.4)) return void requestAnimationFrame(tick);
+      gsap.set(e.lines, { yPercent: 0 });
+      gsap.set(e.phs, { clipPath: 'inset(0% 0% 0% 0%)' });
+      gsap.set(e.fades, { opacity: 1 });
+      e.navMark.style.visibility = 'visible';
+      loader.style.pointerEvents = 'none';
+      gsap.to(loader, { opacity: 0, duration: .35, onComplete: () => {
+        gsap.set(loader, { display: 'none' }); setStatus(s, 'hotovo');
+      } });
+    };
+    tick();
+  }
+
+  $('bReplay').onclick = () => start(lastMode);
+  $('bFast').onclick = () => start('fast');
+  $('bSlow').onclick = () => start('slow');
+  $('bReduce').onchange = () => start(lastMode);
+  mq.addEventListener?.('change', () => { $('bReduce').checked = mq.matches; start(lastMode); });
+
+  let rz;
+  addEventListener('resize', () => {
+    clearTimeout(rz);
+    rz = setTimeout(() => { if (S && S.phase !== 'handoff') layout(); }, 120);
+  });
+
+  start('normal');
+})();
+</script>
+</body>
+</html>

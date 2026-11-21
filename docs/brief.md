@@ -37,8 +37,8 @@ Zdroj: Martinovo zadání a odpovědi z brainstormu (2026-11-20). Texty o Martin
 
 ## Poptávkový formulář
 - **Pole:** typ akce, datum, čas od–do, místo, počet lidí, požadované výstupy, kontakt.
-- **Povinné:** souhlas se zpracováním údajů (GDPR) a ochrana proti spamu (Turnstile).
-- **Po odeslání:** e-mail Martinovi, potvrzení klientovi a uložení do databáze (D1) s dobou uchování.
+- **Povinné:** ochrana proti spamu (Turnstile) a odkaz na zásady ochrany osobních údajů. Zaškrtávátko souhlasu nebude (rozhodnutí 2026-11-21).
+- **Po odeslání:** e-mail Martinovi na `foto@martinruzek.cz`, potvrzení klientovi a uložení do databáze (D1). Poptávky bez zakázky se po 12 měsících anonymizují.
 - Na webu bude vidět i telefon a WhatsApp.
 - Kalkulačka cen poptávku předvyplní.
 
@@ -60,7 +60,7 @@ Zdroj: Martinovo zadání a odpovědi z brainstormu (2026-11-20). Texty o Martin
 - Napojení na Google profil firmy, Firmy.cz a Instagram.
 
 ## Právní a obsahová pravidla
-Viz [AGENTS.md](../AGENTS.md#obsahová-a-právní-pravidla-závazná): souhlasy, děti, rychlé stažení fotek, EXIF, zásady ochrany údajů, analytika bez cookies, žádná technika na webu, žádný vymyšlený obsah.
+Viz [AGENTS.md](../AGENTS.md#obsahová-a-právní-pravidla-závazná): souhlasy, děti, rychlé stažení fotek, EXIF, zásady ochrany údajů, měření bez cookies (Umami, Cloudflare Web Analytics), žádná technika na webu, žádný vymyšlený obsah.
 
 Relevantní předpisy:
 - občanský zákoník § 84–90 (podobizna);

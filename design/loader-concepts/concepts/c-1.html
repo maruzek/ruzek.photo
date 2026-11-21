@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Latentní obraz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Notch:wght@700&family=Stack+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f0efeb;
+    --ink: #121212;
+    --muted: #6d6d6a;
+    --field: #0b0b0b;
+    --gutter: clamp(16px, 3vw, 40px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Stack Sans Text", system-ui, sans-serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- placeholder page ---------- */
+  .page { min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr); padding: 0 var(--gutter) var(--gutter); }
+  .nav { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+  .nav-logo { width: 64px; height: 64px; display: block; margin-left: -12px; }
+  .nav-logo svg { width: 100%; height: 100%; display: block; }
+  .nav-r { display: flex; gap: 24px; font-size: 13px; letter-spacing: .02em; color: var(--muted); }
+  .hero { align-self: center; padding: 2vh 0; }
+  .hl {
+    font-family: "Stack Sans Notch", "Stack Sans Text", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: max(64px, min(15.5vw, 22vh));
+    line-height: .92;
+    letter-spacing: -.035em;
+  }
+  .hl .ln { display: block; overflow: hidden; padding-bottom: .04em; }
+  .hl .ln > span { display: inline-block; will-change: transform; }
+  .hl em { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-weight: 400; letter-spacing: -.02em; }
+  .shots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .shot {
+    aspect-ratio: 4 / 3; position: relative;
+    background: linear-gradient(155deg, #b9b8b4 0%, #8d8c88 55%, #6f6e6a 100%);
+  }
+  .shot:nth-child(2) { background: linear-gradient(200deg, #9a9995, #5f5e5b); }
+  .shot:nth-child(3) { background: linear-gradient(120deg, #c9c8c4, #8a8985); }
+  .shot:nth-child(4) { background: linear-gradient(170deg, #7b7a76, #4d4c49); }
+  .shot span { position: absolute; left: 8px; bottom: 6px; font-size: 11px; color: rgba(255,255,255,.75); letter-spacing: .04em; }
+  @media (max-width: 640px) {
+    .shots { grid-template-columns: repeat(2, 1fr); }
+    .nav-r span:first-child { display: none; }
+  }
+  @media (max-height: 520px) and (min-width: 641px) { .shot { aspect-ratio: 16 / 9; } }
+
+  /* page starts hidden while the loader owns the screen (JS only) */
+  .js .reveal-wait .hl .ln > span { transform: translateY(135%); }
+  .js .reveal-wait .shot { clip-path: inset(100% 0 0 0); }
+  .js .reveal-wait .nav-r, .js .reveal-wait .nav-logo { opacity: 0; }
+
+  /* ---------- loader ---------- */
+  #loader { position: fixed; inset: 0; z-index: 50; background: var(--field); }
+  #loader.is-clear { background: transparent; }
+  #loader.is-gone { display: none; }
+  #loader canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #loader.rm { background: var(--paper); }
+  #flyer { position: fixed; z-index: 60; left: 0; top: 0; transform-origin: 0 0; display: none; pointer-events: none; }
+  #flyer svg { width: 100%; height: 100%; display: block; }
+
+  /* ---------- demo controls (not part of the design) ---------- */
+  .ctl {
+    position: fixed; z-index: 100; right: 10px; bottom: 10px;
+    display: flex; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: flex-end;
+    font: 500 11px/1 "Stack Sans Text", system-ui, sans-serif;
+    max-width: calc(100vw - 20px);
+  }
+  .ctl button {
+    font: inherit; cursor: pointer; border: 0; border-radius: 999px;
+    padding: 7px 10px; background: rgba(128,128,128,.28); color: #fff;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    mix-blend-mode: difference;
+  }
+  .ctl button:hover { background: rgba(128,128,128,.5); }
+  .ctl button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .ctl-s { color: #fff; mix-blend-mode: difference; opacity: .7; padding: 0 6px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<script>document.documentElement.classList.add('js');</script>
+
+<div class="page reveal-wait" id="page">
+  <header class="nav">
+    <a class="nav-logo" id="navLogo" href="#" aria-label="Martin Růžek, úvod"></a>
+    <nav class="nav-r"><span>ruzek.jpg</span><span>Menu</span></nav>
+  </header>
+  <main class="hero">
+    <h1 class="hl"><span class="ln"><span>Martin</span></span><span class="ln"><span>Růžek</span></span></h1>
+  </main>
+  <section class="shots" aria-label="Ukázky fotek">
+    <div class="shot"><span>foto 01</span></div>
+    <div class="shot"><span>foto 02</span></div>
+    <div class="shot"><span>foto 03</span></div>
+    <div class="shot"><span>foto 04</span></div>
+  </section>
+</div>
+
+<div id="loader" aria-hidden="true"><canvas id="cv"></canvas></div>
+<div id="flyer" aria-hidden="true"></div>
+
+<div class="ctl" role="group" aria-label="Ovládání ukázky">
+  <button type="button" data-ms="replay">Znovu</button>
+  <button type="button" data-ms="300">Rychlé načtení</button>
+  <button type="button" data-ms="5000">Pomalé načtení</button>
+  <span class="ctl-s" id="status" aria-live="polite"></span>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script>
+/*
+  Concept c-1 "Latentní obraz"
+  Loader: the logo's tile lattice extended over the whole screen (the three cube faces tile the plane).
+  While waiting, the logo develops as a negative (inverted greys) inside a dark field, with cube-shaped
+  "readout" waves. On load: the dark field burns out from the edges inward in ordered-dither order
+  (the same technique that shapes the logo's edge), the logo tiles flip negative -> positive, and the
+  exact logo is handed to an inline SVG which docks into the nav.
+
+  Real page hook (Astro): render #loader in the initial HTML with inline CSS (first paint is already dark),
+  then resolve "loaded" with
+    Promise.race([ Promise.all([document.fonts.ready, heroImg.decode()]), timeout(4000) ])
+  First visit per session only (sessionStorage flag set after the exit; without it the loader just shows
+  again, nothing breaks). Not shown on Astro view-transition navigations (astro:after-swap skips it).
+*/
+(() => {
+  // ---- logo data: face(0 top,1 left,2 right) i j grey-index, 74 tiles ----
+  const RAW = "00000102020403030405001101120313051400220123022203240423062601340334004401430244044401540556026606651000110013031504101211101212131114131614112112221321103111321233133214341143134315431053125314521656200021022201230324052606211222112313202221232222232424232131233425352044224424432644235320642466";
+  const GREYS = [0x18, 0x38, 0x58, 0x78, 0x98, 0xb8, 0xd0];
+  const M = [ // affine matrices per face: [a,b,c,d] (+ origin 160,146)
+    [13.8564, -8, -13.8564, -8],
+    [-13.8564, -8, 0, 16],
+    [0, 16, 13.8564, -8],
+  ];
+  const OX = 160, OY = 146, INS = 0.105, SZ = 0.79;
+  const logoMap = new Map(); // "f,i,j" -> grey value
+  const logoTiles = [];
+  for (let n = 0; n < RAW.length; n += 4) {
+    const f = +RAW[n], i = +RAW[n + 1], j = +RAW[n + 2], g = GREYS[+RAW[n + 3]];
+    logoMap.set(f + "," + i + "," + j, g);
+    logoTiles.push({ f, i, j, g });
+  }
+  const hex = (v) => "#" + v.toString(16).padStart(2, "0").repeat(3);
+
+  // exact logo as SVG (same structure as prostorovy-roh-seda.svg)
+  function logoSVG() {
+    let s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" fill="none" role="img" aria-label="Martin Růžek, logo">';
+    for (let f = 0; f < 3; f++) {
+      const m = M[f];
+      s += `<g transform="matrix(${m.join(" ")} ${OX} ${OY})">`;
+      for (const t of logoTiles) if (t.f === f)
+        s += `<path fill="${hex(t.g)}" d="M${t.i + INS} ${t.j + INS}h${SZ}v${SZ}h-${SZ}z"/>`;
+      s += "</g>";
+    }
+    return s + "</svg>";
+  }
+  const navLogo = document.getElementById("navLogo");
+  const flyer = document.getElementById("flyer");
+  navLogo.innerHTML = logoSVG();
+  flyer.innerHTML = logoSVG();
+
+  // ---- Bayer 8x8 ----
+  let B = [[0]];
+  for (let s = 0; s < 3; s++) {
+    const n = B.length, N = [];
+    for (let y = 0; y < 2 * n; y++) { N.push([]); for (let x = 0; x < 2 * n; x++) {
+      const v = B[y % n][x % n] * 4, q = (y < n ? 0 : 2) + (x < n ? 0 : 1);
+      N[y].push(v + [0, 2, 3, 1][q]);
+    } }
+    B = N;
+  }
+
+  // ---- canvas + lattice ----
+  const loader = document.getElementById("loader");
+  const cv = document.getElementById("cv");
+  const ctx = cv.getContext("2d");
+  const page = document.getElementById("page");
+  const statusEl = document.getElementById("status");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+
+  let W = 0, H = 0, DPR = 1, K = 1, CX = 0, CY = 0; // logo scale + logo box centre
+  let T = null; // tile arrays
+  let HA = [], HC = []; // per face half vectors (screen px)
+
+  const sx = (vx) => CX + (vx - 160) * K;
+  const sy = (vy) => CY + (vy - 160) * K;
+
+  function layout() {
+    W = innerWidth; H = innerHeight;
+    DPR = Math.min(2, devicePixelRatio || 1);
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    K = Math.min(1, Math.min(W * 0.62, H * 0.44) / 320);
+    CX = W / 2; CY = H / 2;
+    HA = M.map((m) => [m[0] * SZ / 2 * K, m[1] * SZ / 2 * K]);
+    HC = M.map((m) => [m[2] * SZ / 2 * K, m[3] * SZ / 2 * K]);
+    const ox = sx(OX), oy = sy(OY);
+    const far = Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([x, y]) => Math.hypot(x - ox, y - oy)));
+    const NMAX = Math.ceil(far / (8 * K)) + 2, pad = 16 * K;
+    const cx = [], cy = [], fc = [], gi = [], gj = [], lg = [], mm = [], rnd = [], frq = [], ph = [];
+    for (let f = 0; f < 3; f++) {
+      const [a, b, c, d] = M[f];
+      for (let i = 0; i < NMAX; i++) for (let j = 0; j < NMAX; j++) {
+        const u = i + .5, v = j + .5;
+        const x = sx(OX + a * u + c * v), y = sy(OY + b * u + d * v);
+        if (x < -pad || y < -pad || x > W + pad || y > H + pad) continue;
+        cx.push(x); cy.push(y); fc.push(f); gi.push(i); gj.push(j);
+        lg.push(logoMap.has(f + "," + i + "," + j) ? logoMap.get(f + "," + i + "," + j) : -1);
+        mm.push(Math.max(i, j));
+        rnd.push(Math.random()); frq.push(.35 + Math.random() * .9); ph.push(Math.random() * 6.283);
+      }
+    }
+    const n = cx.length;
+    const mMax = Math.max(8, ...mm);
+    const order = new Float32Array(n), delay = new Float32Array(n);
+    for (let t = 0; t < n; t++) {
+      // burn order: cube-distance from the corner + ordered dither, far tiles first
+      const dn = mm[t] / mMax, bay = B[gi[t] % 8][gj[t] % 8] / 64;
+      order[t] = Math.min(1, dn * .82 + bay * .18);
+      delay[t] = (1 - order[t]) * .42;
+    }
+    T = { n, cx, cy, fc, lg, mm, rnd, frq, ph, delay, mMax };
+    buckets = Array.from({ length: 256 }, () => []);
+    scA = new Float32Array(n); scC = new Float32Array(n);
+  }
+
+  // ---- render ----
+  let buckets = [];
+  const S = { phase: "off", t0: 0, exitT: 0 };
+  const clamp = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const ease = (v) => v * v * (3 - 2 * v);
+  const INTRO = .5, EXIT = .72, BASE = 22;
+
+  let scA = new Float32Array(1), scC = new Float32Array(1);
+  function render(now) {
+    if (S.phase === "off" || S.phase === "done") return;
+    const t = (now - S.t0) / 1000;
+    const e = S.phase === "exit" ? (now - S.exitT) / 1000 : -1;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    const intro = clamp(t / INTRO);
+    // the logo "develops": faint during intro, full after ~1.4 s, then breathes
+    let dev = intro * .3 + ease(clamp((t - INTRO) / 1.3)) * .7;
+    if (t > INTRO + 1.3) dev = .9 + .1 * Math.cos((t - INTRO - 1.3) * 2.4);
+    // readout wave: expanding cube outlines from the corner
+    const waveM = ((t * 9) % (T.mMax + 14)) - 3;
+    const baseA = e < 0 ? 1 : 1 - ease(clamp((e - .04) / .3));
+    if (baseA > 0) { ctx.globalAlpha = baseA; ctx.fillStyle = "#0b0b0b"; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+    if (e >= 0) loader.classList.add("is-clear");
+
+    for (let b = 0; b < 256; b++) buckets[b].length = 0;
+    const { n, cx, cy, fc, lg, mm, rnd, frq, ph, delay, mMax } = T;
+    for (let k = 0; k < n; k++) {
+      let L, a = 1, c = 1;
+      const appear = ease(clamp((intro - rnd[k] * .55) / .45));
+      if (lg[k] < 0) {
+        const fl = Math.pow(Math.max(0, Math.sin(t * frq[k] * 6.283 + ph[k])), 60) * 34;
+        const dw = mm[k] + .5 - waveM;
+        const wv = Math.exp(-dw * dw * .5) * 14 * (1 - mm[k] / (mMax + 4));
+        L = (BASE + fl + wv * intro) * appear;
+        if (e >= 0) {
+          const loc = clamp((e - delay[k]) / .28);
+          L = L + (236 - L) * ease(clamp(loc * 1.7));
+          const s = 1 - Math.pow(clamp((loc - .3) / .7), 2.2);
+          a = c = s;
+        }
+      } else {
+        const neg = 255 - lg[k];
+        L = (BASE + (neg - BASE) * dev) * appear;
+        if (e >= 0) {
+          // flip negative -> positive, corner first
+          const f = clamp((e - (.12 + (mm[k] / 6) * .2)) / .32);
+          if (f > 0) { const cf = Math.cos(Math.PI * f); a = Math.abs(cf); if (f >= .5) L = lg[k]; }
+          if (f >= 1) { a = 1; L = lg[k]; }
+        }
+      }
+      if (a < .01 || c < .01) continue;
+      const li = L < 0 ? 0 : L > 255 ? 255 : Math.round(L);
+      if (e < 0 && li < 3) continue;
+      scA[k] = a; scC[k] = c;
+      buckets[li].push(k);
+    }
+    for (let b = 0; b < 256; b++) {
+      const arr = buckets[b];
+      if (!arr.length) continue;
+      ctx.fillStyle = hex(b);
+      ctx.beginPath();
+      for (let q = 0; q < arr.length; q++) {
+        const k = arr[q], f = fc[k], x = cx[k], y = cy[k];
+        const ax = HA[f][0] * scA[k], ay = HA[f][1] * scA[k], bx = HC[f][0] * scC[k], by = HC[f][1] * scC[k];
+        ctx.moveTo(x - ax - bx, y - ay - by);
+        ctx.lineTo(x + ax - bx, y + ay - by);
+        ctx.lineTo(x + ax + bx, y + ay + by);
+        ctx.lineTo(x - ax + bx, y - ay + by);
+        ctx.closePath();
+      }
+      ctx.fill();
+    }
+    if (e >= EXIT) { handoff(); return; }
+    raf = requestAnimationFrame(render);
+  }
+  let raf = 0;
+
+  // ---- controller ----
+  let gen = 0, lastMs = 900, timers = [], tl = null;
+  const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+  const status = (s) => (statusEl.textContent = s);
+  const fmt = (ms) => (ms / 1000).toLocaleString("cs-CZ", { maximumFractionDigits: 1 }) + " s";
+
+  function reset() {
+    gen++;
+    timers.forEach(clearTimeout); timers = [];
+    cancelAnimationFrame(raf);
+    if (tl) tl.kill();
+    gsap.globalTimeline.getChildren().forEach((c) => c.kill());
+    S.phase = "off";
+    gsap.set([flyer, ".hl .ln > span", ".shot", ".nav-r", ".nav-logo", loader], { clearProps: "all" });
+    page.classList.add("reveal-wait");
+    loader.className = "";
+    flyer.style.display = "none";
+    scrollTo(0, 0);
+  }
+
+  function start(ms) {
+    lastMs = ms;
+    reset();
+    const my = gen;
+    status("načítání " + fmt(ms) + "…");
+    const loaded = new Promise((r) => later(r, ms)); // simulated page load
+    if (reduce.matches) return startReduced(ms, my, loaded);
+    layout();
+    S.phase = "intro"; S.t0 = performance.now();
+    raf = requestAnimationFrame(render);
+    const minShown = new Promise((r) => later(r, (INTRO + .05) * 1000)); // never exit mid-intro
+    loaded.then(() => my === gen && status("načteno, odchod"));
+    Promise.all([loaded, minShown]).then(() => {
+      if (my !== gen) return;
+      S.phase = "exit"; S.exitT = performance.now();
+    });
+  }
+
+  function flyerToCentre() {
+    const size = 320 * K;
+    flyer.style.display = "block";
+    flyer.style.width = flyer.style.height = size + "px";
+    gsap.set(flyer, { x: CX - size / 2, y: CY - size / 2, scale: 1, opacity: 1 });
+    return size;
+  }
+
+  function handoff() {
+    S.phase = "done";
+    const size = flyerToCentre();
+    loader.classList.add("is-gone");
+    const r = navLogo.getBoundingClientRect();
+    tl = gsap.timeline({ onComplete: () => { flyer.style.display = "none"; status("hotovo · " + fmt(lastMs)); } });
+    tl.to(flyer, { x: r.left, y: r.top, scale: r.width / size, duration: .7, ease: "power3.inOut" }, 0)
+      .set(".nav-logo", { opacity: 1 }, ">")
+      .to(".hl .ln > span", { y: 0, duration: .9, stagger: .07, ease: "expo.out" }, .2)
+      .to(".shot", { clipPath: "inset(0% 0 0 0)", duration: .8, stagger: .06, ease: "expo.out" }, .3)
+      .to(".nav-r", { opacity: 1, duration: .5 }, .4)
+      .add(() => page.classList.remove("reveal-wait"));
+  }
+
+  function startReduced(ms, my, loaded) {
+    // calm alternative: static logo fades in on paper, then everything cross-fades
+    layout();
+    loader.className = "rm";
+    flyerToCentre();
+    gsap.fromTo(flyer, { opacity: 0 }, { opacity: 1, duration: .3 });
+    const minShown = new Promise((r) => later(r, 500));
+    Promise.all([loaded, minShown]).then(() => {
+      if (my !== gen) return;
+      page.classList.remove("reveal-wait");
+      gsap.set([".hl .ln > span", ".shot", ".nav-r", ".nav-logo"], { y: 0, clipPath: "inset(0% 0 0 0)", opacity: 1 });
+      tl = gsap.timeline({ onComplete: () => { loader.classList.add("is-gone"); flyer.style.display = "none"; status("hotovo · " + fmt(ms)); } });
+      tl.to([loader, flyer], { opacity: 0, duration: .4, ease: "power1.out" });
+    });
+  }
+
+  document.querySelectorAll(".ctl button").forEach((b) =>
+    b.addEventListener("click", () => start(b.dataset.ms === "replay" ? lastMs : +b.dataset.ms)));
+  let rz;
+  addEventListener("resize", () => {
+    clearTimeout(rz);
+    rz = setTimeout(() => { if (S.phase === "intro" || S.phase === "exit") layout(); }, 120);
+  });
+
+  start(900);
+})();
+</script>
+</body>
+</html>

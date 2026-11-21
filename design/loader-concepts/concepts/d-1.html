@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rejstřík 74</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Stack+Sans+Notch:wght@600&family=Stack+Sans+Text:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #efeeea;
+    --ink: #111111;
+    --mute: #8a8984;
+    --hair: rgba(17, 17, 17, .16);
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "Stack Sans Text", "Helvetica Neue", Arial, sans-serif;
+    --display: "Stack Sans Notch", "Stack Sans Text", "Helvetica Neue", Arial, sans-serif;
+    --gut: clamp(16px, 2.4vw, 32px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  body.locked { overflow: hidden; }
+
+  /* ---------- placeholder page ---------- */
+  .site { min-height: 100%; }
+  .site-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px var(--gut);
+    font-size: 13px; letter-spacing: .01em;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand svg { width: 30px; height: 34px; display: block; }
+  .site-head nav { display: flex; gap: 22px; color: var(--mute); }
+  .hero { padding: clamp(18px, 5vh, 64px) var(--gut) 0; }
+  .hero h1 {
+    font-family: var(--display); font-weight: 600;
+    font-size: clamp(64px, 15.5vw, 236px);
+    line-height: .86; letter-spacing: -.035em;
+  }
+  .hero h1 span { display: block; overflow: hidden; }
+  .hero h1 span i { display: block; font-style: normal; }
+  .hero .sig { margin-top: 14px; font-size: 13px; color: var(--mute); font-family: var(--mono); }
+  .photos {
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: start;
+    padding: clamp(20px, 5vh, 56px) var(--gut) 80px;
+  }
+  .photos div { background: #c9c7c1; aspect-ratio: 4 / 5; }
+  .photos div:nth-child(2) { background: #b4b2ac; aspect-ratio: 4 / 6; }
+  .photos div:nth-child(3) { background: #d6d4ce; }
+  .photos div:nth-child(4) { background: #a9a7a1; aspect-ratio: 3 / 4; }
+  @media (max-width: 600px) {
+    .photos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .site-head nav { gap: 14px; }
+  }
+
+  /* ---------- loader ---------- */
+  .loader { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+  .loader canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .loader .ui { position: absolute; inset: 0; }
+  .corner {
+    position: absolute; font-size: 12px; line-height: 1.35; letter-spacing: .01em;
+  }
+  .corner.tl { top: 14px; left: var(--gut); }
+  .corner.tr { top: 14px; right: var(--gut); font-family: var(--mono); color: var(--mute); }
+  .corner.bl { bottom: 16px; left: var(--gut); font-family: var(--mono); font-size: 11px; color: var(--mute); }
+  .log li { list-style: none; white-space: nowrap; }
+  .log li b { font-weight: 500; color: var(--ink); }
+  .stage {
+    position: absolute; left: 50%; top: 47%;
+    transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .mark { width: auto; height: min(46vh, 300px); aspect-ratio: 208 / 236; display: block; overflow: visible; }
+  .mark .ghost {
+    fill: none; stroke: var(--hair); stroke-width: .6px; vector-effect: non-scaling-stroke;
+  }
+  .mark .ghost.cursor { stroke: var(--ink); stroke-width: 1px; }
+  .mark .tile { opacity: 0; }
+  .counter {
+    margin-top: clamp(14px, 3vh, 28px);
+    font-family: var(--mono); font-size: 12px; letter-spacing: .04em;
+    font-variant-numeric: tabular-nums;
+    display: flex; gap: 14px; color: var(--mute);
+  }
+  .counter b { color: var(--ink); font-weight: 500; }
+
+  /* ---------- demo controls ---------- */
+  .controls {
+    position: fixed; right: var(--gut); bottom: 14px; z-index: 20;
+    display: flex; gap: 4px; padding: 4px;
+    background: rgba(17, 17, 17, .88); border-radius: 999px;
+    font-family: var(--mono); font-size: 11px;
+  }
+  .controls button {
+    appearance: none; border: 0; background: transparent; color: #eee;
+    font: inherit; padding: 6px 10px; border-radius: 999px; cursor: pointer;
+  }
+  .controls button:hover, .controls button:focus-visible { background: #333; outline: none; }
+  .controls button[aria-pressed="true"] { background: #efeeea; color: #111; }
+  @media (max-width: 480px) {
+    .controls { left: 16px; right: 16px; justify-content: space-between; }
+    .corner.bl { bottom: 58px; }
+  }
+</style>
+</head>
+<body class="locked">
+
+<div class="site" id="site">
+  <header class="site-head">
+    <div class="brand"><svg id="headMark" viewBox="56 28 208 236" aria-hidden="true"></svg><span>Martin Růžek</span></div>
+    <nav><span>Práce</span><span>Kontakt</span></nav>
+  </header>
+  <main class="hero">
+    <h1><span><i>Martin</i></span><span><i>Růžek</i></span></h1>
+    <p class="sig">ruzek.jpg</p>
+  </main>
+  <section class="photos" aria-hidden="true"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></section>
+</div>
+
+<div class="loader" id="loader" aria-live="polite">
+  <canvas id="veil"></canvas>
+  <div class="ui" id="ui">
+    <div class="corner tl">Martin Růžek</div>
+    <div class="corner tr">ruzek.jpg</div>
+    <ul class="corner bl log" id="log"></ul>
+    <div class="stage">
+      <svg class="mark" id="mark" viewBox="56 28 208 236" role="img" aria-label="Načítání"></svg>
+      <div class="counter"><span><b id="count">000</b>/074</span><span id="clock">0.00 s</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls" role="group" aria-label="Ovládání ukázky">
+  <button id="bReplay" type="button">Znovu</button>
+  <button id="bFast" type="button" aria-pressed="true">Rychle</button>
+  <button id="bSlow" type="button" aria-pressed="false">Pomalu</button>
+  <button id="bNav" type="button">Přechod</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+<script>
+(() => {
+  /* ---------- logo data: [face, i, j, grey] — identical to prostorovy-roh-seda.svg ---------- */
+  const GREYS = ['#181818', '#383838', '#585858', '#787878', '#989898', '#b8b8b8', '#d0d0d0'];
+  const FACES = [
+    'matrix(13.8564 -8 -13.8564 -8 160 146)',  // top
+    'matrix(-13.8564 -8 0 16 160 146)',        // left
+    'matrix(0 16 13.8564 -8 160 146)'          // right
+  ];
+  const TILES = [[0,0,0,0],[0,1,0,2],[0,2,0,4],[0,3,0,3],[0,4,0,5],[0,0,1,1],[0,1,1,2],[0,3,1,3],[0,5,1,4],[0,0,2,2],[0,1,2,3],[0,2,2,2],[0,3,2,4],[0,4,2,3],[0,6,2,6],[0,1,3,4],[0,3,3,4],[0,0,4,4],[0,1,4,3],[0,2,4,4],[0,4,4,4],[0,1,5,4],[0,5,5,6],[0,2,6,6],[0,6,6,5],[1,0,0,0],[1,1,0,0],[1,3,0,3],[1,5,0,4],[1,0,1,2],[1,1,1,0],[1,2,1,2],[1,3,1,1],[1,4,1,3],[1,6,1,4],[1,1,2,1],[1,2,2,2],[1,3,2,1],[1,0,3,1],[1,1,3,2],[1,2,3,3],[1,3,3,2],[1,4,3,4],[1,1,4,3],[1,3,4,3],[1,5,4,3],[1,0,5,3],[1,2,5,3],[1,4,5,2],[1,6,5,6],[2,0,0,0],[2,1,0,2],[2,2,0,1],[2,3,0,3],[2,4,0,5],[2,6,0,6],[2,1,1,2],[2,2,1,1],[2,3,1,3],[2,0,2,2],[2,1,2,3],[2,2,2,2],[2,3,2,4],[2,4,2,3],[2,1,3,1],[2,3,3,4],[2,5,3,5],[2,0,4,4],[2,2,4,4],[2,4,4,3],[2,6,4,4],[2,3,5,3],[2,0,6,4],[2,4,6,6]];
+  const N = TILES.length; // 74
+  const NS = 'http://www.w3.org/2000/svg';
+  const cell = (i, j) => `M${i + .105} ${j + .105}h.79v.79h-.79z`;
+
+  function buildLogo(svg, { ghosts = false } = {}) {
+    const groups = FACES.map(m => {
+      const g = document.createElementNS(NS, 'g');
+      g.setAttribute('transform', m);
+      svg.appendChild(g);
+      return g;
+    });
+    const ghostMap = new Map();
+    if (ghosts) {
+      FACES.forEach((_, f) => {
+        for (let j = 0; j < 7; j++) for (let i = 0; i < 7; i++) {
+          const p = document.createElementNS(NS, 'path');
+          p.setAttribute('d', cell(i, j));
+          p.setAttribute('class', 'ghost');
+          groups[f].appendChild(p);
+          ghostMap.set(`${f}-${i}-${j}`, p);
+        }
+      });
+    }
+    const tiles = TILES.map(([f, i, j, g]) => {
+      const p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', cell(i, j));
+      p.setAttribute('fill', GREYS[g]);
+      groups[f].appendChild(p);
+      return { el: p, f, i, j, g, ghost: ghostMap.get(`${f}-${i}-${j}`) };
+    });
+    return { tiles, ghostMap };
+  }
+
+  buildLogo(document.getElementById('headMark'));
+  const mark = buildLogo(document.getElementById('mark'), { ghosts: true });
+  mark.tiles.forEach(t => t.el.classList.add('tile'));
+  const otherGhosts = [...mark.ghostMap.entries()]
+    .filter(([k]) => !mark.tiles.some(t => `${t.f}-${t.i}-${t.j}` === k))
+    .map(([, el]) => el);
+
+  /* Fill order = the logo's own density: from the shared corner outward (i+j),
+     darker tiles first within a ring, faces interleaved. The dither falls off
+     exactly the way the progress grows. */
+  const ORDER = [...mark.tiles].sort((a, b) =>
+    (a.i + a.j) - (b.i + b.j) || a.g - b.g || a.f - b.f);
+
+  /* ---------- elements ---------- */
+  const $ = id => document.getElementById(id);
+  const loader = $('loader'), ui = $('ui'), canvas = $('veil'), ctx = canvas.getContext('2d');
+  const countEl = $('count'), clockEl = $('clock'), logEl = $('log');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- ordered-dither veil (canvas) ---------- */
+  const BAYER = [
+    [0,48,12,60,3,51,15,63],[32,16,44,28,35,19,47,31],[8,56,4,52,11,59,7,55],[40,24,36,20,43,27,39,23],
+    [2,50,14,62,1,49,13,61],[34,18,46,30,33,17,45,29],[10,58,6,54,9,57,5,53],[42,26,38,22,41,25,37,21]
+  ];
+  let W = 0, H = 0, CELL = 12, cover = 1; // cover: 1 = fully opaque veil, 0 = gone
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    CELL = W < 600 ? 10 : 12;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawVeil(cover);
+  }
+  // A cell is opaque while its threshold is below `c`. Threshold mixes the
+  // Bayer value with vertical position, so the dissolve sweeps top -> bottom.
+  function drawVeil(c) {
+    cover = c;
+    ctx.clearRect(0, 0, W, H);
+    if (c <= 0) return;
+    ctx.fillStyle = '#efeeea';
+    if (c >= 1) { ctx.fillRect(0, 0, W, H); return; }
+    const cols = Math.ceil(W / CELL), rows = Math.ceil(H / CELL);
+    for (let y = 0; y < rows; y++) {
+      const v = 1 - y / rows; // top cells reveal first
+      for (let x = 0; x < cols; x++) {
+        const th = .55 * (BAYER[y & 7][x & 7] / 64) + .45 * v;
+        if (th < c) ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+      }
+    }
+  }
+  addEventListener('resize', resize);
+
+  /* ---------- simulated resources (stand-in for fonts + hero decode + images) ---------- */
+  const PROFILES = {
+    fast: [['písmo', 120], ['úvodní fotka', 260], ['fotky 1–4', 330], ['fotky 5–8', 380]],
+    slow: [['písmo', 600], ['úvodní fotka', 2300], ['fotky 1–4', 3400], ['fotky 5–8', 5000]]
+  };
+  let profile = 'fast';
+
+  /* ---------- loader run ---------- */
+  let run = 0;
+  function start({ transition = false } = {}) {
+    const id = ++run;
+    gsap.globalTimeline.getChildren().forEach(t => t.kill());
+    gsap.ticker.remove(tick);
+    document.body.classList.add('locked');
+    loader.style.display = '';
+    ui.style.opacity = 1;
+    $('mark').style.opacity = 1;
+    mark.tiles.forEach(t => { t.el.style.opacity = 0; t.ghost.classList.remove('cursor'); });
+    gsap.set([...mark.ghostMap.values()], { opacity: 1 });
+    gsap.set('.corner, .counter', { opacity: 1 });
+    gsap.set(loader, { opacity: 1 });
+    gsap.set('.hero h1 i, .hero .sig, .photos div', { yPercent: 0, y: 0, opacity: 1 });
+    countEl.textContent = '000'; clockEl.textContent = '0.00 s';
+
+    const res = PROFILES[profile].map(([label, at]) => ({ label, at, done: false }));
+    logEl.innerHTML = res.map(r => `<li data-l="${r.label}">${r.label} <span>···</span></li>`).join('');
+
+    let lit = 0, shown = 0, t0 = 0, complete = false;
+    const MAX_RATE = N / (transition ? .36 : .72);          // 74 tiles in no less than ~0.72 s: the minimum display time
+    let last = 0;
+
+    if (reduce) {
+      // Calm version: static logo, text-only progress, plain fade.
+      drawVeil(1);
+      mark.tiles.forEach(t => t.el.style.opacity = 1);
+      otherGhosts.forEach(g => g.style.opacity = 0);
+    } else if (transition) {
+      // Page-to-page: dither the current page out first, then run the counter.
+      gsap.set(ui, { opacity: 0 });
+      drawVeil(0);
+      const o = { c: 0 };
+      gsap.to(o, { c: 1, duration: .45, ease: 'power1.in', onUpdate: () => drawVeil(o.c),
+        onComplete: () => { if (id === run) { gsap.to(ui, { opacity: 1, duration: .15 }); begin(); } } });
+      return;
+    } else {
+      drawVeil(1);
+    }
+    begin();
+
+    function begin() {
+      t0 = performance.now(); last = t0;
+      gsap.ticker.add(tick);
+    }
+
+    function tick() {
+      if (id !== run) return gsap.ticker.remove(tick);
+      const now = performance.now(), el = now - t0, dt = (now - last) / 1000; last = now;
+      // real progress from resources
+      let doneCount = 0;
+      res.forEach(r => {
+        if (!r.done && el >= r.at) {
+          r.done = true;
+          const li = logEl.querySelector(`[data-l="${r.label}"] span`);
+          if (li) { li.textContent = '✓'; li.parentElement.innerHTML = `<b>${r.label}</b> ✓`; }
+        }
+        if (r.done) doneCount++;
+      });
+      const real = doneCount / res.length;
+      // Honest mapping: tiles only light for real progress, never faked,
+      // but they are rate-limited so a fast load still reads as a gesture.
+      const target = Math.round(real * N);
+      lit = Math.min(target, lit + MAX_RATE * dt);
+      const n = Math.floor(lit);
+      if (!reduce) {
+        while (shown < n) {
+          const t = ORDER[shown++];
+          t.ghost.classList.remove('cursor');
+          gsap.fromTo(t.el, { opacity: 0 }, { opacity: 1, duration: .22, ease: 'power1.out' });
+        }
+        // Waiting cursor: the next tile outline blinks while nothing arrives.
+        if (shown < N) {
+          const nxt = ORDER[shown].ghost;
+          nxt.classList.toggle('cursor', Math.floor(el / 380) % 2 === 0 && target <= shown);
+        }
+      } else shown = n;
+      countEl.textContent = String(shown).padStart(3, '0');
+      clockEl.textContent = (el / 1000).toFixed(2) + ' s';
+      if (!complete && shown >= N && real >= 1) { complete = true; gsap.ticker.remove(tick); finish(id); }
+    }
+  }
+
+  function finish(id) {
+    if (reduce) {
+      gsap.to(loader, { opacity: 0, duration: .3, delay: .15, onComplete: done });
+      return;
+    }
+    const tl = gsap.timeline({ onComplete: done });
+    // 1) "the rest of the squares simply disappear": the construction grid goes, the logo stays
+    tl.to([...mark.ghostMap.values()], { opacity: 0, duration: .25, stagger: { each: .0015, from: 'end' } }, 0)
+      .to('.corner', { opacity: 0, duration: .25 }, 0)
+      .to('.counter', { opacity: 0, duration: .25 }, .1);
+    // 2) hold the finished logo very briefly
+    // 3) ordered-dither dissolve of the veil + logo tiles leave by their own dither rank
+    const o = { c: 1 };
+    tl.to(o, { c: 0, duration: .75, ease: 'power1.inOut', onUpdate: () => drawVeil(o.c) }, .45)
+      .to(ORDER.map(t => t.el).reverse(), { opacity: 0, duration: .12, stagger: .005 }, .45)
+      .from('.hero h1 i', { yPercent: 100, duration: .8, ease: 'expo.out', stagger: .07 }, .55)
+      .from('.hero .sig, .photos div', { y: 16, opacity: 0, duration: .6, ease: 'power2.out', stagger: .03 }, .75);
+  }
+
+  function done() {
+    loader.style.display = 'none';
+    loader.style.opacity = '';
+    $('mark').style.opacity = '';
+    gsap.set('.counter', { opacity: 1 });
+    document.body.classList.remove('locked');
+  }
+
+  /* ---------- controls ---------- */
+  const setProfile = p => {
+    profile = p;
+    $('bFast').setAttribute('aria-pressed', p === 'fast');
+    $('bSlow').setAttribute('aria-pressed', p === 'slow');
+  };
+  $('bReplay').onclick = () => start();
+  $('bFast').onclick = () => { setProfile('fast'); start(); };
+  $('bSlow').onclick = () => { setProfile('slow'); start(); };
+  $('bNav').onclick = () => start({ transition: true });
+
+  resize();
+  start();
+})();
+</script>
+</body>
+</html>
