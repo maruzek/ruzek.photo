@@ -3,6 +3,13 @@
 // until he signs the translation off (concept.md, kap. 5). See cs.ts for the string conventions.
 import type { Dictionary } from './cs';
 
+// Same shared card as in cs.ts: one card for the short shoot and the portrait.
+const shortAndPortraitCard = {
+  title: 'Portrait and short shoot',
+  text: 'Portraits for a profile, a team or speakers. A short shoot for smaller events.',
+  priceLabel: 'Portrait / short shoot',
+} as const;
+
 export const en = {
   meta: {
     title: 'Martin Růžek · event and sports photographer, Prague and Karlovy Vary',
@@ -31,8 +38,7 @@ export const en = {
     inquiry: 'Request a shoot →',
   },
   lang: {
-    short: 'CS',
-    label: 'Switch to Czech',
+    other: 'Čeština',
   },
   hero: {
     kicker: 'Event and sports photographer',
@@ -98,16 +104,13 @@ export const en = {
         priceLabel: 'First hour',
         priceNote: 'each additional hour {price}',
       },
-      sport: {
+      match: {
         title: 'Sport',
         text: 'Football, floorball, tournaments and races. For clubs, teams and organisers.',
         priceLabel: 'Match',
       },
-      portrait: {
-        title: 'Portrait and short shoot',
-        text: 'Portraits for a profile, a team or speakers. A short shoot for smaller events.',
-        priceLabel: 'Portrait / short shoot',
-      },
+      short: shortAndPortraitCard,
+      portrait: shortAndPortraitCard,
     },
     addons: {
       sameDay: { label: 'Same-day selection for social media', note: 'Selected photos on the day of the event' },
@@ -141,7 +144,7 @@ export const en = {
   about: {
     eyebrow: 'About me',
     title: 'I’m Martin. I *photograph* people in motion.',
-    leadStrong: 'I am an event and sports photographer from Prague and Karlovy Vary.',
+    leadStrong: 'I am an event and sports photographer. I shoot in Prague and also work in Karlovy Vary.',
     lead: 'Most often I photograph corporate events, conferences, university and association events, balls and parties. Sport is my passion, portraits are a supplement.',
     speed: 'My strength is speed. I send a selection of photos for social media the same day, and I also shoot vertical videos.',
     storyTodo: 'Martin’s own story, how he got into photography',
@@ -201,7 +204,6 @@ export const en = {
       reset: 'Write another',
     },
     privacy: {
-      intro: 'I will use the details from the form only to reply to your inquiry.',
       acknowledge: 'By sending it you acknowledge the',
       link: 'privacy policy',
     },

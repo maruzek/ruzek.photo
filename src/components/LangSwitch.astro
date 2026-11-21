@@ -5,12 +5,14 @@ import { alternates, t, type Locale, type RouteKey } from '../i18n';
 interface Props {
   locale: Locale;
   route: RouteKey;
+  /** Case-study slug, kept in both languages. */
+  slug?: string;
 }
 
-const { locale, route } = Astro.props;
+const { locale, route, slug } = Astro.props;
 const other: Locale = locale === 'cs' ? 'en' : 'cs';
-const href = alternates(route)[other];
+const href = alternates(route, slug)[other];
 const d = t(locale).lang;
 ---
 
-<a href={href} hreflang={other} lang={other} aria-label={d.label} data-umami-event="lang_switch">{d.short}</a>
+<a href={href} hreflang={other} lang={other} data-umami-event="lang_switch">{d.other}</a>

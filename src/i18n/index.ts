@@ -13,7 +13,7 @@ const dictionaries: Record<Locale, Dictionary> = { cs, en };
 const routes: Record<RouteKey, Record<Locale, string>> = {
   home: { cs: '/', en: '/en/' },
   privacy: { cs: '/zasady-ochrany-osobnich-udaju/', en: '/en/privacy/' },
-  // Index of the case-study section; detail pages are `${path}${slug}/`.
+  // Only detail pages exist (concept.md, kap. 3): the path is `${prefix}${slug}/` and needs a slug.
   caseStudy: { cs: '/pripadove-studie/', en: '/en/case-studies/' },
 };
 
@@ -21,12 +21,16 @@ export function t(locale: Locale): Dictionary {
   return dictionaries[locale];
 }
 
-export function localePath(locale: Locale, route: RouteKey): string {
-  return routes[route][locale];
+/** `slug` is required for `caseStudy` (there is no index page) and ignored for the other routes. */
+export function localePath(locale: Locale, route: RouteKey, slug?: string): string {
+  const base = routes[route][locale];
+  if (route !== 'caseStudy') return base;
+  if (!slug) throw new Error('Route caseStudy needs a slug');
+  return `${base}${slug}/`;
 }
 
-export function alternates(route: RouteKey): { cs: string; en: string } {
-  return { cs: routes[route].cs, en: routes[route].en };
+export function alternates(route: RouteKey, slug?: string): { cs: string; en: string } {
+  return { cs: localePath('cs', route, slug), en: localePath('en', route, slug) };
 }
 
 /** Replaces `{name}` placeholders in a dictionary string. A missing value is a bug, so it throws. */

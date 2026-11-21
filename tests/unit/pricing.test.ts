@@ -91,6 +91,7 @@ describe('config matches docs/brief.md', () => {
     expect(d('short')).toEqual({
       photos: { from: 15, to: 25 },
       turnaround: { value: { from: 2, to: 3 }, unit: 'days' },
+      durationMax: 60, // brief.md: "do 1 h", no minimum
     });
     expect(d('match')).toEqual({
       photos: { from: 30, to: 50 },

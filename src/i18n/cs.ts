@@ -13,6 +13,13 @@
 /** Widens string literals to `string` but keeps object keys and tuple lengths, so `en` must have the same shape. */
 type Widen<T> = T extends string ? string : { readonly [K in keyof T]: Widen<T[K]> };
 
+// The prototype shows one card for the short shoot and the portrait; both pricing ids point to it.
+const shortAndPortraitCard = {
+  title: 'Portrét a\u00A0krátké focení',
+  text: 'Portréty pro profil, tým nebo řečníky. Krátké focení na menší akce.',
+  priceLabel: 'Portrét / krátké focení',
+} as const;
+
 export const cs = {
   meta: {
     title: 'Martin Růžek · fotograf akcí a sportu, Praha a Karlovy Vary',
@@ -42,8 +49,8 @@ export const cs = {
     inquiry: 'Poptat focení →',
   },
   lang: {
-    short: 'EN',
-    label: 'Přepnout na angličtinu',
+    // Name of the other language, written in that language (the link carries its `lang`).
+    other: 'English',
   },
   hero: {
     kicker: 'Fotograf akcí a\u00A0sportu',
@@ -109,16 +116,13 @@ export const cs = {
         priceLabel: 'První hodina',
         priceNote: 'každá další {price}',
       },
-      sport: {
+      match: {
         title: 'Sport',
         text: 'Fotbal, florbal, turnaje a\u00A0závody. Pro kluby, týmy i\u00A0pořadatele.',
         priceLabel: 'Zápas',
       },
-      portrait: {
-        title: 'Portrét a\u00A0krátké focení',
-        text: 'Portréty pro profil, tým nebo řečníky. Krátké focení na menší akce.',
-        priceLabel: 'Portrét / krátké focení',
-      },
+      short: shortAndPortraitCard,
+      portrait: shortAndPortraitCard,
     },
     addons: {
       sameDay: { label: 'Výběr na sítě týž den', note: 'Vybrané fotky ještě v\u00A0den akce' },
@@ -152,7 +156,7 @@ export const cs = {
   about: {
     eyebrow: 'O\u00A0mně',
     title: 'Jsem Martin. *Fotím* lidi v\u00A0pohybu.',
-    leadStrong: 'Jsem fotograf akcí a\u00A0sportu z\u00A0Prahy a\u00A0Karlových Varů.',
+    leadStrong: 'Jsem fotograf akcí a\u00A0sportu. Fotím v\u00A0Praze a\u00A0působím i\u00A0v\u00A0Karlových Varech.',
     lead: 'Nejčastěji fotím firemní akce, konference, univerzitní a\u00A0spolkové akce, plesy a\u00A0večírky. Sport je moje vášeň, portréty doplněk.',
     speed: 'Moje silná stránka je rychlost. Výběr fotek na sítě posílám ještě týž den a\u00A0točím i\u00A0vertikální videa.',
     storyTodo: 'Martinův vlastní příběh, jak se k focení dostal',
@@ -212,7 +216,6 @@ export const cs = {
       reset: 'Napsat další',
     },
     privacy: {
-      intro: 'Údaje z\u00A0formuláře použiju jen k\u00A0odpovědi na poptávku.',
       acknowledge: 'Odesláním berete na vědomí',
       link: 'zásady ochrany osobních údajů',
     },

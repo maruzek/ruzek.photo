@@ -29,6 +29,8 @@ export interface Service {
     turnaround?: { value: Range; unit: 'days' | 'hours' };
     /** Length of the shoot in minutes. */
     durationMin?: Range;
+    /** Upper limit of the shoot in minutes ("do 1 h"), when brief.md gives no minimum. */
+    durationMax?: number;
   };
 }
 
@@ -48,7 +50,11 @@ export const services: readonly Service[] = [
   {
     id: 'short',
     pricing: { kind: 'flat', price: { from: 1500, to: 1500 }, unit: 'session' },
-    deliverables: { photos: { from: 15, to: 25 }, turnaround: { value: { from: 2, to: 3 }, unit: 'days' } },
+    deliverables: {
+      photos: { from: 15, to: 25 },
+      turnaround: { value: { from: 2, to: 3 }, unit: 'days' },
+      durationMax: 60,
+    },
   },
   {
     id: 'match',

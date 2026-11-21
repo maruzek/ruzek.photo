@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { cs } from '@/i18n/cs';
 import { en } from '@/i18n/en';
 import { localePath, alternates, t, fill } from '@/i18n';
+import { SERVICE_IDS } from '@/config/pricing';
 
 // Dotted paths of every leaf (strings inside arrays get their index as a path segment).
 const keys = (o: object, p = ''): string[] =>
@@ -26,7 +27,28 @@ describe('i18n', () => {
     expect(localePath('cs', 'privacy')).toBe('/zasady-ochrany-osobnich-udaju/');
     expect(localePath('en', 'privacy')).toBe('/en/privacy/');
     expect(alternates('home')).toEqual({ cs: '/', en: '/en/' });
-    expect(alternates('caseStudy')).toEqual({ cs: '/pripadove-studie/', en: '/en/case-studies/' });
+    expect(alternates('caseStudy', 'turnaj')).toEqual({
+      cs: '/pripadove-studie/turnaj/',
+      en: '/en/case-studies/turnaj/',
+    });
+    expect(localePath('en', 'caseStudy', 'turnaj')).toBe('/en/case-studies/turnaj/');
+  });
+  it('has no case-study index page, so a slug is required', () => {
+    expect(() => alternates('caseStudy')).toThrow(/slug/);
+  });
+  it('every pricing service resolves to a card in both languages', () => {
+    for (const d of [cs, en])
+      for (const id of SERVICE_IDS) {
+        expect(d.services.cards[id].title, id).toBeTruthy();
+        expect(d.services.cards[id].text, id).toBeTruthy();
+      }
+  });
+  it('the language switch names the other language in that language', () => {
+    expect(cs.lang.other).toBe('English');
+    expect(en.lang.other).toBe('Čeština');
+  });
+  it('the form has only the acknowledgement sentence about privacy (docs/decisions.md)', () => {
+    for (const d of [cs, en]) expect(Object.keys(d.inquiry.privacy).sort()).toEqual(['acknowledge', 'link']);
   });
   it('t() returns the dictionary of the locale', () => {
     expect(t('cs')).toBe(cs);
