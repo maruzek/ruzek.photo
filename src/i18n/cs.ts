@@ -44,7 +44,7 @@ export const cs = {
     homeLabel: '{name}, úvod',
     logoLabel: 'Logo {name}',
     work: 'Práce',
-    services: 'Služby a ceny',
+    services: 'Služby a\u00A0ceny',
     about: 'O\u00A0mně',
     inquiry: 'Poptat focení →',
   },
@@ -100,13 +100,13 @@ export const cs = {
     eyebrow: 'Vybraná práce',
     title: 'Okamžiky z\u00A0akcí, *ne* aranžmá.',
     lead: 'Ukázky z\u00A0akcí a\u00A0sportu. Klikněte na fotku a\u00A0otevře se celá.',
-    foot: 'Klienti dostanou všechny hotové fotky z\u00A0akce v\u00A0soukromé online galerii. Na webu jsou jen fotky se souhlasem klienta nebo pořadatele.',
+    foot: 'Fotky z\u00A0akce předávám klientům v\u00A0soukromé online galerii. Na webu jsou jen fotky se souhlasem klienta nebo pořadatele.',
     footLink: 'Chci podobné fotky',
   },
   services: {
-    eyebrow: 'Služby a ceny',
+    eyebrow: 'Služby a\u00A0ceny',
     title: 'Co fotím a\u00A0*za kolik.*',
-    lead: 'Ceny jsou orientační, uvádím je od. Nejsem plátce DPH. Přesnou nabídku pošlu podle délky a\u00A0typu akce.',
+    lead: 'V\u00A0ceníku uvádím orientační ceny „od“. Nejsem plátce DPH. Přesnou nabídku pošlu podle délky a\u00A0typu akce.',
     calcLink: 'Spočítat cenu',
     cards: {
       event: {
@@ -137,7 +137,7 @@ export const cs = {
       {
         no: '01 · Během akce',
         title: 'Fotím, co se děje',
-        text: 'Řečníci, hosté, atmosféra, detaily. Na sportu pohyb a\u00A0emoce.',
+        text: 'Řečníci, hosté, atmosféra, detaily. Na sportovních akcích pohyb a\u00A0emoce.',
       },
       {
         no: '02 · Hned po akci',
@@ -159,7 +159,7 @@ export const cs = {
     leadStrong: 'Jsem fotograf akcí a\u00A0sportu. Fotím v\u00A0Praze a\u00A0působím i\u00A0v\u00A0Karlových Varech.',
     lead: 'Nejčastěji fotím firemní akce, konference, univerzitní a\u00A0spolkové akce, plesy a\u00A0večírky. Sport je moje vášeň, portréty jsou doplněk.',
     speed: 'Moje silná stránka je rychlost. Výběr fotek na sítě posílám ještě týž den a\u00A0točím i\u00A0vertikální videa.',
-    storyTodo: 'Martinův vlastní příběh, jak se k focení dostal',
+    storyTodo: 'Martinův vlastní příběh, jak se k\u00A0focení dostal',
     portraitAlt: 'Zástupný portrét, místo pro Martinovu fotku',
     portraitTodo: 'Martinův portrét',
     facts: {
@@ -212,8 +212,8 @@ export const cs = {
       },
       send: 'Odeslat poptávku',
       sending: 'Odesílám…',
-      done: 'Díky! Poptávka je odeslaná. Potvrzení vám přijde na e-mail. Odpovím s\u00A0cenou a\u00A0tím, jestli mám volno.',
-      reset: 'Odeslat další poptávku',
+      done: 'Díky! Poptávka je odeslaná. Potvrzení vám přijde na e-mail.',
+      reset: 'Napsat další poptávku',
     },
     privacy: {
       acknowledge: 'Odesláním berete na vědomí',
@@ -221,7 +221,7 @@ export const cs = {
     },
   },
   footer: {
-    lead: 'Máte akci nebo zápas? Napište mi, ať je máte na\u00A0fotkách.',
+    lead: 'Máte akci nebo zápas? Napište mi, co chcete nafotit.',
     cta: 'Poptat focení',
     shoot: { label: 'Fotím', value: 'Akce, sport, portréty' },
     where: { label: 'Kde', value: 'Praha · Karlovy Vary' },

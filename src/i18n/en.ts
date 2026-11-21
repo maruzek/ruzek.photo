@@ -88,13 +88,13 @@ export const en = {
     eyebrow: 'Selected work',
     title: 'Moments from events, *not* arrangements.',
     lead: 'Samples from events and sport. Click a photo to open it in full.',
-    foot: 'Clients receive all the finished photos from an event in a private online gallery. The website only shows photos with the consent of the client or organiser.',
+    foot: 'I deliver the photos from an event to clients in a private online gallery. The website only shows photos with the consent of the client or organiser.',
     footLink: 'I want photos like these',
   },
   services: {
     eyebrow: 'Services and prices',
     title: 'What I shoot and *for how much.*',
-    lead: 'Prices are indicative and shown as “from”. I am not a VAT payer. I will send an exact quote based on the length and type of the event.',
+    lead: 'The prices shown are indicative starting prices. I am not a VAT payer. I will send an exact quote based on the length and type of the event.',
     calcLink: 'Calculate the price',
     cards: {
       event: {
@@ -125,7 +125,7 @@ export const en = {
       {
         no: '01 · During the event',
         title: 'I shoot what happens',
-        text: 'Speakers, guests, atmosphere, details. At sport, movement and emotion.',
+        text: 'Speakers, guests, atmosphere, details. At sporting events, movement and emotion.',
       },
       {
         no: '02 · Right after the event',
@@ -200,8 +200,8 @@ export const en = {
       },
       send: 'Send inquiry',
       sending: 'Sending…',
-      done: 'Thanks! The inquiry has been sent. A confirmation will arrive at your e-mail. I will reply with a price and whether I am free.',
-      reset: 'Send another inquiry',
+      done: 'Thanks! The inquiry has been sent. A confirmation will arrive at your e-mail.',
+      reset: 'Write another inquiry',
     },
     privacy: {
       acknowledge: 'By sending it you acknowledge the',
@@ -209,7 +209,7 @@ export const en = {
     },
   },
   footer: {
-    lead: 'Have an event or a match? Write to me and get them on photos.',
+    lead: 'Have an event or a match? Tell me what you’d like photographed.',
     cta: 'Request a shoot',
     shoot: { label: 'I shoot', value: 'Events, sport, portraits' },
     where: { label: 'Where', value: 'Prague · Karlovy Vary' },
