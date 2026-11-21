@@ -1,6 +1,6 @@
 ---
 import { Picture } from 'astro:assets';
-import type { CollectionEntry } from 'astro:content';
+import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/sections/hero.css';
 import { site } from '../config/site';
 import { fill, t, type Locale } from '../i18n';
@@ -13,7 +13,7 @@ import Todo from './Todo.astro';
 
 interface Props {
   locale: Locale;
-  photo: CollectionEntry<'photos'> | undefined;
+  photo: PublishedPhoto | undefined;
 }
 
 const { locale, photo } = Astro.props;

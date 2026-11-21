@@ -1,10 +1,10 @@
 ---
 // Goes into the `head` slot of Base. Preloads the AVIF the browser will pick for the hero <img> (LCP).
-import type { CollectionEntry } from 'astro:content';
+import type { PublishedPhoto } from '../lib/photos/get';
 import { HERO_SIZES, avifSrcset } from '../lib/photos/image';
 
 interface Props {
-  photo: CollectionEntry<'photos'>;
+  photo: PublishedPhoto;
 }
 
 const { photo } = Astro.props;

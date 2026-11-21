@@ -2,13 +2,15 @@ import { defineCollection, reference } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { contentDate } from '@/lib/content-date';
-import { photoSchema } from '@/lib/photos/schema';
+import { photoPath, photoSchema } from '@/lib/photos/schema';
 
 const bilingual = z.object({ cs: z.string().min(1), en: z.string().min(1) });
 
 const photos = defineCollection({
   loader: glob({ pattern: '*.yaml', base: './src/content/photos' }),
-  schema: ({ image }) => photoSchema(image()),
+  // `image` stays a path string: an `image()` field would import (and emit into `dist`) every file at load
+  // time, also of a withdrawn photo. `getPhoto()` imports the file of a published photo only (issue E-14).
+  schema: photoSchema(photoPath),
 });
 
 const caseStudies = defineCollection({

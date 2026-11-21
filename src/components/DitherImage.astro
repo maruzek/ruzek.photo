@@ -1,13 +1,13 @@
 ---
 import { Picture } from 'astro:assets';
-import type { CollectionEntry } from 'astro:content';
+import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/dither.css';
 import type { Locale } from '../i18n';
 import { COVER, type Cover } from '../lib/palette';
 import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
 
 interface Props {
-  photo: CollectionEntry<'photos'>;
+  photo: PublishedPhoto;
   /** The alt text comes from the photo, in this language (the plan's props had no locale) */
   locale: Locale;
   sizes: string;

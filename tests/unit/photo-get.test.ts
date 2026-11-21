@@ -2,16 +2,31 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const getEntry = vi.fn();
 vi.mock('astro:content', () => ({ getEntry }));
+const smokeImage = { src: '/smoke.jpg', width: 10, height: 10, format: 'jpg' };
+vi.mock('virtual:published-photos', () => ({ default: { smoke: smokeImage } }));
 
 const { getPhoto } = await import('@/lib/photos/get');
 
 afterEach(() => vi.restoreAllMocks());
 
 describe('getPhoto', () => {
-  it('returns a published photo', async () => {
-    const entry = { id: 'smoke', data: { published: true } };
-    getEntry.mockResolvedValueOnce(entry);
-    expect(await getPhoto('smoke')).toBe(entry);
+  it('returns a published photo with its image resolved', async () => {
+    getEntry.mockResolvedValueOnce({
+      id: 'smoke',
+      data: { published: true, image: '../../assets/photos/smoke.jpg' },
+    });
+    expect(await getPhoto('smoke')).toEqual({
+      id: 'smoke',
+      data: { published: true, image: smokeImage },
+    });
+  });
+
+  it('fails loudly when a published photo has no imported image', async () => {
+    getEntry.mockResolvedValueOnce({
+      id: 'ghost',
+      data: { published: true, image: '../../assets/photos/ghost.jpg' },
+    });
+    await expect(getPhoto('ghost')).rejects.toThrow(/"ghost" has no image/);
   });
 
   it('returns undefined and warns when the photo is withdrawn', async () => {

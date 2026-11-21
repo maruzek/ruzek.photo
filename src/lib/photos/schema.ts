@@ -7,6 +7,14 @@ import { z } from 'astro/zod';
  */
 export const CONSENT_REF = /^C-\d{4}-\d{3,}$/;
 
+/** `image` in the YAML: a file in `src/assets/photos/`, relative to `src/content/photos/`. */
+export const photoPath = z
+  .string()
+  .regex(
+    /^\.\.\/\.\.\/assets\/photos\/[a-z0-9-]+\.(jpe?g|png|webp)$/,
+    'image must point into src/assets/photos, e.g. ../../assets/photos/smoke.jpg',
+  );
+
 export const PHOTO_CATEGORIES = ['event', 'sport', 'portrait'] as const;
 export const PHOTO_SHADES = ['normal', 'strong'] as const;
 
@@ -38,7 +46,7 @@ const bilingual = z.object({ cs: text, en: text });
  * Un-publishing (`published: false`) never fails the build, so a photo can always be withdrawn quickly.
  * `published` defaults to false: nothing goes live by omission.
  *
- * @param image the Astro `image()` helper (or `z.string()` in unit tests)
+ * @param image the schema of the image field (`photoPath` in the collection, any string schema in unit tests)
  */
 export function photoSchema<I extends z.ZodType>(image: I): z.ZodType<Photo<z.infer<I>>> {
   return (

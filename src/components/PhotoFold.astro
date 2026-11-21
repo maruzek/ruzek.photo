@@ -1,5 +1,5 @@
 ---
-import type { CollectionEntry } from 'astro:content';
+import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/sections/fold.css';
 import type { Locale } from '../i18n';
 import DitherImage from './DitherImage.astro';
@@ -9,7 +9,7 @@ import Rich from './Rich.astro';
 interface Props {
   locale: Locale;
   /** `undefined` when the photo is withdrawn: the text then sits on the plain night surface */
-  photo: CollectionEntry<'photos'> | undefined;
+  photo: PublishedPhoto | undefined;
   /** Id of the heading; the section is labelled by it */
   id: string;
   /** Title with `*emphasised*` words */
@@ -25,7 +25,9 @@ const { locale, photo, id, title, chips, text, index, indexLabel } = Astro.props
 
 <section class="fold" aria-labelledby={id}>
   {photo && <DitherImage photo={photo} locale={locale} sizes="100vw" cover="night" />}
-  {photo && <div class:list={['shade', photo.data.shade === 'strong' && 'strong']} aria-hidden="true" />}
+  {photo && (
+    <div class:list={['shade', photo.data.shade === 'strong' && 'strong']} aria-hidden="true" />
+  )}
   {photo?.data.placeholder && <PlaceholderTag locale={locale} />}
   <div class="note">
     <div>

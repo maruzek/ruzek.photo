@@ -1,7 +1,9 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig, fontProviders } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
+import { publishedPhotos } from './scripts/vite-published-photos';
 
 const fontFile = (pkg: string, file: string): string => `./node_modules/@fontsource/${pkg}/files/${file}`;
 
@@ -45,6 +47,10 @@ export default defineConfig({
   build: { inlineStylesheets: 'auto' },
   // no sessions: they would set cookies and make the adapter provision an unused KV binding
   session: false,
+  // only published photos are imported, so a withdrawn photo emits no file (issue E-14)
+  vite: {
+    plugins: [publishedPhotos(fileURLToPath(new URL('./src/content/photos', import.meta.url)))],
+  },
   // Fonts API with the local provider: the woff2 files come from the pnpm-installed @fontsource/* packages
   // (OFL 1.1, see README), nothing is fetched at build time and nothing from Google
   fonts: [
