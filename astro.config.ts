@@ -10,4 +10,6 @@ export default defineConfig({
   integrations: [react({ include: ['**/islands/**'] }), sitemap()],
   i18n: { defaultLocale: 'cs', locales: ['cs', 'en'], routing: { prefixDefaultLocale: false } },
   build: { inlineStylesheets: 'auto' },
+  // no sessions: they would set cookies and make the adapter provision an unused KV binding
+  session: false,
 });

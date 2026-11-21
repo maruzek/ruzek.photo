@@ -15,7 +15,8 @@ export default defineConfig({
     // wrangler dev serves dist/ the way Workers with static assets will on Cloudflare
     command: 'pnpm build && pnpm preview',
     url: `http://localhost:${PORT}`,
-    reuseExistingServer: !process.env['CI'],
+    // always build the current source; an already running preview would serve stale HTML
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [
