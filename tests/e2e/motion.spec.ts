@@ -343,3 +343,44 @@ test('after a jump from the menu, the About section is fully shown (desktop pin)
     )
     .toBe(0);
 });
+
+// Each mask (SplitText sets overflow: clip inline) must reach above the ink of its glyph: Ů's ring, i's dot
+test('the name mask does not clip accents or dots', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  await page.evaluate(() => document.fonts.ready);
+  // wait until the entrance has finished
+  await expect
+    .poll(() =>
+      page
+        .locator('#name [style*="clip"] > *')
+        .evaluateAll((els) =>
+          els.every((el) =>
+            /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/.test(getComputedStyle(el).transform),
+          ),
+        ),
+    )
+    .toBe(true);
+  const clipped = await page.locator('#name').evaluate((h1) => {
+    const ctx = document.createElement('canvas').getContext('2d');
+    if (!ctx) return ['no canvas'];
+    const out: string[] = [];
+    const masks = [...h1.querySelectorAll<HTMLElement>('[style*="clip"]')];
+    if (masks.length === 0) return ['no masks'];
+    for (const mask of masks) {
+      const ch = mask.firstElementChild as HTMLElement | null;
+      if (!ch?.textContent?.trim()) continue;
+      const cs = getComputedStyle(ch);
+      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const m = ctx.measureText(ch.textContent);
+      const lh = parseFloat(cs.lineHeight);
+      const a = m.fontBoundingBoxAscent;
+      const d = m.fontBoundingBoxDescent;
+      const baseline = ch.getBoundingClientRect().top + (lh - (a + d)) / 2 + a;
+      const inkTop = baseline - m.actualBoundingBoxAscent;
+      if (mask.getBoundingClientRect().top > inkTop + 0.5) out.push(ch.textContent);
+    }
+    return out;
+  });
+  expect(clipped).toEqual([]);
+});

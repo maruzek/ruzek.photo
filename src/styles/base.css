@@ -148,6 +148,11 @@ em.s {
   letter-spacing: -0.035em;
   text-wrap: balance;
 }
+/* SplitText line masks (choreo.ts): room for háčky above capitals, the line box stays the same */
+.sl-mask {
+  padding-block: 0.12em;
+  margin-block: -0.12em;
+}
 .eyebrow {
   display: flex;
   align-items: center;

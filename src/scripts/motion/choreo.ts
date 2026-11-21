@@ -43,10 +43,11 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
     SplitText.create(name, {
       type: 'chars',
       mask: 'chars',
+      charsClass: 'nm-ch', // the mask gets `nm-ch-mask` (hero.css gives it headroom for accents)
       autoSplit: true,
       onSplit: (self) =>
         gsap.from(self.chars, {
-          yPercent: 115,
+          yPercent: 140, // below the mask's extra headroom, so no accent peeks out at the start
           duration: 1.25,
           ease: 'expo.out',
           stagger: 0.045,
@@ -70,10 +71,11 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
     SplitText.create(el, {
       type: 'lines',
       mask: 'lines',
+      linesClass: 'sl', // the mask gets `sl-mask` (base.css gives it room for háčky)
       autoSplit: true,
       onSplit: (self) =>
         gsap.from(self.lines, {
-          yPercent: 110,
+          yPercent: 125,
           duration: 1.1,
           ease: 'expo.out',
           stagger: 0.09,

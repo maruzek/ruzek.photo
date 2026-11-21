@@ -111,6 +111,12 @@
   white-space: nowrap;
   margin-left: -0.05em;
 }
+/* SplitText masks (choreo.ts): the line-height of 0.84 is shorter than the glyphs, so the clip box gets headroom
+   for Ů's ring and the dots; the negative margin keeps the line box as it was */
+.hero h1 .nm-ch-mask {
+  padding-top: 0.32em;
+  margin-top: -0.32em;
+}
 .hero .row {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3fr);
