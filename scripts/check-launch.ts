@@ -2,6 +2,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'astro/zod';
+import { loadEnv } from 'vite';
 import { parse } from 'yaml';
 import { analyticsFrom } from '../src/config/analytics-from';
 import { photoSchema, type Photo } from '../src/lib/photos/schema';
@@ -12,11 +13,32 @@ import { photoSchema, type Photo } from '../src/lib/photos/schema';
 
 type Env = Readonly<Record<string, string | undefined>>;
 
-/** Cloudflare's public Turnstile test keys (always pass / fail / spent). They never protect anything. */
-const TURNSTILE_TEST_KEY = /^[123]x0{20}AA$/;
-const TURNSTILE_TEST_SECRET = /^[123]x0{31}AA$/;
+/**
+ * Cloudflare's published Turnstile test keys (always pass, always fail, forced challenge, spent token). They
+ * never protect anything. Source: developers.cloudflare.com/turnstile/troubleshooting/testing
+ */
+const TURNSTILE_TEST_SITE_KEYS: readonly string[] = [
+  '1x00000000000000000000AA',
+  '2x00000000000000000000AB',
+  '1x00000000000000000000BB',
+  '2x00000000000000000000BB',
+  '3x00000000000000000000FF',
+];
+const TURNSTILE_TEST_SECRETS: readonly string[] = [
+  '1x0000000000000000000000000000000AA',
+  '2x0000000000000000000000000000000AA',
+  '3x0000000000000000000000000000000AA',
+];
 
 const set = (value: string | undefined): value is string => Boolean(value?.trim());
+
+/**
+ * The values the production build sees: Vite's own loader with mode `production` (`.env`, `.env.local`,
+ * `.env.production`, `.env.production.local`, later files win), then the process environment on top.
+ */
+export function launchEnv(root: string, processEnv: Env = process.env): Env {
+  return { ...loadEnv('production', root, ''), ...processEnv };
+}
 
 /**
  * Everything that must be true before the site goes live, as a list of readable problems (empty = ready).
@@ -38,13 +60,13 @@ export function launchProblems(opts: { photos: Photo<unknown>[]; env: Env }): st
   const secret = env['TURNSTILE_SECRET'];
   if (!set(secret))
     problems.push('TURNSTILE_SECRET is not set (Turnstile would refuse every inquiry)');
-  else if (TURNSTILE_TEST_SECRET.test(secret.trim()))
+  else if (TURNSTILE_TEST_SECRETS.includes(secret.trim()))
     problems.push('TURNSTILE_SECRET is a Cloudflare test secret, use the real widget secret');
 
   const siteKey = env['PUBLIC_TURNSTILE_SITE_KEY'];
   if (!set(siteKey))
     problems.push('PUBLIC_TURNSTILE_SITE_KEY is not set (the form cannot be sent)');
-  else if (TURNSTILE_TEST_KEY.test(siteKey.trim()))
+  else if (TURNSTILE_TEST_SITE_KEYS.includes(siteKey.trim()))
     problems.push('PUBLIC_TURNSTILE_SITE_KEY is a Cloudflare test key, use the real widget key');
 
   // mailer.ts: MAILER=console sends nothing; without RESEND_API_KEY every send fails
@@ -116,7 +138,7 @@ async function loadPhotos(dir: string): Promise<Photo<unknown>[]> {
 async function main(): Promise<void> {
   const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
   const photos = await loadPhotos(join(root, 'src/content/photos'));
-  const problems = launchProblems({ photos, env: process.env });
+  const problems = launchProblems({ photos, env: launchEnv(root) });
   const todos = await leftoverTodos(join(root, 'dist/client'));
 
   if (todos.length > 0) {

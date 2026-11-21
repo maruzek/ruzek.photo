@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { launchProblems, leftoverTodos } from '../../scripts/check-launch';
+import { launchEnv, launchProblems, leftoverTodos } from '../../scripts/check-launch';
 import type { Photo } from '../../src/lib/photos/schema';
 
 const photo = (over: Partial<Photo<unknown>> = {}): Photo<unknown> => ({
@@ -78,16 +78,33 @@ describe('launchProblems', () => {
     expect(problems.join()).toMatch(/MAILER/);
   });
 
-  it('flags Cloudflare test Turnstile keys', () => {
+  // every key Cloudflare publishes at developers.cloudflare.com/turnstile/troubleshooting/testing
+  it.each([
+    '1x00000000000000000000AA',
+    '2x00000000000000000000AB',
+    '1x00000000000000000000BB',
+    '2x00000000000000000000BB',
+    '3x00000000000000000000FF',
+  ])('flags the Cloudflare test site key %s', (key) => {
     const problems = launchProblems({
       photos: [],
-      env: {
-        ...goodEnv,
-        TURNSTILE_SECRET: '1x0000000000000000000000000000000AA',
-        PUBLIC_TURNSTILE_SITE_KEY: '1x00000000000000000000AA',
-      },
+      env: { ...goodEnv, PUBLIC_TURNSTILE_SITE_KEY: key },
     });
-    expect(problems).toHaveLength(2);
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toMatch(/PUBLIC_TURNSTILE_SITE_KEY/);
+  });
+
+  it.each([
+    '1x0000000000000000000000000000000AA',
+    '2x0000000000000000000000000000000AA',
+    '3x0000000000000000000000000000000AA',
+  ])('flags the Cloudflare test secret %s', (secret) => {
+    const problems = launchProblems({
+      photos: [],
+      env: { ...goodEnv, TURNSTILE_SECRET: secret },
+    });
+    expect(problems).toHaveLength(1);
+    expect(problems[0]).toMatch(/TURNSTILE_SECRET/);
   });
 
   it('flags a Umami script URL that is not https (the build would drop it)', () => {
@@ -119,5 +136,29 @@ describe('leftoverTodos', () => {
 
   it('returns nothing for a missing dist', async () => {
     expect(await leftoverTodos(join(dir, 'missing'))).toEqual([]);
+  });
+});
+
+describe('launchEnv', () => {
+  const root = mkdtempSync(join(tmpdir(), 'launch-env-'));
+  afterAll(() => rmSync(root, { recursive: true, force: true }));
+  const NAME = 'PUBLIC_LAUNCH_ENV_PROBE';
+
+  it('reads the same files as the production build, the most specific one wins', () => {
+    writeFileSync(join(root, '.env'), `${NAME}=from-env\nONLY_IN_ENV=1\n`);
+    writeFileSync(join(root, '.env.production'), `${NAME}=from-production\n`);
+    writeFileSync(join(root, '.env.production.local'), `${NAME}=from-production-local\n`);
+    // .env.local is read by the build too; .env.development must not be
+    writeFileSync(join(root, '.env.local'), 'ONLY_IN_LOCAL=1\n');
+    writeFileSync(join(root, '.env.development'), 'ONLY_IN_DEV=1\n');
+    const env = launchEnv(root, {});
+    expect(env[NAME]).toBe('from-production-local');
+    expect(env['ONLY_IN_ENV']).toBe('1');
+    expect(env['ONLY_IN_LOCAL']).toBe('1');
+    expect(env['ONLY_IN_DEV']).toBeUndefined();
+  });
+
+  it('lets the process environment win over every file', () => {
+    expect(launchEnv(root, { [NAME]: 'from-process' })[NAME]).toBe('from-process');
   });
 });

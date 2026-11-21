@@ -204,7 +204,7 @@ Automaticky hlídá snímkovou frekvenci jen `pnpm test:perf` (zpomalený proces
 - žádný poskytovatel e-mailu (`RESEND_API_KEY`), nebo `MAILER=console`;
 - chybějící nebo neplatné `PUBLIC_UMAMI_SRC`, `PUBLIC_UMAMI_WEBSITE_ID`, `PUBLIC_CF_BEACON_TOKEN`.
 
-Jako varování vypíše viditelná `TODO` ve stránkách v `dist/client` (podle pravidel smí na webu být, ale před spuštěním je vyplňte). Hodnoty čte z prostředí a ze souboru `.env` (nikdy se nevypisují). Tajné klíče jsou v produkci jen v Cloudflare, takže je pro kontrolu dočasně vložte do `.env`. Kontrola není součástí `pnpm check`, protože zástupné fotky jsou zatím zveřejněné schválně.
+Jako varování vypíše viditelná `TODO` ve stránkách v `dist/client` (podle pravidel smí na webu být, ale před spuštěním je vyplňte). Hodnoty čte stejně jako produkční build, tedy ze souborů `.env`, `.env.local`, `.env.production` a `.env.production.local` (pozdější vyhrává) a z prostředí procesu, které má přednost (nikdy se nevypisují). Zná všechny testovací klíče Turnstile, které Cloudflare zveřejňuje. Tajné klíče jsou v produkci jen v Cloudflare, takže je pro kontrolu dočasně vložte do `.env`. Kontrola není součástí `pnpm check`, protože zástupné fotky jsou zatím zveřejněné schválně.
 
 ## Nasazení
 Nasazení dělá Martin sám, nebo agent s jeho výslovným souhlasem u každého kroku, protože kroky na Cloudflare jsou nevratné nebo veřejné. Postup je v plánu, [úkol 16](docs/superpowers/plans/2026-11-20-rozpad-astro.md): D1 databáze a migrace, widget Turnstile, odesílání e-mailů (DNS záznamy SPF, DKIM, DMARC), údržbový worker, Umami a Cloudflare Web Analytics, Search Console, `pnpm check && pnpm test:e2e && pnpm check:launch`, pak `pnpm build && wrangler deploy` a kontrola na produkci.

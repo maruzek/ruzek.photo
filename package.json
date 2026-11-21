@@ -20,7 +20,7 @@
     "types:worker": "wrangler types",
     "check:exif": "tsx scripts/check-exif.ts",
     "check:contrast": "tsx scripts/check-contrast.ts",
-    "check:launch": "tsx --env-file-if-exists=.env scripts/check-launch.ts",
+    "check:launch": "tsx scripts/check-launch.ts",
     "lhci": "tsx scripts/lhci.ts",
     "photos:import": "tsx scripts/photos-import.ts"
   },
@@ -56,6 +56,7 @@
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.73.0",
+    "vite": "^8.3.8",
     "vitest": "^5.1.1",
     "wrangler": "^4.166.0",
     "yaml": "^2.9.1"
