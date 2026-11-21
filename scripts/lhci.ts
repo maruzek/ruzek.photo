@@ -53,7 +53,15 @@ if (await isPortTaken(PORT)) {
 const server = spawn('pnpm', ['exec', 'tsx', 'scripts/lhci-server.ts'], {
   cwd: root,
   stdio: 'inherit',
+  // its own process group, so the whole tree (pnpm, tsx, wrangler, workerd) can be stopped together
+  detached: true,
 });
+// Ctrl-C reaches only this process (the server has its own group), so pass it on
+for (const signal of ['SIGINT', 'SIGTERM'] as const)
+  process.on(signal, () => {
+    if (server.pid !== undefined) process.kill(-server.pid, 'SIGTERM');
+    process.exit(130);
+  });
 const work = mkdtempSync(join(tmpdir(), 'lhci-'));
 let code: number;
 try {
@@ -95,7 +103,8 @@ try {
   }
   code = lhciCode !== 0 || problems.length > 0 ? 1 : 0;
 } finally {
-  server.kill();
+  // killing only the `pnpm` wrapper would leave wrangler and workerd running on the port
+  if (server.pid !== undefined) process.kill(-server.pid, 'SIGTERM');
   rmSync(work, { recursive: true, force: true });
 }
 process.exit(code);
