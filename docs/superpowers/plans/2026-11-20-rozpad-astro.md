@@ -249,7 +249,7 @@ export function estimate(input: EstimateInput): Range;
 export function formatRange(r: Range, locale: 'cs' | 'en'): string; // "1 500 Kč" | "3 500–3 900 Kč" | "CZK 1,500"
 ```
 
-- [ ] **Step 1:** Napsat test:
+- [x] **Step 1:** Napsat test:
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -294,8 +294,8 @@ describe('formatRange', () => {
 });
 ```
 
-- [ ] **Step 2:** `pnpm vitest run tests/unit/pricing.test.ts`. Očekávání: FAIL.
-- [ ] **Step 3:** Implementace. `pricing.ts` podle tabulky v `docs/brief.md` (akce 1 500 + 1 000–1 200/h, max 12 h; krátké focení 1 500; zápas 1 500–2 500; portrét 1 500, 45–60 min, 8–10 fotek; příplatky 20–30 % a 1 000–2 000 Kč). `estimate`:
+- [x] **Step 2:** `pnpm vitest run tests/unit/pricing.test.ts`. Očekávání: FAIL.
+- [x] **Step 3:** Implementace. `pricing.ts` podle tabulky v `docs/brief.md` (akce 1 500 + 1 000–1 200/h, max 12 h; krátké focení 1 500; zápas 1 500–2 500; portrét 1 500, 45–60 min, 8–10 fotek; příplatky 20–30 % a 1 000–2 000 Kč). `estimate`:
 
 ```ts
 export function estimate({ service, hours, addons: picked }: EstimateInput): Range {
@@ -317,8 +317,8 @@ export function estimate({ service, hours, addons: picked }: EstimateInput): Ran
 ```
 
 `format.ts` přes `Intl.NumberFormat` (`cs-CZ`, `en-GB`), mezery nahradit ` `.
-- [ ] **Step 4:** Test: PASS.
-- [ ] **Step 5:** Commit `feat: typed pricing config and estimate`.
+- [x] **Step 4:** Test: PASS.
+- [x] **Step 5:** Commit `feat: typed pricing config and estimate`.
 
 ---
 
