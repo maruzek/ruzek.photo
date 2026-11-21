@@ -40,7 +40,7 @@ const [hero, events, sport] = await Promise.all([
     {hero && <HeroPreload photo={hero} />}
   </Fragment>
   <Header locale={locale} route="home" />
-  <main id="main">
+  <main id="main" tabindex="-1">
     <Hero locale={locale} photo={hero} />
     <Marquee locale={locale} />
     {
@@ -68,4 +68,5 @@ const [hero, events, sport] = await Promise.all([
   </main>
   <Footer locale={locale} />
   <Lightbox locale={locale} />
+  <div class="cur" aria-hidden="true"><i></i><span>{d.common.cursorView}</span></div>
 </Base>

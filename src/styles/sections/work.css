@@ -123,3 +123,37 @@
     transition: none;
   }
 }
+
+/* The "view" cursor over photos (fine pointers with motion only; cursor.ts moves it) */
+.cur {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translate(-100px, -100px);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+.cur.on {
+  opacity: 1;
+}
+.cur i {
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  background: conic-gradient(var(--accent) 25%, transparent 0 50%, var(--accent) 0 75%, transparent 0) 0 0 / 8px 8px;
+  mix-blend-mode: difference;
+}
+.cur span {
+  font: 500 12px / 1 var(--f-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--light-ink);
+  color: var(--light);
+  padding: 6px 8px;
+  margin-top: -28px;
+}

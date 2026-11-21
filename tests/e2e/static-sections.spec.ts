@@ -263,6 +263,9 @@ for (const path of ['/', '/en/']) {
     }, testInfo) => {
       test.skip(testInfo.project.name !== 'desktop', 'sizes are set per test, one project is enough');
       await page.setViewportSize({ width, height: 800 });
+      // the motion layer's hero entrance moves the paragraph on purpose (a transform, no layout shift); this
+      // test measures font metrics only
+      await page.emulateMedia({ reducedMotion: 'reduce' });
       let release: () => void = () => undefined;
       const gate = new Promise<void>((resolve) => (release = resolve));
       await page.route(/\.woff2(\?|$)/, async (route) => {

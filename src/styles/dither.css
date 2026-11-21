@@ -21,3 +21,10 @@ canvas.dz {
   image-rendering: pixelated;
   pointer-events: none;
 }
+
+/* Reduced motion: whole static photos, no dither canvas (concept.md §7) */
+@media (prefers-reduced-motion: reduce) {
+  canvas.dz {
+    display: none;
+  }
+}

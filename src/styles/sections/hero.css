@@ -190,3 +190,10 @@
     animation: none;
   }
 }
+
+/* Reduced motion: no ASCII layer at all, only the photo (concept.md §7) */
+@media (prefers-reduced-motion: reduce) {
+  .hero canvas.ascii {
+    display: none;
+  }
+}

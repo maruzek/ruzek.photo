@@ -488,8 +488,8 @@ export function startLenis(gsap: typeof import('gsap').gsap, ST: typeof ScrollTr
 // boot.ts: no exports; window.__motion = { lenis?: Lenis; state: 'off' | 'on' } jen pro e2e testy (podmínka import.meta.env.MODE !== 'production')
 ```
 
-- [ ] **Step 1:** Napsat unit test plánovače s falešným tickerem a pozorovatelem: efekt mimo viewport se netiká; po zviditelnění se tiká; když nic není vidět, `running()` je `false` a ticker je odhlášený.
-- [ ] **Step 2:** Napsat e2e:
+- [x] **Step 1:** Napsat unit test plánovače s falešným tickerem a pozorovatelem: efekt mimo viewport se netiká; po zviditelnění se tiká; když nic není vidět, `running()` je `false` a ticker je odhlášený.
+- [x] **Step 2:** Napsat e2e:
 
 ```ts
 test('reduced motion: no GSAP/Lenis downloaded, everything visible', async ({ page }) => {
@@ -538,14 +538,14 @@ test('marquee can be paused', async ({ page }) => {
 });
 ```
 
-- [ ] **Step 3:** Spustit, FAIL. Implementovat:
+- [x] **Step 3:** Spustit, FAIL. Implementovat:
   - `boot.ts`: pokud `matchMedia('(prefers-reduced-motion: reduce)').matches` nebo `navigator.connection?.saveData`, skončit. Jinak `const { start } = await import('./start')`. Po startu přidat `motion-ready` na `<html>`. Při změně `reduce` za běhu zavolat `revert()` ze `start`, odebrat `motion`, přidat `rm`.
   - `start.ts`: `gsap.registerPlugin(ScrollTrigger, SplitText)`, `startLenis`, `initLightbox(dialog, { onOpen: lenis.stop, onClose: lenis.start })`, choreografie z `choreo.ts` uvnitř `gsap.matchMedia()` a `ScrollTrigger.refresh()` po `document.fonts.ready` a `load`.
   - `lenis.ts`: konfigurace z `rozpad.js` (duration 1.15, easing), `syncTouch: false`, `lenis.on('scroll', ScrollTrigger.update)`, `gsap.ticker.add`, `lagSmoothing(0)`. Kotvy přes `lenis.scrollTo(target, { offset: 0, onComplete: () => target.focus({ preventScroll: true }) })`, sekce mají `tabindex="-1"`. Import `lenis/dist/lenis.css`.
   - `choreo.ts`: přepis bloku „GSAP choreography“ z `rozpad.js` 1 : 1 (hero leave, jméno a titulky přes SplitText, stagger, rise, folds, parallax `data-par`, marquee s rychlostí a pauzou, pin týž den jen `desktop`, footer, schování headeru, plus plné pozadí headeru po odjezdu z hero). Každá funkce dostane kořenový prvek a vrátí úklid.
   - `cursor.ts`: magnetická tlačítka a kurzor nad fotkami, jen `(hover: hover) and (pointer: fine)`.
-- [ ] **Step 4:** Testy PASS. Ručně porovnat pohyb s prototypem na 1440 px.
-- [ ] **Step 5:** Commit `feat: motion layer with GSAP, Lenis and reduced-motion gating`.
+- [x] **Step 4:** Testy PASS. Ručně porovnat pohyb s prototypem na 1440 px.
+- [x] **Step 5:** Commit `feat: motion layer with GSAP, Lenis and reduced-motion gating`.
 
 ---
 

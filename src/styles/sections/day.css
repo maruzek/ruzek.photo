@@ -29,6 +29,12 @@
   align-content: start;
   transition: opacity 0.5s var(--ease);
 }
+/* with motion, the steps light up one by one as the section scrolls (choreo.ts) */
+@media (prefers-reduced-motion: no-preference) {
+  html.motion-ready .step:not(.is-on) {
+    opacity: 0.35;
+  }
+}
 .step .no {
   display: flex;
   align-items: center;

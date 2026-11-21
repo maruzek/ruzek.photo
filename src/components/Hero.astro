@@ -22,7 +22,7 @@ const [first = '', ...rest] = site.name.split(' ');
 const anchor = (key: keyof typeof d.anchors): string => `#${d.anchors[key]}`;
 ---
 
-<section class="hero" id="top" data-ascii aria-labelledby="name">
+<section class="hero" id="top" tabindex="-1" data-ascii aria-labelledby="name">
   {
     photo && (
       <div class="media">

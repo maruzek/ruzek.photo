@@ -256,12 +256,23 @@ em.s {
    and the motion layer has not announced itself (.motion-ready). If it never does, Base's inline script adds
    .reveal-fallback after 3 s (counted from navigation) and everything shows. The motion layer (task 8) skips
    entrance animations when it finds .reveal-fallback already set. */
-html.motion:not(.motion-ready, .reveal-fallback) :is([data-split], [data-rise], [data-stagger] > *) {
+html.motion:not(.motion-ready, .reveal-fallback)
+  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .kick > *, .hero .row > *) {
   opacity: 0;
+  /* second safety net (issue E-04): should the inline timer never run, the stylesheet itself reveals at 4 s */
+  animation: reveal-safety 0.01s 4s forwards;
+}
+@keyframes reveal-safety {
+  to {
+    opacity: 1;
+  }
 }
 /* Keyboard users must never land on an invisible element: anything focused (or holding focus) shows at once */
 html.motion:not(.motion-ready, .reveal-fallback)
-  :is([data-split], [data-rise], [data-stagger] > *):is(:focus-within, :focus-visible) {
+  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .kick > *, .hero .row > *):is(
+    :focus-within,
+    :focus-visible
+  ) {
   opacity: 1;
 }
 
@@ -312,6 +323,7 @@ html.motion:not(.motion-ready, .reveal-fallback)
   text-wrap: pretty;
 }
 /* sections are focus targets of the anchor links (tabindex="-1"); the heading tells where focus went */
+main:focus,
 section[tabindex='-1']:focus {
   outline: none;
 }
