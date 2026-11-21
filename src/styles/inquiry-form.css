@@ -201,12 +201,10 @@
 .inq-form .grp {
   grid-column: 1 / -1;
   color: var(--light-muted);
-  border-top: 1px solid var(--rule-l);
   padding-top: 20px;
   margin-top: 8px;
 }
 .inq-form .grp:first-child {
-  border-top: 0;
   padding-top: 0;
   margin-top: 0;
 }

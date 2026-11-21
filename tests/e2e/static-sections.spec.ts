@@ -81,6 +81,9 @@ test('folds with a placeholder photo carry the placeholder tag clear of the text
   expect(await folds.count()).toBe(2);
   for (let i = 0; i < 2; i++) {
     const fold = folds.nth(i);
+    // at rest: the caption sticks to the bottom of the screen while the fold comes in (fold.css), so it passes the
+    // tag on the way and covers it then; with the fold filling the screen the two are apart
+    await fold.evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().top + scrollY));
     const tag = fold.locator('.ph-tag');
     await expect(tag).toHaveText('Zástupná fotka');
     const tagBox = await tag.boundingBox();

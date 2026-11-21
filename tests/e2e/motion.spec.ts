@@ -344,45 +344,100 @@ test('after a jump from the menu, the About section is fully shown (desktop pin)
     .toBe(0);
 });
 
-// Each mask (SplitText sets overflow: clip inline) must reach above the ink of its glyph: Ů's ring, i's dot
-test('the name mask does not clip accents or dots', async ({ page }) => {
+// Each mask (SplitText sets overflow: clip inline) must reach above the ink of its glyph: Ů's ring, i's dot.
+// The hero name and the big name in the footer share the 0.84 line height.
+for (const [what, selector] of [
+  ['the name', '#name'],
+  ['the footer name', '.foot .big'],
+] as const) {
+  test(`${what} mask does not clip accents or dots`, async ({ page }) => {
+    await page.goto('/');
+    await page.waitForFunction(motionIs, 'on' as const);
+    await page.evaluate(() => document.fonts.ready);
+    await page.locator(selector).scrollIntoViewIfNeeded();
+    // wait until the entrance has finished
+    await expect
+      .poll(() =>
+        page
+          .locator(`${selector} [style*="clip"] > *`)
+          .evaluateAll(
+            (els) =>
+              els.length > 0 &&
+              els.every((el) =>
+                /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/.test(getComputedStyle(el).transform),
+              ),
+          ),
+      )
+      .toBe(true);
+    const clipped = await page.locator(selector).evaluate((host) => {
+      const ctx = document.createElement('canvas').getContext('2d');
+      if (!ctx) return ['no canvas'];
+      const out: string[] = [];
+      const masks = [...host.querySelectorAll<HTMLElement>('[style*="clip"]')];
+      if (masks.length === 0) return ['no masks'];
+      for (const mask of masks) {
+        const ch = mask.firstElementChild as HTMLElement | null;
+        if (!ch?.textContent?.trim()) continue;
+        const cs = getComputedStyle(ch);
+        ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+        const m = ctx.measureText(ch.textContent);
+        const lh = parseFloat(cs.lineHeight);
+        const a = m.fontBoundingBoxAscent;
+        const d = m.fontBoundingBoxDescent;
+        const baseline = ch.getBoundingClientRect().top + (lh - (a + d)) / 2 + a;
+        const inkTop = baseline - m.actualBoundingBoxAscent;
+        if (mask.getBoundingClientRect().top > inkTop + 0.5) out.push(ch.textContent);
+      }
+      return out;
+    });
+    expect(clipped).toEqual([]);
+  });
+}
+
+// The fold number sits in a clipping box and has negative tracking: the last digit must keep its right edge
+test('the fold number is not clipped on the right', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => document.fonts.ready);
+  const overflow = await page.locator('.fold .idx b').evaluateAll((els) =>
+    els.map((b) => {
+      const ctx = document.createElement('canvas').getContext('2d');
+      if (!ctx || !b.textContent) return -1;
+      const cs = getComputedStyle(b);
+      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      ctx.letterSpacing = cs.letterSpacing;
+      const m = ctx.measureText(b.textContent);
+      // ink right edge from the text start, against the box the clip leaves for the text
+      const ink = m.actualBoundingBoxRight;
+      const box =
+        b.parentElement!.getBoundingClientRect().right -
+        b.getBoundingClientRect().left -
+        parseFloat(cs.paddingLeft);
+      return Math.round(ink - box);
+    }),
+  );
+  for (const o of overflow) expect(o).toBeLessThanOrEqual(0);
+});
+
+// Fold headings sit at the bottom of a full-screen photo: they must be readable while the fold comes in
+test('a fold heading is in view before the whole photo is', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(motionIs, 'on' as const);
-  await page.evaluate(() => document.fonts.ready);
-  // wait until the entrance has finished
-  await expect
-    .poll(() =>
-      page
-        .locator('#name [style*="clip"] > *')
-        .evaluateAll((els) =>
-          els.every((el) =>
-            /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/.test(getComputedStyle(el).transform),
-          ),
-        ),
-    )
-    .toBe(true);
-  const clipped = await page.locator('#name').evaluate((h1) => {
-    const ctx = document.createElement('canvas').getContext('2d');
-    if (!ctx) return ['no canvas'];
-    const out: string[] = [];
-    const masks = [...h1.querySelectorAll<HTMLElement>('[style*="clip"]')];
-    if (masks.length === 0) return ['no masks'];
-    for (const mask of masks) {
-      const ch = mask.firstElementChild as HTMLElement | null;
-      if (!ch?.textContent?.trim()) continue;
-      const cs = getComputedStyle(ch);
-      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-      const m = ctx.measureText(ch.textContent);
-      const lh = parseFloat(cs.lineHeight);
-      const a = m.fontBoundingBoxAscent;
-      const d = m.fontBoundingBoxDescent;
-      const baseline = ch.getBoundingClientRect().top + (lh - (a + d)) / 2 + a;
-      const inkTop = baseline - m.actualBoundingBoxAscent;
-      if (mask.getBoundingClientRect().top > inkTop + 0.5) out.push(ch.textContent);
-    }
-    return out;
-  });
-  expect(clipped).toEqual([]);
+  const vh = page.viewportSize()!.height;
+  // the second fold with 60 % of its height on screen
+  await page.evaluate((vh) => {
+    const fold = document.querySelectorAll<HTMLElement>('.fold')[1]!;
+    window.scrollTo(0, fold.getBoundingClientRect().top + scrollY - vh * 0.4);
+  }, vh);
+  const top = await page
+    .locator('.fold >> nth=1')
+    .locator('h2')
+    .evaluate((h) => h.getBoundingClientRect().top);
+  expect(top).toBeLessThan(vh);
+  await expect(page.locator('.fold >> nth=1').locator('h2 .sl').first()).toHaveCSS(
+    'transform',
+    /none|matrix\(1, 0, 0, 1, 0, 0\)/,
+    { timeout: 4000 },
+  );
 });
 
 // Review Focus 2: on a short laptop the pinned section must not cut off its own heading

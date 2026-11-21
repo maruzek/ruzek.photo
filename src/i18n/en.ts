@@ -12,7 +12,7 @@ const shortAndPortraitCard = {
 
 export const en = {
   meta: {
-    title: 'Martin Růžek · event and sports photographer, Prague and Karlovy Vary',
+    title: 'Martin Růžek · event and sports photographer',
     description:
       'Martin Růžek photographs corporate events, conferences, balls, parties and sport in Prague and Karlovy Vary. A selection of photos for your social media the same day.',
     translationTodo: 'kontrola překladu',
@@ -102,7 +102,6 @@ export const en = {
     cards: {
       event: {
         title: 'Events',
-        tag: 'main',
         text: 'Corporate events, conferences, talks and debates, university and association events, balls, parties and bars.',
         priceLabel: 'First hour',
         priceNote: 'each additional hour {price}',
@@ -155,7 +154,7 @@ export const en = {
   },
   about: {
     eyebrow: 'About me',
-    title: 'I’m Martin. I *photograph* people in motion.',
+    title: 'I’m Martin. I photograph people in *motion.*',
     leadStrong: 'I am an event and sports photographer. I shoot in Prague and also work in Karlovy Vary.',
     lead: 'Most often I photograph corporate events, conferences, university and association events, balls and parties. Sport is my passion, portraits are a supplement.',
     speed: 'My strength is speed. I send a selection of photos for social media the same day, and I also shoot vertical videos.',

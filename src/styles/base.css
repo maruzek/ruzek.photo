@@ -259,14 +259,14 @@ em.s {
   outline-offset: 2px;
 }
 /* Links in running text (contacts, footer, privacy page): the dashed underline of the hero's .lnk, solid on hover */
-:where(.direct, .foot .cols, .foot .legal, .inq-form .privacy, .inq-form .noscript, .prose, .page .back, .toast) a {
+:where(.direct, .facts, .foot .cols, .foot .legal, .inq-form .privacy, .inq-form .noscript, .prose, .page .back, .toast) a {
   text-decoration: none;
   padding-bottom: 3px;
   background: repeating-linear-gradient(90deg, currentcolor 0 3px, transparent 3px 6px) left bottom / 100% 1px
     no-repeat;
   box-decoration-break: clone;
 }
-:where(.direct, .foot .cols, .foot .legal, .inq-form .privacy, .inq-form .noscript, .prose, .page .back, .toast)
+:where(.direct, .facts, .foot .cols, .foot .legal, .inq-form .privacy, .inq-form .noscript, .prose, .page .back, .toast)
   a:hover {
   background-image: linear-gradient(currentcolor, currentcolor);
 }

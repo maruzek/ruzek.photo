@@ -22,7 +22,7 @@ const shortAndPortraitCard = {
 
 export const cs = {
   meta: {
-    title: 'Martin Růžek · fotograf akcí a sportu, Praha a Karlovy Vary',
+    title: 'Martin Růžek · fotograf akcí a sportu',
     description:
       'Martin Růžek fotí firemní akce, konference, plesy, večírky a sport v Praze a Karlových Varech. Výběr fotek na sítě ještě týž den.',
     // Shown on the English page until Martin approves the translation (concept.md, kap. 5).
@@ -115,7 +115,6 @@ export const cs = {
     cards: {
       event: {
         title: 'Akce',
-        tag: 'hlavní',
         text: 'Firemní akce, konference, přednášky a\u00A0debaty, univerzitní a\u00A0spolkové akce, plesy, večírky a\u00A0bary.',
         priceLabel: 'První hodina',
         priceNote: 'každá další {price}',
@@ -169,7 +168,7 @@ export const cs = {
   },
   about: {
     eyebrow: 'O\u00A0mně',
-    title: 'Jsem Martin. *Fotím* lidi v\u00A0pohybu.',
+    title: 'Jsem Martin. Fotím lidi v\u00A0*pohybu.*',
     leadStrong: 'Jsem fotograf akcí a\u00A0sportu. Fotím v\u00A0Praze a\u00A0působím i\u00A0v\u00A0Karlových Varech.',
     lead: 'Nejčastěji fotím firemní akce, konference, univerzitní a\u00A0spolkové akce, plesy a\u00A0večírky. Sport je moje vášeň, portréty jsou doplněk.',
     speed: 'Moje silná stránka je rychlost. Výběr fotek na sítě posílám ještě týž den a\u00A0točím i\u00A0vertikální videa.',

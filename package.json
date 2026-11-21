@@ -22,7 +22,8 @@
     "check:contrast": "tsx scripts/check-contrast.ts",
     "check:launch": "tsx scripts/check-launch.ts",
     "lhci": "tsx scripts/lhci.ts",
-    "photos:import": "tsx scripts/photos-import.ts"
+    "photos:import": "tsx scripts/photos-import.ts",
+    "icons": "tsx scripts/icons.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.9",

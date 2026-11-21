@@ -159,9 +159,9 @@ Každá sekce prototypu je jedna komponenta `.astro`. Kromě formuláře není n
 
 ## 8. Písma (self-hosted)
 
-- Všechna čtyři písma mají licenci **SIL OFL 1.1**: Stack Sans Notch, Stack Sans Text, Crimson Pro i Geist Mono. Šířit je i commitovat smíme, licence se přiloží. Před commitem se to přesto ověří v souboru licence každého balíčku (AGENTS.md).
+- Všechna čtyři písma mají licenci **SIL OFL 1.1**: Stack Sans Notch, Stack Sans Text, Instrument Serif i Geist Mono. Šířit je i commitovat smíme, licence se přiloží. Před commitem se to přesto ověří v souboru licence každého balíčku (AGENTS.md).
 - Zdroj: balíčky `@fontsource/*` z pnpm. Pokud zamčená verze Astra má stabilní Fonts API s providerem Fontsource, použijeme ho, protože sám vygeneruje `preload` a záložní metriky. Jinak Fontsource, ruční `preload` a `@font-face` s `size-adjust` pro záložní písmo.
-- Jen řezy, které design používá: Notch 700, Text 400/500/600, Crimson Pro Italic 400, Geist Mono 400/500. Sady `latin` a `latin-ext` (čeština), formát WOFF2.
+- Jen řezy, které design používá: Notch 700, Text 400/500/600, Instrument Serif Italic 400, Geist Mono 400/500. Sady `latin` a `latin-ext` (čeština), formát WOFF2.
 - `preload` jen pro dvě písma nad ohybem: Notch 700 (jméno) a Text 400. Ostatní `font-display: swap`.
 - Žádný požadavek na `fonts.googleapis.com` ani `gstatic.com`. Hlídá to e2e test.
 

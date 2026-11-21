@@ -63,7 +63,16 @@ const portrait = await getPhoto(PLACEMENT.about);
       </div>
       <div>
         <dt>{a.facts.instagram.label}</dt>
-        <dd>{site.handle}</dd>
+        <dd>
+          <a
+            href={site.instagram}
+            rel="me"
+            data-umami-event="contact_click"
+            data-umami-event-type="instagram"
+          >
+            {site.handle}
+          </a>
+        </dd>
       </div>
     </dl>
   </div>

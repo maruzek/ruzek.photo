@@ -6,7 +6,7 @@
   min-height: 600px;
   display: grid;
   align-items: end;
-  overflow: hidden;
+  overflow: clip; /* not hidden: a scroll container would stop the caption from sticking */
   background: var(--night); /* the surface the text sits on when the photo is withdrawn */
 }
 .fold .ph-tag {
@@ -43,8 +43,12 @@
     rgb(7 8 11 / 95%) 100%
   );
 }
+/* The caption sticks to the bottom of the screen while the fold comes in, so the heading reads as soon as the
+   photo shows instead of after a whole screen of it; the fold's clip hides what is still below its top edge. */
 .fold .note {
-  position: relative;
+  position: sticky;
+  bottom: 0;
+  z-index: 3; /* above the placeholder tag, which it passes on the way down */
   isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 6fr) minmax(0, 3fr) minmax(0, 3fr);
@@ -85,6 +89,8 @@
   font-size: clamp(72px, 8vw, 136px);
   line-height: 0.85;
   letter-spacing: -0.045em;
+  /* the negative tracking also pulls in the box after the last digit, and .idx clips: give the ink back */
+  padding-right: 0.06em;
   color: var(--ink);
 }
 .chips {

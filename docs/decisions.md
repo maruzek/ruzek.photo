@@ -22,7 +22,10 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 - **Formulář:** typ focení vybírá dlaždicemi, délka akce se dopočítá ze začátku a konce, pole jsou ve skupinách Kontakt / Akce / Výstupy.
 - **Odkazy v textu** mají tečkované podtržení jako „Prohlédnout práci“, hlavní menu ne.
 - **Astro audit „tabindex“:** neřeší se. `tabindex="-1"` na `main` a sekcích je cíl fokusu po skoku z menu a do pořadí tabulátoru nic nepřidává.
-- **Serif:** Instrument Serif se zkouší ve worktree `exp/instrument-serif`. Crimson Pro zůstává, dokud Martin nerozhodne.
+- **Serif:** akcentem je **Instrument Serif** (kurzíva), nahrazuje Crimson Pro. Martin ho vybral po porovnání obou verzí.
+- **Sekce s fotkou:** popisek s nadpisem se při najíždění sekce drží u spodního okraje obrazovky, takže se čte hned, ne až po celé fotce.
+- **Služby:** odznak „hlavní“ u akcí je pryč. **Formulář:** skupiny nemají dělicí čáry.
+- **Ikona a titulek:** ikona v záložce je logo (`pnpm icons` ji vygeneruje z `design/logo/logo-tiles.json`), titulek je zkrácený na „Martin Růžek · fotograf akcí a sportu“.
 
 ### 2026-11-21: výkon, první měření Lighthouse CI
 Lab měření (`pnpm lhci`, emulace mobilu, medián z 5 běhů, zástupné fotky; opraveno po review PF-03 až PF-05): výkon 1,0, přístupnost 1, LCP ≈ 1,1 s, TBT 75 ms, CLS 0. Rozpočty na JS a písma se po review počítají poctivěji, viz níže.

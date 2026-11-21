@@ -25,6 +25,11 @@
   white-space: nowrap;
   margin-left: -0.05em;
 }
+/* SplitText masks (choreo.ts), as in hero.css: headroom above the 0.84 line for Ů's ring and the dots */
+.foot .big .fb-ch-mask {
+  padding-top: 0.32em;
+  margin-top: -0.32em;
+}
 .foot .cols {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

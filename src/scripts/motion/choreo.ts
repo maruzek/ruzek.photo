@@ -79,7 +79,7 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
           duration: 1.1,
           ease: 'expo.out',
           stagger: 0.09,
-          scrollTrigger: { trigger: el, start: 'top 86%', once: true },
+          scrollTrigger: foldStart(el) ?? { trigger: el, start: 'top 86%', once: true },
         }),
     });
   }
@@ -115,6 +115,7 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
     SplitText.create(big, {
       type: 'chars',
       mask: 'chars',
+      charsClass: 'fb-ch', // the mask gets `fb-ch-mask` (footer.css gives it headroom for Ů)
       autoSplit: true,
       onSplit: (self) =>
         gsap.from(self.chars, {
@@ -129,7 +130,23 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
   return () => listeners.forEach((fn) => fn());
 }
 
-/** Photo folds: slow zoom out and the caption drifting in. */
+/**
+ * A fold heading is in a caption that sticks to the bottom of the screen (fold.css), and ScrollTrigger cannot
+ * measure a sticky element. The heading comes into view when the fold's top has risen the caption's height above
+ * the bottom of the screen, so its entrance starts just before that.
+ */
+function foldStart(el: HTMLElement): ScrollTrigger.Vars | undefined {
+  const fold = el.closest<HTMLElement>('.fold');
+  const note = fold?.querySelector<HTMLElement>('.note');
+  if (!fold || !note) return undefined;
+  return {
+    trigger: fold,
+    start: () => `top bottom-=${Math.round(note.offsetHeight * 0.9)}`,
+    once: true,
+  };
+}
+
+/** Photo folds: slow zoom out and the number rising. */
 export function folds({ gsap }: Libs, root: ParentNode): Cleanup {
   for (const fold of root.querySelectorAll<HTMLElement>('.fold')) {
     const media = fold.querySelector('.dph');
@@ -144,21 +161,14 @@ export function folds({ gsap }: Libs, root: ParentNode): Cleanup {
         },
       );
     }
-    const note = fold.querySelector('.note');
-    if (note) {
-      gsap.from(note, {
-        y: 80,
-        ease: 'none',
-        scrollTrigger: { trigger: fold, start: 'top bottom', end: 'center center', scrub: true },
-      });
-    }
     const idx = fold.querySelector('.idx b');
     if (idx) {
       gsap.from(idx, {
         yPercent: 60,
         opacity: 0,
         ease: 'none',
-        scrollTrigger: { trigger: fold, start: 'top 70%', end: 'center center', scrub: true },
+        // the caption sticks to the bottom of the screen while the fold comes in (fold.css), so the number does too
+        scrollTrigger: { trigger: fold, start: 'top bottom-=120', end: 'top 45%', scrub: true },
       });
     }
   }
