@@ -1,0 +1,180 @@
+/* Inquiry form island: estimate box and form. Source: design/final/rozpad/index.html:180-205 (INQUIRY).
+   The section grid (.inq, .inq-side, .direct) belongs to sections/inquiry.css. */
+.inq .est {
+  border: 1px solid var(--light-ink);
+  padding: 22px;
+  display: grid;
+  gap: 6px;
+}
+.inq .est output {
+  font-family: var(--f-text);
+  font-weight: 600;
+  font-size: clamp(30px, 2.8vw, 44px);
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  /* amounts never wrap inside (non-breaking spaces); a break is allowed only after the en dash (<wbr>) */
+  white-space: normal;
+}
+.inq .est small {
+  color: var(--light-muted);
+}
+.inq-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px var(--gap);
+}
+.inq-form .field {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.inq-form .field.full {
+  grid-column: 1 / -1;
+}
+.inq-form label {
+  font-weight: 500;
+}
+.inq-form label .opt {
+  color: var(--light-muted);
+  font-weight: 400;
+}
+.inq-form :is(input, select, textarea) {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--control);
+  border-radius: 0;
+  background: transparent;
+  color: var(--light-ink);
+  font-size: 18px;
+  transition: border-color 0.3s var(--ease);
+}
+.inq-form select {
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--light-ink) 50%) right 6px center / 7px 7px no-repeat,
+    linear-gradient(-45deg, transparent 50%, var(--light-ink) 50%) right 0 center / 7px 7px no-repeat;
+  padding-right: 28px;
+}
+.inq-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+.inq-form :is(input, textarea)::placeholder {
+  color: #8a8e96;
+}
+.inq-form :is(input, select, textarea):hover {
+  border-color: var(--light-ink);
+}
+.inq-form :is(input, select, textarea):focus-visible {
+  outline: none;
+  border-bottom: 2px solid var(--light-ink);
+}
+.inq-form .field.bad :is(input, select, textarea) {
+  border-color: var(--err);
+}
+.inq-form .msg {
+  color: var(--err);
+  font-size: 15px;
+}
+.inq-form .form-msg {
+  grid-column: 1 / -1;
+}
+.inq-form .form-msg:empty {
+  display: none;
+}
+.inq-form .ticks {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px var(--gap);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.inq-form .tick {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border: 1px solid var(--rule-l);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition:
+    border-color 0.3s var(--ease),
+    background 0.3s var(--ease);
+}
+.inq-form .tick:hover {
+  border-color: var(--light-ink);
+}
+.inq-form .tick:has(input:checked) {
+  border-color: var(--light-ink);
+  background: #fff;
+}
+.inq-form .tick input {
+  width: 20px;
+  min-height: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--light-ink);
+  border: 0;
+  flex: none;
+}
+.inq-form .tick small {
+  display: block;
+  color: var(--light-muted);
+}
+.inq-form .actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.inq-form .done {
+  grid-column: 1 / -1;
+  background: var(--ok-bg);
+  color: var(--ok);
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.inq-form .done button {
+  background: none;
+  border: 0;
+  color: var(--ok);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 500;
+}
+.inq-form :is(.privacy, .noscript, .turnstile) {
+  grid-column: 1 / -1;
+}
+.inq-form .privacy {
+  color: var(--light-muted);
+  font-size: 14px;
+  max-width: 70ch;
+}
+.inq-form .turnstile:empty {
+  display: none;
+}
+/* Honeypot: off screen rather than display:none, which some bots skip */
+.inq-form .hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+@media (max-width: 900px) {
+  .inq-form,
+  .inq-form .ticks {
+    grid-template-columns: 1fr;
+  }
+}

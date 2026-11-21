@@ -668,8 +668,8 @@ export const inquirySchema = z.object({
 });
 ```
 
-- [ ] **Step 1:** Unit testy schématu: platná poptávka projde (i bez `source`); e-mail `jana@` neprojde; `source.landingPath` bez úvodního `/` neprojde; neznámá služba neprojde; `note` 4 001 znaků neprojde; vyplněný `website` neprojde. Testy `readSource`: `('https://martinruzek.eu/?utm_source=ig&utm_campaign=jaro', 'https://www.instagram.com/', 'martinruzek.eu')` → `{ referrer: 'https://www.instagram.com/', landingPath: '/', utmSource: 'ig', utmCampaign: 'jaro' }`; referrer z vlastní domény se vynechá; prázdný referrer se vynechá. Testy `readPrefill`: `'#poptavka?sluzba=match'` → `{ service: 'match' }`, neznámá hodnota → `{}`, `'#inquiry?service=event&hours=4'` → `{ service: 'event', hours: 4 }`.
-- [ ] **Step 2:** E2e (testovací klíče Turnstile `1x00000000000000000000AA` / `1x0000000000000000000000000000000AA` v `.dev.vars` pro testy; endpoint v tomto úkolu nahradí `page.route`):
+- [x] **Step 1:** Unit testy schématu: platná poptávka projde (i bez `source`); e-mail `jana@` neprojde; `source.landingPath` bez úvodního `/` neprojde; neznámá služba neprojde; `note` 4 001 znaků neprojde; vyplněný `website` neprojde. Testy `readSource`: `('https://martinruzek.eu/?utm_source=ig&utm_campaign=jaro', 'https://www.instagram.com/', 'martinruzek.eu')` → `{ referrer: 'https://www.instagram.com/', landingPath: '/', utmSource: 'ig', utmCampaign: 'jaro' }`; referrer z vlastní domény se vynechá; prázdný referrer se vynechá. Testy `readPrefill`: `'#poptavka?sluzba=match'` → `{ service: 'match' }`, neznámá hodnota → `{}`, `'#inquiry?service=event&hours=4'` → `{ service: 'event', hours: 4 }`.
+- [x] **Step 2:** E2e (testovací klíče Turnstile `1x00000000000000000000AA` / `1x0000000000000000000000000000000AA` v `.dev.vars` pro testy; endpoint v tomto úkolu nahradí `page.route`):
   - odhad se mění s typem, hodinami a příplatky (3 h + týž den → `4 200–5 070 Kč`);
   - odeslání prázdného formuláře přesune fokus na pole Jméno a ukáže chybu propojenou přes `aria-describedby`;
   - **dvojí klik** na Odeslat pošle jediný požadavek (tlačítko se během odesílání zakáže);
@@ -678,9 +678,9 @@ export const inquirySchema = z.object({
   - Turnstile skript se nestáhne, dokud formulář není blízko viewportu;
   - formulář nemá žádné zaškrtávátko souhlasu, nad tlačítkem je věta s odkazem na zásady ve správném jazyce;
   - po úspěšném odeslání se zavolá `umami.track('inquiry_sent', { service })` (v testu podstrčený `window.umami`), při chybě `inquiry_error`. Bez `window.umami` formulář funguje stejně.
-- [ ] **Step 3:** Spustit, FAIL. Implementovat `InquiryForm.tsx` (řízené pole, validace přes `inquirySchema.shape[pole].safeParse` při blur, celé schéma při submit, stavy `idle | sending | sent | error`, vzhled a třídy z `index.html:393-416`, zaškrtávátka souhlasu z prototypu se vynechají). Zdroj poptávky přes `readSource(location, document.referrer, location.host)` při odeslání, nic se neukládá do prohlížeče. Měření přes `track()` z `src/scripts/analytics.ts` (úkol 14 ho doplní, tady stačí funkce, která volá `window.umami?.track`). `useTurnstile` vloží skript `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` až po `IntersectionObserver` (rootMargin 400 px) nebo prvním `focusin` a vykreslí widget s `appearance: 'interaction-only'`. Pod formulářem `<noscript>` s přímými kontakty.
-- [ ] **Step 4:** Testy PASS.
-- [ ] **Step 5:** Commit `feat: inquiry form island with live estimate and Turnstile`.
+- [x] **Step 3:** Spustit, FAIL. Implementovat `InquiryForm.tsx` (řízené pole, validace přes `inquirySchema.shape[pole].safeParse` při blur, celé schéma při submit, stavy `idle | sending | sent | error`, vzhled a třídy z `index.html:393-416`, zaškrtávátka souhlasu z prototypu se vynechají). Zdroj poptávky přes `readSource(location, document.referrer, location.host)` při odeslání, nic se neukládá do prohlížeče. Měření přes `track()` z `src/scripts/analytics.ts` (úkol 14 ho doplní, tady stačí funkce, která volá `window.umami?.track`). `useTurnstile` vloží skript `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` až po `IntersectionObserver` (rootMargin 400 px) nebo prvním `focusin` a vykreslí widget s `appearance: 'interaction-only'`. Pod formulářem `<noscript>` s přímými kontakty.
+- [x] **Step 4:** Testy PASS.
+- [x] **Step 5:** Commit `feat: inquiry form island with live estimate and Turnstile`.
 
 ---
 
