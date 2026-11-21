@@ -14,6 +14,7 @@ export interface LenisHandle {
 }
 
 const DURATION = 1.15;
+const SCROLL_KEYS = new Set([' ', 'PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown']);
 const easing = (t: number): number => Math.min(1, 1.001 - 2 ** (-10 * t));
 
 export function startLenis(gsap: typeof Gsap, ScrollTrigger: typeof ST): LenisHandle {
@@ -46,10 +47,25 @@ export function startLenis(gsap: typeof Gsap, ScrollTrigger: typeof ST): LenisHa
     const target = document.getElementById(decodeURIComponent(hash.slice(1)));
     if (!target) return;
     event.preventDefault();
-    lenis.scrollTo(target, { offset: 0, onComplete: () => target.focus({ preventScroll: true }) });
+    // land below the fixed header (HM-09); the same offset as the CSS scroll-padding of the native jump
+    const header = document.querySelector<HTMLElement>('header.top');
+    lenis.scrollTo(target, {
+      offset: -(header?.offsetHeight ?? 0),
+      onComplete: () => target.focus({ preventScroll: true }),
+    });
     history.replaceState(null, '', hash);
   };
   document.addEventListener('click', onClick);
+
+  // A scroll key during wheel inertia: stop the interpolation where it is and let the browser's own key action run;
+  // otherwise Lenis keeps easing towards its old target and overrides the key (HM-08).
+  const onKey = (event: KeyboardEvent): void => {
+    if (!SCROLL_KEYS.has(event.key) || lenis.isScrolling !== 'smooth') return;
+    const target = event.target as Element | null;
+    if (target?.closest('input, textarea, select, [contenteditable], dialog')) return;
+    lenis.scrollTo(lenis.animatedScroll, { immediate: true, force: true });
+  };
+  document.addEventListener('keydown', onKey, { capture: true });
 
   return {
     lenis,
@@ -57,6 +73,7 @@ export function startLenis(gsap: typeof Gsap, ScrollTrigger: typeof ST): LenisHa
     start: () => lenis.start(),
     destroy: () => {
       document.removeEventListener('click', onClick);
+      document.removeEventListener('keydown', onKey, { capture: true });
       gsap.ticker.remove(raf);
       lenis.destroy();
     },

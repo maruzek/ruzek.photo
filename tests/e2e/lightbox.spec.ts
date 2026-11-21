@@ -36,3 +36,17 @@ test.describe('without JavaScript', () => {
     await expect(shot).toHaveAttribute('href', /\/_astro\/.+\.(webp|jpg)$/);
   });
 });
+
+// HM-12: a placeholder photo is marked in the grid and in the dialog
+test('placeholder photos are marked in the work grid and the lightbox', async ({ page }) => {
+  await page.goto('/');
+  const shots = page.locator('.shot[data-placeholder]');
+  expect(await shots.count()).toBeGreaterThan(0);
+  expect(await page.locator('.shot[data-placeholder] .frame .ph-tag').count()).toBe(
+    await shots.count(),
+  );
+  await expect(shots.first().locator('.ph-tag')).toHaveText('Zástupná fotka');
+  await shots.first().click();
+  await expect(page.locator('dialog.lb .lb-ph')).toBeVisible();
+  await expect(page.locator('dialog.lb .lb-ph')).toHaveText('Zástupná fotka');
+});

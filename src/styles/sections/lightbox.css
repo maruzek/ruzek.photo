@@ -33,6 +33,10 @@ dialog.lb::backdrop {
   display: grid;
   place-items: center;
   min-height: 0;
+  position: relative;
+}
+.lb-stage .lb-ph[hidden] {
+  display: none;
 }
 .lb-stage img {
   max-width: 100%;

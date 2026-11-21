@@ -26,11 +26,14 @@ const portrait = await getPhoto(PLACEMENT.about);
       locale={locale}
       sizes="(max-width: 900px) 100vw, 40vw"
       cover="night"
-      alt={a.portraitAlt}
+      alt={portrait.data.placeholder ? a.portraitAlt : portrait.data.alt[locale]}
     >
-      <span class="ph-tag">
-        <Todo>{a.portraitTodo}</Todo>
-      </span>
+      {/* a real portrait keeps its own alt text and loses the TODO (HM-12) */}
+      {portrait.data.placeholder && (
+        <span class="ph-tag">
+          <Todo>{a.portraitTodo}</Todo>
+        </span>
+      )}
     </DitherImage>
   ) : (
     <p class="about-todo">

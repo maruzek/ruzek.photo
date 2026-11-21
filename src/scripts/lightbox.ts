@@ -26,6 +26,7 @@ export function initLightbox(root: HTMLDialogElement, hooks: LightboxHooks = {})
   const img = root.querySelector<HTMLImageElement>('.lb-stage img');
   const cap = root.querySelector<HTMLElement>('.lb-cap');
   const no = root.querySelector<HTMLElement>('.lb-no');
+  const tag = root.querySelector<HTMLElement>('.lb-ph');
   const close = root.querySelector<HTMLButtonElement>('.lb-close');
   const prev = root.querySelector<HTMLButtonElement>('.lb-prev');
   const next = root.querySelector<HTMLButtonElement>('.lb-next');
@@ -48,6 +49,7 @@ export function initLightbox(root: HTMLDialogElement, hooks: LightboxHooks = {})
       img.height = thumb.height;
     }
     cap.textContent = item.dataset['lb'] ?? '';
+    if (tag) tag.hidden = item.dataset['placeholder'] === undefined;
     no.textContent = counter.replace('{n}', pad(index + 1)).replace('{total}', pad(items.length));
   };
 

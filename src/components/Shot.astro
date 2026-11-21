@@ -6,6 +6,7 @@ import type { Locale } from '../i18n';
 import { t } from '../i18n';
 import type { PublishedPhoto } from '../lib/photos/get';
 import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+import PlaceholderTag from './PlaceholderTag.astro';
 import Todo from './Todo.astro';
 
 /** Width of the file the lightbox opens (never larger than the source) */
@@ -22,7 +23,7 @@ interface Props {
 }
 
 const { photo, locale, slot, sizes, par } = Astro.props;
-const { image, alt, caption } = photo.data;
+const { image, alt, caption, placeholder } = photo.data;
 const full = await getImage({
   src: image,
   width: Math.min(FULL_WIDTH, image.width),
@@ -38,6 +39,7 @@ const title = caption?.[locale];
   data-full={full.src}
   data-cursor
   data-par={par}
+  data-placeholder={placeholder ? '' : undefined}
 >
   <span class="frame">
     <Picture
@@ -48,6 +50,7 @@ const title = caption?.[locale];
       sizes={sizes}
       loading="lazy"
     />
+    {placeholder && <PlaceholderTag locale={locale} />}
   </span>
   <span class="cap">
     {title && <b>{title}</b>}

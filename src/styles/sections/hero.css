@@ -62,7 +62,25 @@
 }
 .hero .base {
   position: relative;
+  isolation: isolate; /* keeps the backing below the text and above the photo */
   padding: 0 var(--m) clamp(28px, 3vw, 44px);
+}
+/* Backing tied to the text block itself (HM-06): however tall the block gets (a narrow phone wraps the name and
+   the lead onto many lines), its top edge already sits on 62 % night, and the backing moves with the
+   block while the hero scrolls away. It fades in over the 72 px above the block. The .shade above stays for the
+   kicker at the top. tests/e2e/contrast.spec.ts measures the rendered result at 360 × 780. */
+.hero .base::before {
+  content: '';
+  position: absolute;
+  inset: -72px 0 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(7 8 11 / 0%) 0,
+    rgb(7 8 11 / 62%) 72px,
+    rgb(7 8 11 / 92%) 100%
+  );
 }
 .hero h1 {
   font-family: var(--f-name);

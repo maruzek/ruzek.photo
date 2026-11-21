@@ -2,7 +2,7 @@
 // of characters follows the pointer, and the photo turns back into characters as the hero scrolls away.
 // Runs without GSAP (it ships with the first paint), drives one frame callback through the shared scheduler,
 // and does nothing at all with reduced motion. The canvas is decorative (aria-hidden); the photo below it stays
-// visible and remains the LCP element.
+// visible and loads first.
 import { b8 } from './bayer';
 import { createGlyphAtlas, RAMP, type GlyphAtlas } from './glyph-atlas';
 import { createQualityProbe, initialQuality, type Quality } from './quality';
@@ -25,6 +25,11 @@ const COVER = 'rgba(7,8,11,.9)';
 
 const clamp = (v: number, a: number, b: number): number => (v < a ? a : v > b ? b : v);
 const easeInOut = (t: number): number => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2); // power2.inOut
+
+/** The short dissolve after a switch to `lite`: starts exactly at the rendered amount `from` (HM-11). */
+export function fadeLoad(from: number, elapsedMs: number, durationMs: number): number {
+  return from * (1 - clamp(elapsedMs / durationMs, 0, 1));
+}
 
 type Lens = 'off' | 'tracking' | 'drift' | 'idle';
 
@@ -61,7 +66,8 @@ export function initAsciiHero(
   // intro: 1 = all characters, 0 = the photo
   let load = 1;
   let introStart = -1;
-  let introMs = quality === 'lite' ? LITE_INTRO_MS : INTRO_MS;
+  const introMs = quality === 'lite' ? LITE_INTRO_MS : INTRO_MS;
+  let fade: { from: number; start: number } | null = null;
   let leave = 0;
   let lens: Lens = 'off';
   let lensOn = 0;
@@ -127,6 +133,7 @@ export function initAsciiHero(
     H = r.height;
     const dpr = Math.min(devicePixelRatio || 1, MAX_DPR);
     cw = Math.max(CELL, Math.ceil(Math.sqrt((W * H) / (CELL_RATIO * MAX_CELLS))));
+    while (Math.ceil(W / cw) * Math.ceil(H / Math.round(cw * CELL_RATIO)) > MAX_CELLS) cw++; // HM-15
     ch = Math.round(cw * CELL_RATIO);
     cols = Math.ceil(W / cw);
     rows = Math.ceil(H / ch);
@@ -189,13 +196,14 @@ export function initAsciiHero(
         if (quality === 'full' && probe.verdict() === 'lite') {
           // weak device: finish with a short dissolve from where the intro is now, and no lens
           quality = 'lite';
-          introMs = LITE_INTRO_MS / Math.max(load, 0.01);
-          introStart = time - (1 - load) * introMs;
+          fade = { from: load, start: time };
           setIntro('lite');
           lensTarget = 0;
           setLens('off');
         }
-        load = 1 - easeInOut(clamp((time - introStart) / introMs, 0, 1));
+        load = fade
+          ? fadeLoad(fade.from, time - fade.start, LITE_INTRO_MS)
+          : 1 - easeInOut(clamp((time - introStart) / introMs, 0, 1));
         if (load <= 0) {
           load = 0;
           if (root.dataset['asciiIntro'] === 'running') setIntro('done');
@@ -254,6 +262,7 @@ export function initAsciiHero(
     leave = H > 0 ? clamp(scrollY / H, 0, 1) : 0;
   };
   const onMove = (e: PointerEvent): void => {
+    if (quality !== 'full') return; // no lens in `lite` (HM-11)
     const r = root.getBoundingClientRect();
     tx = e.clientX - r.left;
     ty = e.clientY - r.top;
@@ -288,15 +297,11 @@ export function initAsciiHero(
     } else setLens('off');
   };
 
-  // A photo from the HTTP cache skips the intro (risk R4: no dissolve over a photo people already see).
-  // `complete` alone is not enough: the preload often finishes the first download before this script runs.
-  const fromCache = (): boolean => {
-    const entry = performance.getEntriesByName(img.currentSrc || img.src, 'resource').at(-1) as
-      PerformanceResourceTiming | undefined;
-    return entry !== undefined && entry.transferSize === 0 && entry.decodedBodySize > 0;
-  };
-  const onLoad = (): void => begin(fromCache());
-  if (img.complete && img.naturalWidth > 0) onLoad();
+  // No dissolve over a photo people may already see (risk R4, HM-03): a photo that is loaded when this module
+  // runs, or a page the 3 s fallback has already revealed (a late module, a late photo), skips the intro.
+  const revealed = (): boolean => document.documentElement.classList.contains('reveal-fallback');
+  const onLoad = (): void => begin(revealed());
+  if (img.complete && img.naturalWidth > 0) begin(true);
   else img.addEventListener('load', onLoad, { once: true });
 
   if (opts.fine) {

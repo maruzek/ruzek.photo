@@ -56,3 +56,31 @@ test('on touch the lens drifts for 5 s and then stops', async ({ page }, testInf
   await expect(hero).toHaveAttribute('data-ascii-lens', 'drift');
   await expect(hero).toHaveAttribute('data-ascii-lens', 'idle', { timeout: 8000 });
 });
+
+// HM-03: a page the 3 s fallback already revealed never gets the photo covered again
+test('the intro is skipped once the fallback has revealed the page', async ({ page }) => {
+  await page.route(/smoke\.[^/]*\.(avif|webp|jpg)$/, async (route) => {
+    await new Promise((r) => setTimeout(r, 3600));
+    await route.continue();
+  });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveClass(/reveal-fallback/, { timeout: 5000 });
+  await expect(page.locator('.hero')).toHaveAttribute('data-ascii-intro', 'skipped', {
+    timeout: 8000,
+  });
+});
+
+// HM-11: `lite` (here: little device memory) has no pointer lens
+test('quality lite never turns the lens on', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'pointer lens is desktop only');
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'deviceMemory', { get: () => 2 });
+  });
+  await page.goto('/');
+  const hero = page.locator('.hero');
+  await expect(hero).toHaveAttribute('data-ascii-lens', 'off');
+  await page.mouse.move(400, 400);
+  await page.mouse.move(600, 450, { steps: 5 });
+  await page.waitForTimeout(300);
+  await expect(hero).toHaveAttribute('data-ascii-lens', 'off');
+});

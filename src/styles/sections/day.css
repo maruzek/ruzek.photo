@@ -27,14 +27,9 @@
   display: grid;
   gap: 14px;
   align-content: start;
-  transition: opacity 0.5s var(--ease);
 }
-/* with motion, the steps light up one by one as the section scrolls (choreo.ts) */
-@media (prefers-reduced-motion: no-preference) {
-  html.motion-ready .step:not(.is-on) {
-    opacity: 0.35;
-  }
-}
+/* With motion the steps light up one by one as the section scrolls (choreo.ts): the progress line fills and the
+   step marker turns coral. The text itself is never dimmed, it keeps its full contrast (HM-05). */
 .step .no {
   display: flex;
   align-items: center;

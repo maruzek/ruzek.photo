@@ -76,9 +76,15 @@ test('open lightbox blocks page scroll (wheel, space, arrows)', async ({ page })
       }),
   );
   const y = await page.evaluate(() => scrollY);
+  const dialog = page.locator('dialog.lb');
+  // HM-13: Space on the focused Close button would just close the dialog; move focus off any control first
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
   await page.mouse.wheel(0, 800);
-  await page.keyboard.press('Space');
-  await page.keyboard.press('ArrowDown');
+  await expect(dialog).toHaveAttribute('open', '');
+  for (const key of ['Space', 'ArrowDown', 'PageDown']) {
+    await page.keyboard.press(key);
+    await expect(dialog).toHaveAttribute('open', '');
+  }
   await page.waitForTimeout(400);
   expect(await page.evaluate(() => scrollY)).toBe(y);
   await page.keyboard.press('Escape');
@@ -94,6 +100,32 @@ test('anchor link moves focus to the section', async ({ page, viewport }) => {
   await page.waitForFunction(motionIs('on'));
   await page.getByRole('link', { name: /Služby a ceny/ }).click();
   await expect(page.locator('#sluzby')).toBeFocused();
+  // HM-09: the section starts below the fixed header, not under it
+  const { top, header } = await page.evaluate(() => ({
+    top: document.querySelector('#sluzby')!.getBoundingClientRect().top,
+    header: document.querySelector<HTMLElement>('header.top')!.offsetHeight,
+  }));
+  expect(top).toBeGreaterThanOrEqual(header - 1);
+});
+
+test('reduced motion: an anchor jump lands below the header', async ({ page, viewport }) => {
+  test.skip((viewport?.width ?? 0) <= 900, 'the services link is in the desktop navigation only');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await page.getByRole('link', { name: /Služby a ceny/ }).click();
+  const { top, header } = await page.evaluate(() => ({
+    top: document.querySelector('#sluzby')!.getBoundingClientRect().top,
+    header: document.querySelector<HTMLElement>('header.top')!.offsetHeight,
+  }));
+  expect(top).toBeGreaterThanOrEqual(header - 1);
+});
+
+// HM-09: a control focused before its group has risen in is shown at once
+test('focusing the hero CTA during its entrance shows it at once', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(motionIs('on'));
+  await page.locator('.hero .cta a').first().focus();
+  await expect(page.locator('.hero .row > .cta')).toHaveCSS('opacity', '1', { timeout: 200 });
 });
 
 test('marquee can be paused', async ({ page }) => {
@@ -127,5 +159,134 @@ test('header blends only over flat sections and never over photos', async ({ pag
     const fold = document.querySelector('.fold') as HTMLElement;
     window.scrollTo(0, fold.getBoundingClientRect().top + scrollY + fold.offsetHeight / 2);
   });
+  await expect(header).not.toHaveClass(/\bblend\b/);
+});
+
+// HM-02: a failure inside start() (not just a failed import) undoes what was set up and shows everything
+test('a failure in the middle of the motion layer reveals the page', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.IntersectionObserver = class {
+      constructor() {
+        throw new Error('IntersectionObserver unavailable');
+      }
+    } as unknown as typeof IntersectionObserver;
+  });
+  await page.goto('/');
+  await page.waitForFunction(motionIs('off'));
+  await expect(page.locator('html')).not.toHaveClass(/\blenis\b/);
+  await expect(page.locator('html')).not.toHaveClass(/motion-ready/);
+  for (const el of await page.locator('.svc-sec [data-stagger] > *, [data-rise]').all())
+    await expect(el).toHaveCSS('opacity', '1');
+  expect(await page.locator('[data-split] [class*="mask"]').count()).toBe(0);
+});
+
+// HM-04: reduced motion chosen while start() waits for the fonts never starts Lenis
+test('switching to reduced motion during the font wait starts nothing', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __lenisSeen: boolean };
+    w.__lenisSeen = false;
+    // added and removed in the same task would leave no trace in classList: read the old values too
+    // (init scripts run before <html> exists, so watch the document)
+    new MutationObserver((records) => {
+      for (const r of records)
+        if (/\blenis\b/.test(`${r.oldValue ?? ''} ${document.documentElement.className}`))
+          w.__lenisSeen = true;
+    }).observe(document, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class'],
+      attributeOldValue: true,
+    });
+  });
+  await page.route(/\.woff2$/, async (route) => {
+    await new Promise((r) => setTimeout(r, 2500));
+    await route.continue();
+  });
+  const startChunk = page.waitForResponse((r) => /start[^/]*\.js$/.test(r.url()));
+  await page.goto('/', { waitUntil: 'commit' });
+  await startChunk;
+  await page.waitForTimeout(200); // start() is now waiting for the delayed fonts
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForFunction(motionIs('off'), undefined, { timeout: 10_000 });
+  await page.waitForTimeout(1500); // past FONT_WAIT_MS
+  expect(
+    await page.evaluate(() => (window as unknown as { __lenisSeen: boolean }).__lenisSeen),
+  ).toBe(false);
+  await expect(page.locator('html')).not.toHaveClass(/motion-ready/);
+});
+
+// HM-04: after switching to reduced motion no frame loop keeps running
+test('switching to reduced motion stops every frame loop', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __raf: number };
+    w.__raf = 0;
+    const raf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = (cb) => {
+      w.__raf++;
+      return raf(cb);
+    };
+  });
+  await page.goto('/');
+  await page.waitForFunction(motionIs('on'));
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForFunction(motionIs('off'));
+  await page.waitForTimeout(500);
+  const a = await page.evaluate(() => (window as unknown as { __raf: number }).__raf);
+  await page.waitForTimeout(1000);
+  const b = await page.evaluate(() => (window as unknown as { __raf: number }).__raf);
+  expect(b - a).toBeLessThan(5);
+});
+
+// HM-05: steps that are not reached yet keep full text contrast; the marker and the line show progress
+test('pinned same-day steps keep full contrast before they light up', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(motionIs('on'));
+  await page.evaluate(() => {
+    const day = document.querySelector('.day') as HTMLElement;
+    window.scrollTo(0, day.getBoundingClientRect().top + scrollY + 10);
+  });
+  await expect(page.locator('.step:not(.is-on)').first()).toBeAttached();
+  for (const step of await page.locator('.step').all())
+    await expect(step).toHaveCSS('opacity', '1');
+});
+
+// HM-08: a scroll key during wheel inertia wins over the rest of the smooth scroll
+test('a scroll key during wheel inertia is not overridden by Lenis', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'wheel smoothing is desktop only');
+  await page.goto('/');
+  await page.waitForFunction(motionIs('on'));
+  await page.evaluate(() => window.scrollTo(0, 3000));
+  await page.waitForTimeout(300);
+  await page.mouse.move(700, 450);
+  await page.mouse.wheel(0, 1500);
+  await page.waitForTimeout(120);
+  await page.keyboard.press('Home');
+  await page.waitForTimeout(1500);
+  expect(await page.evaluate(() => scrollY)).toBeLessThan(50);
+});
+
+// HM-10: a narrow photo between the sample points still turns the blend off (the "same day" portrait)
+test('header does not blend over a narrow photo', async ({ page, viewport }) => {
+  test.skip(
+    (viewport?.width ?? 0) < 1200,
+    'the portrait sits between sample points at desktop width',
+  );
+  await page.goto('/');
+  await page.waitForFunction(motionIs('on'));
+  const header = page.locator('header.top');
+  for (let i = 0; i < 4; i++) {
+    await page.evaluate(() => {
+      const ph = document.querySelector('.day .dph') as HTMLElement;
+      const h = document.querySelector<HTMLElement>('header.top')!.offsetHeight;
+      window.scrollTo(0, scrollY + ph.getBoundingClientRect().top - h / 2);
+    });
+    await page.waitForTimeout(250);
+  }
+  const overlaps = await page.evaluate(() => {
+    const r = document.querySelector('.day .dph')!.getBoundingClientRect();
+    const h = document.querySelector<HTMLElement>('header.top')!.offsetHeight;
+    return r.top < h && r.bottom > 0;
+  });
+  expect(overlaps).toBe(true);
   await expect(header).not.toHaveClass(/\bblend\b/);
 });

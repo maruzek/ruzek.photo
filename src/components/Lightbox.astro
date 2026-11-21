@@ -7,6 +7,7 @@ interface Props {
 }
 
 const d = t(Astro.props.locale).lightbox;
+const placeholder = t(Astro.props.locale).common.placeholderPhoto;
 ---
 
 <dialog class="lb" id="lb" aria-label={d.label} data-counter={d.counter}>
@@ -19,6 +20,10 @@ const d = t(Astro.props.locale).lightbox;
     </div>
     <div class="lb-stage">
       <img alt="" />
+      <!-- shown by lightbox.ts for a photo whose link carries data-placeholder (HM-12) -->
+      <span class="ph-tag lb-ph" hidden>
+        {placeholder}
+      </span>
     </div>
     <div class="lb-foot">
       <button class="lb-btn lb-prev" type="button" aria-label={d.prev}>

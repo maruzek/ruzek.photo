@@ -22,21 +22,24 @@ if (reduce.matches || saveData) {
   // Save-Data without reduced motion: nothing animates, so nothing may stay hidden either
   settle();
 } else {
-  void import('./start').then(async ({ start }) => {
-    if (reduce.matches) return settle();
-    const revert = await start();
-    if (reduce.matches) {
-      revert();
-      return settle();
-    }
-    root.dataset['motion'] = 'on';
-    // switching back to full motion later keeps the static page (no second start in the same visit)
-    const onChange = (): void => {
-      if (!reduce.matches) return;
-      reduce.removeEventListener('change', onChange);
-      revert();
-      settle();
-    };
-    reduce.addEventListener('change', onChange);
-  }, settle);
+  void import('./start')
+    .then(async ({ start }) => {
+      if (reduce.matches) return settle();
+      const revert = await start();
+      if (reduce.matches) {
+        revert();
+        return settle();
+      }
+      root.dataset['motion'] = 'on';
+      // switching back to full motion later keeps the static page (no second start in the same visit)
+      const onChange = (): void => {
+        if (!reduce.matches) return;
+        reduce.removeEventListener('change', onChange);
+        revert();
+        settle();
+      };
+      reduce.addEventListener('change', onChange);
+      // a failed import and a failure inside start() (which undoes its own partial state) both end static (HM-02)
+    })
+    .catch(settle);
 }

@@ -17,7 +17,9 @@ const RESOLVED_ID = `\0${PUBLISHED_PHOTOS_ID}`;
  * `import.meta.glob` (even lazy) both import every file, published or not.
  *
  * The YAML rules (consent, alt texts) are still checked by the collection schema. A published photo whose file
- * is missing fails the build here, because its import cannot resolve.
+ * is missing fails the build here, because its import cannot resolve. Two entries (published or not) that point
+ * to the same file fail the build too: withdrawing one of them would leave the file published through the
+ * other (HM-01).
  */
 export function publishedPhotos(photosDir: string): Plugin {
   return {
@@ -30,6 +32,7 @@ export function publishedPhotos(photosDir: string): Plugin {
       const files = (await readdir(photosDir)).filter((f) => f.endsWith('.yaml')).sort();
       const imports: string[] = [];
       const entries: string[] = [];
+      const owners = new Map<string, string>();
       for (const [i, file] of files.entries()) {
         const path = join(photosDir, file);
         this.addWatchFile(path);
@@ -37,9 +40,14 @@ export function publishedPhotos(photosDir: string): Plugin {
           image?: unknown;
           published?: unknown;
         } | null;
+        if (typeof data?.image !== 'string') continue;
+        const image = resolve(photosDir, data.image);
+        const owner = owners.get(image);
+        if (owner) throw new Error(`${owner} and ${file} point to the same image ${data.image}`);
+        owners.set(image, file);
         // `published` defaults to false in the schema: only an explicit `true` imports the file
-        if (data?.published !== true || typeof data.image !== 'string') continue;
-        imports.push(`import p${i} from ${JSON.stringify(resolve(photosDir, data.image))};`);
+        if (data.published !== true) continue;
+        imports.push(`import p${i} from ${JSON.stringify(image)};`);
         entries.push(`${JSON.stringify(file.slice(0, -'.yaml'.length))}: p${i}`);
       }
       return `${imports.join('\n')}\nexport default { ${entries.join(', ')} };\n`;

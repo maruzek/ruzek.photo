@@ -45,11 +45,27 @@
 }
 .fold .note {
   position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 6fr) minmax(0, 3fr) minmax(0, 3fr);
   gap: var(--gap);
   align-items: end;
   padding: var(--m);
+}
+/* Backing tied to the text block (HM-06), as in hero.css: on a phone the stacked heading, chips and text reach far
+   above the bottom 35 % the .shade was drawn for. */
+.fold .note::before {
+  content: '';
+  position: absolute;
+  inset: -72px 0 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(7 8 11 / 0%) 0,
+    rgb(7 8 11 / 50%) 72px,
+    rgb(7 8 11 / 85%) 100%
+  );
 }
 .fold .note p {
   max-width: 22.8em; /* 34ch of Stack Sans Text, in em so the fallback font wraps the same way (RZ2-11) */

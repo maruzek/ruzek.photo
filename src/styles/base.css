@@ -16,6 +16,8 @@ body {
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: auto;
+  /* anchor jumps and focused elements land below the fixed header (header.css, 76–82 px; HM-09) */
+  scroll-padding-top: 88px;
 }
 body {
   background: var(--night);

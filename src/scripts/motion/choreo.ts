@@ -15,14 +15,13 @@ type Cleanup = () => void;
 const noop: Cleanup = () => undefined;
 const clamp = (v: number, a: number, b: number): number => Math.min(b, Math.max(a, v));
 
-/** The hero copy drifts up and fades as the hero leaves. */
+/** The hero copy drifts up as the hero leaves; it no longer fades, so it stays legible on its backing (HM-06). */
 export function heroLeave({ gsap }: Libs, root: ParentNode): Cleanup {
   const hero = root.querySelector<HTMLElement>('.hero');
   const base = hero?.querySelector('.base');
   if (!hero || !base) return noop;
   gsap.to(base, {
     yPercent: -18,
-    opacity: 0.2,
     ease: 'none',
     scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true },
   });
@@ -31,6 +30,14 @@ export function heroLeave({ gsap }: Libs, root: ParentNode): Cleanup {
 
 /** Name and headings rise in masks (SplitText), groups and paragraphs rise into place. */
 export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup {
+  // keyboard focus inside a group that is still on its way in finishes its entrance at once (HM-09)
+  const listeners: Array<() => void> = [];
+  const finishOnFocus = (group: Element | null, tween: { progress(v: number): unknown }): void => {
+    if (!group) return;
+    const finish = (): void => void tween.progress(1);
+    group.addEventListener('focusin', finish, { once: true });
+    listeners.push(() => group.removeEventListener('focusin', finish));
+  };
   const name = root.querySelector<HTMLElement>('#name');
   if (name) {
     SplitText.create(name, {
@@ -49,7 +56,7 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
   }
   const heroBits = root.querySelectorAll('.hero .kick > *, .hero .row > *');
   if (heroBits.length > 0) {
-    gsap.from(heroBits, {
+    const tween = gsap.from(heroBits, {
       y: 24,
       opacity: 0,
       duration: 0.9,
@@ -57,6 +64,7 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
       stagger: 0.08,
       delay: 1.1,
     });
+    finishOnFocus(root.querySelector('.hero'), tween);
   }
   for (const el of root.querySelectorAll<HTMLElement>('[data-split]')) {
     SplitText.create(el, {
@@ -74,7 +82,7 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
     });
   }
   for (const group of root.querySelectorAll<HTMLElement>('[data-stagger]')) {
-    gsap.from(group.children, {
+    const tween = gsap.from(group.children, {
       y: 48,
       opacity: 0,
       duration: 1,
@@ -82,15 +90,17 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
       stagger: 0.1,
       scrollTrigger: { trigger: group, start: 'top 85%', once: true },
     });
+    finishOnFocus(group, tween);
   }
   for (const el of root.querySelectorAll<HTMLElement>('[data-rise]')) {
-    gsap.from(el, {
+    const tween = gsap.from(el, {
       y: 32,
       opacity: 0,
       duration: 0.9,
       ease: 'power3.out',
       scrollTrigger: { trigger: el, start: 'top 88%', once: true },
     });
+    finishOnFocus(el, tween);
   }
   const big = root.querySelector<HTMLElement>('.foot .big');
   if (big) {
@@ -108,7 +118,7 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
         }),
     });
   }
-  return noop;
+  return () => listeners.forEach((fn) => fn());
 }
 
 /** Photo folds: slow zoom out and the caption drifting in. */
@@ -272,6 +282,14 @@ export function headerBlend(root: Document): Cleanup {
   const overFlat = (): boolean => {
     const h = top.offsetHeight;
     const w = innerWidth;
+    // any photo box in the header band, however narrow, rules the blend out; the sample points below only
+    // confirm the flat surface (HM-10)
+    for (const el of root.querySelectorAll(PHOTO)) {
+      if (top.contains(el)) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0 && r.top < h && r.bottom > 0 && r.left < w && r.right > 0)
+        return false;
+    }
     for (const y of [2, h / 2, h - 2]) {
       for (const x of [4, w * 0.25, w * 0.5, w * 0.75, w - 4]) {
         const under = root.elementsFromPoint(x, y).find((el) => !top.contains(el));
