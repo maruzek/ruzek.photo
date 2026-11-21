@@ -93,13 +93,19 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
     finishOnFocus(group, tween);
   }
   for (const el of root.querySelectorAll<HTMLElement>('[data-rise]')) {
-    const tween = gsap.from(el, {
-      y: 32,
-      opacity: 0,
-      duration: 0.9,
-      ease: 'power3.out',
-      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-    });
+    // explicit end values: until motion-ready the CSS safety net holds [data-rise] at opacity 0, and from() would
+    // take that 0 as where the paragraph ends up (it stayed invisible)
+    const tween = gsap.fromTo(
+      el,
+      { y: 32, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.9,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+      },
+    );
     finishOnFocus(el, tween);
   }
   const big = root.querySelector<HTMLElement>('.foot .big');
@@ -235,6 +241,8 @@ export function sameDay({ gsap }: Libs, root: ParentNode, desktop: boolean): Cle
         end: desktop ? '+=110%' : 'bottom 60%',
         scrub: true,
         pin: desktop,
+        // created after the triggers below it (start.ts): refreshing first lets them include the pin spacing
+        refreshPriority: 1,
         onUpdate: (s) =>
           steps.forEach((el, i) =>
             el.classList.toggle('is-on', s.progress >= i / steps.length + 0.02),

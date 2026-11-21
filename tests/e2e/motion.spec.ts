@@ -4,7 +4,8 @@ import { test, expect } from '@playwright/test';
 // is what the e2e suite tests).
 // A function, not a string: the CSP has no 'unsafe-eval', and Playwright evaluates a string predicate with eval.
 // The state is passed as the argument (a function is serialized without its closure).
-const motionIs = (state: 'on' | 'off'): boolean => document.documentElement.dataset['motion'] === state;
+const motionIs = (state: 'on' | 'off'): boolean =>
+  document.documentElement.dataset['motion'] === state;
 
 test('reduced motion: no GSAP/Lenis downloaded, everything visible', async ({ page }) => {
   const scripts: string[] = [];
@@ -301,4 +302,44 @@ test('header does not blend over a narrow photo', async ({ page, viewport }) => 
   });
   expect(overlaps).toBe(true);
   await expect(header).not.toHaveClass(/\bblend\b/);
+});
+
+// Review Focus 1: triggers below the pinned "same day" section must include the pin's spacing
+test('after a jump from the menu, the About section is fully shown (desktop pin)', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'the "same day" pin is desktop only');
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  await page
+    .getByRole('navigation')
+    .getByRole('link', { name: /^O\smně$/ })
+    .click(); // the label has a nbsp
+  await expect(page.locator('#o-mne')).toBeFocused({ timeout: 4000 }); // Lenis has landed
+  // every paragraph already past its trigger line (top 88 %, measured without the 32 px start offset) is shown;
+  // one lower down rises in on the next scroll
+  const rise = page.locator('.about [data-rise]');
+  const passed = await rise.evaluateAll((els) =>
+    els.map((el) => el.getBoundingClientRect().top - 32 < innerHeight * 0.85),
+  );
+  expect(passed.filter(Boolean).length).toBeGreaterThanOrEqual(2);
+  for (const [i, inView] of passed.entries())
+    if (inView) await expect(rise.nth(i)).toHaveCSS('opacity', '1');
+  await page.mouse.wheel(0, 400);
+  for (const p of await rise.all()) await expect(p).toHaveCSS('opacity', '1', { timeout: 4000 });
+  // the portrait's dither canvas is fully transparent once the photo has assembled
+  await expect
+    .poll(
+      () =>
+        page.locator('.about canvas.dz').evaluate((cv: HTMLCanvasElement) => {
+          const ctx = cv.getContext('2d');
+          if (!ctx || cv.dataset['painted'] !== 'live') return -1;
+          const { data } = ctx.getImageData(0, 0, cv.width, cv.height);
+          let opaque = 0;
+          for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) opaque++;
+          return opaque;
+        }),
+      { timeout: 4000 },
+    )
+    .toBe(0);
 });
