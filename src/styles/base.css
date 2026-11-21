@@ -285,13 +285,3 @@ html.motion:not(.motion-ready) :is([data-split], [data-rise], [data-stagger] > *
     transition-duration: 0.01ms !important;
   }
 }
-
-/* TEMPORARY (task 2): the real .name lives in styles/sections/hero.css from task 5; delete this block then */
-.name {
-  font-family: var(--f-name);
-  font-weight: 700;
-  font-size: var(--t-name);
-  line-height: 0.84;
-  letter-spacing: -0.045em;
-  overflow-wrap: anywhere;
-}

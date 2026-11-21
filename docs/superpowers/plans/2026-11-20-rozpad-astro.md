@@ -398,10 +398,10 @@ it('unpublished photo needs nothing', () =>
   - `logoPaths(tiles: LogoTiles): { transform: string; d: string }[]` v `src/lib/logo.ts`.
   - Marquee: `<button class="marquee-toggle" aria-pressed="false">` s textem ze slovníku (Pozastavit / Spustit).
 
-- [ ] **Step 1:** Test `logo.test.ts`: `logoPaths` nad `design/logo/logo-tiles.json` vrátí 3 stěny, celkem 74 dlaždic, a `transform` první stěny je `matrix(13.8564 -8 -13.8564 -8 160 146)` (shoda s inline SVG v `index.html:262`). FAIL → implementovat → PASS.
-- [ ] **Step 2:** Komponenty převést 1 : 1 z `index.html` (markup řádky 261–313, CSS řádky 56–110 a 234–253). Texty jen ze slovníku. Hero fotka `<Picture … loading="eager" fetchpriority="high" sizes="100vw" widths={[480,768,1080,1440,1920,2560]} formats={['avif','webp']}>`. Do `<head>` přes slot `head` dát `<link rel="preload" as="image" imagesrcset imagesizes fetchpriority="high">` pro AVIF.
-- [ ] **Step 3:** Dočasně poskládat do `src/pages/index.astro` a vizuálně porovnat s prototypem na 1440 a 390 px (`python3 -m http.server` v `design/final/rozpad`). Rozdíly opravit.
-- [ ] **Step 4:** Commit `feat: header, hero, marquee, photo folds and wipes (static)`.
+- [x] **Step 1:** Test `logo.test.ts`: `logoPaths` nad `design/logo/logo-tiles.json` vrátí 3 stěny, celkem 74 dlaždic, a `transform` první stěny je `matrix(13.8564 -8 -13.8564 -8 160 146)` (shoda s inline SVG v `index.html:262`). FAIL → implementovat → PASS.
+- [x] **Step 2:** Komponenty převést 1 : 1 z `index.html` (markup řádky 261–313, CSS řádky 56–110 a 234–253). Texty jen ze slovníku. Hero fotka `<Picture … loading="eager" fetchpriority="high" sizes="100vw" widths={[480,768,1080,1440,1920,2560]} formats={['avif','webp']}>`. Do `<head>` přes slot `head` dát `<link rel="preload" as="image" imagesrcset imagesizes fetchpriority="high">` pro AVIF.
+- [x] **Step 3:** Dočasně poskládat do `src/pages/index.astro` a vizuálně porovnat s prototypem na 1440 a 390 px (`python3 -m http.server` v `design/final/rozpad`). Rozdíly opravit.
+- [x] **Step 4:** Commit `feat: header, hero, marquee, photo folds and wipes (static)`.
 
 ---
 

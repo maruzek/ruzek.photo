@@ -1,0 +1,54 @@
+---
+import '../styles/sections/header.css';
+import { site } from '../config/site';
+import { fill, t, type Locale, type StaticRoute } from '../i18n';
+import LangSwitch from './LangSwitch.astro';
+import Logo from './Logo.astro';
+
+/** `route` (and `slug` for a case study) tell the language switch where the other language lives. */
+type Props =
+  | { locale: Locale; route: StaticRoute; slug?: never }
+  | { locale: Locale; route: 'caseStudy'; slug: string };
+
+const props = Astro.props;
+const { locale } = props;
+const d = t(locale);
+---
+
+<a class="skip" href="#main">
+  {d.common.skip}
+</a>
+<header class="top">
+  <a class="mark" href="#top" aria-label={fill(d.nav.homeLabel, { name: site.name })}>
+    <span class="logo">
+      <Logo />
+    </span>
+    <span>
+      <b>{site.name}</b>
+      <small>{site.handle.replace('@', '')}</small>
+    </span>
+  </a>
+  <nav aria-label={d.nav.label}>
+    <ul>
+      <li>
+        <a href={`#${d.anchors.work}`}>{d.nav.work}</a>
+      </li>
+      <li>
+        <a href={`#${d.anchors.services}`}>{d.nav.services}</a>
+      </li>
+      <li>
+        <a href={`#${d.anchors.about}`}>{d.nav.about}</a>
+      </li>
+      <li class="lang">
+        {props.route === 'caseStudy' ? (
+          <LangSwitch locale={locale} route="caseStudy" slug={props.slug} />
+        ) : (
+          <LangSwitch locale={locale} route={props.route} />
+        )}
+      </li>
+      <li>
+        <a href={`#${d.anchors.inquiry}`}>{d.nav.inquiry}</a>
+      </li>
+    </ul>
+  </nav>
+</header>

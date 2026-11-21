@@ -1,0 +1,23 @@
+/* Shared dither containers (used by folds, service cards, the portrait). Source: index.html "Shared dither containers".
+   <Picture> wraps the <img> in a <picture>; display: contents keeps the img a direct layout child of .dph. */
+.dph {
+  position: relative;
+  overflow: hidden;
+}
+.dph > picture {
+  display: contents;
+}
+.dph img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+canvas.dz {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}

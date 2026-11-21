@@ -1,0 +1,71 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import '../styles/sections/hero.css';
+import { site } from '../config/site';
+import { fill, t, type Locale } from '../i18n';
+import { HERO_SIZES, IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+import AsciiHero from './AsciiHero.astro';
+import Button from './Button.astro';
+import PlaceholderTag from './PlaceholderTag.astro';
+import Rich from './Rich.astro';
+import Todo from './Todo.astro';
+
+interface Props {
+  locale: Locale;
+  photo: CollectionEntry<'photos'>;
+}
+
+const { locale, photo } = Astro.props;
+const d = t(locale);
+const [first = '', ...rest] = site.name.split(' ');
+const anchor = (key: keyof typeof d.anchors): string => `#${d.anchors[key]}`;
+---
+
+<section class="hero" id="top" data-ascii aria-labelledby="name">
+  <div class="media">
+    <Picture
+      src={photo.data.image}
+      alt={photo.data.alt[locale]}
+      widths={IMAGE_WIDTHS}
+      formats={IMAGE_FORMATS}
+      sizes={HERO_SIZES}
+      loading="eager"
+      fetchpriority="high"
+    />
+  </div>
+  <AsciiHero />
+  <div class:list={['shade', photo.data.shade === 'strong' && 'strong']} aria-hidden="true"></div>
+  {photo.data.placeholder && <PlaceholderTag locale={locale} />}
+  <div class="kick mono">
+    <span>{d.hero.kicker}</span>
+    <span>{d.hero.places}</span>
+  </div>
+  <span class="scroll-hint mono" aria-hidden="true">
+    {d.hero.scrollHint}
+  </span>
+  <div class="base">
+    <h1 id="name">
+      <span>{first}</span> <span>{rest.join(' ')}</span>
+    </h1>
+    <div class="row">
+      <p>
+        <Rich text={d.hero.lead} />
+      </p>
+      <div class="cta">
+        <Button href={anchor('inquiry')} magnetic>
+          {d.hero.cta}
+        </Button>
+        <a class="lnk" href={anchor('work')}>
+          {d.hero.ctaWork}
+        </a>
+      </div>
+      <div class="meta mono">
+        <span>{fill(d.hero.instagram, { handle: site.handle })}</span>
+        <span>
+          {d.hero.onPhoto} <Todo>{d.hero.onPhotoTodo}</Todo>
+        </span>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,40 @@
+---
+// The home page for one language. TEMPORARY composition (task 6): header, hero, marquee, two folds and the
+// wipe into the light zone. Task 7 adds the remaining sections and the footer.
+import Base from '../layouts/Base.astro';
+import { t, type Locale } from '../i18n';
+import { getPhoto } from '../lib/photos/get';
+import DitherWipe from './DitherWipe.astro';
+import Header from './Header.astro';
+import Hero from './Hero.astro';
+import HeroPreload from './HeroPreload.astro';
+import Marquee from './Marquee.astro';
+import PhotoFold from './PhotoFold.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const d = t(locale);
+// Placeholder photos for now; Martin's own photos replace them by editing these ids and the YAML files
+const [hero, events, sport] = await Promise.all([
+  getPhoto('smoke'),
+  getPhoto('ball'),
+  getPhoto('soccer-goal'),
+]);
+---
+
+<Base locale={locale} route="home" title={d.meta.title} description={d.meta.description}>
+  <Fragment slot="head">
+    <HeroPreload photo={hero} />
+  </Fragment>
+  <Header locale={locale} route="home" />
+  <main id="main">
+    <Hero locale={locale} photo={hero} />
+    <Marquee locale={locale} />
+    <PhotoFold locale={locale} photo={events} id="fold-events" {...d.folds.events} />
+    <PhotoFold locale={locale} photo={sport} id="fold-sport" {...d.folds.sport} />
+    <DitherWipe from="night" to="light" />
+  </main>
+</Base>

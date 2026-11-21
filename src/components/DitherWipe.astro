@@ -1,0 +1,21 @@
+---
+// Dithered transition between a dark and a light zone. Without the script (or with reduced motion)
+// the CSS gradient is a plain hard edge (concept.md, kap. 4).
+import '../styles/sections/wipe.css';
+import { COVER, type Cover } from '../lib/palette';
+
+interface Props {
+  from: Cover;
+  to: Cover;
+}
+
+const { from, to } = Astro.props;
+---
+
+<canvas
+  class="dwipe"
+  data-from={COVER[from]}
+  data-to={COVER[to]}
+  style={`--from:${COVER[from]};--to:${COVER[to]}`}
+  aria-hidden="true"
+></canvas>

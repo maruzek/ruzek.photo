@@ -1,0 +1,31 @@
+---
+// Isometric cube corner generated from design/logo/logo-tiles.json at build time (concept.md, kap. 4).
+// The accessible name belongs to exactly one place: pass `label` where the SVG stands alone;
+// inside a link that already has a name leave it out and the SVG is hidden from assistive technology.
+import tiles from '../../design/logo/logo-tiles.json';
+import { logoPaths, type LogoTiles } from '../lib/logo';
+
+interface Props {
+  label?: string;
+}
+
+const { label } = Astro.props;
+const data = tiles as unknown as LogoTiles;
+const paths = logoPaths(data);
+---
+
+<svg
+  class="roh"
+  viewBox={data.viewBox.join(' ')}
+  fill="none"
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  focusable="false"
+>
+  <g fill="currentColor">
+    {paths.map((p) => (
+      <path transform={p.transform} d={p.d} />
+    ))}
+  </g>
+</svg>

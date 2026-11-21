@@ -1,0 +1,34 @@
+---
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import '../styles/dither.css';
+import type { Locale } from '../i18n';
+import { COVER, type Cover } from '../lib/palette';
+import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+
+interface Props {
+  photo: CollectionEntry<'photos'>;
+  /** The alt text comes from the photo, in this language (the plan's props had no locale) */
+  locale: Locale;
+  sizes: string;
+  /** `scroll`: assembles on entry and falls apart on exit; `hover`: reacts to the pointer; `stay`: assembles and stays */
+  mode?: 'scroll' | 'hover' | 'stay';
+  /** Colour the dither covers the photo with: the surface behind it */
+  cover: Cover;
+  eager?: boolean;
+}
+
+const { photo, locale, sizes, mode = 'scroll', cover, eager = false } = Astro.props;
+---
+
+<div class="dph" data-dz={mode} data-dz-color={COVER[cover]}>
+  <Picture
+    src={photo.data.image}
+    alt={photo.data.alt[locale]}
+    widths={IMAGE_WIDTHS}
+    formats={IMAGE_FORMATS}
+    sizes={sizes}
+    loading={eager ? 'eager' : 'lazy'}
+  />
+  <canvas class="dz" aria-hidden="true"></canvas>
+</div>

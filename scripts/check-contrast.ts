@@ -16,12 +16,17 @@ export const BOTTOM_FRACTION = 0.35;
  * so the *weakest* point is where the strip starts, and that is where the text is hardest to read:
  * we use that value, not the average. `normal` is the fold gradient of the prototype
  * (0 at 35 % of the height, 0.9 at 100 %) sampled at 65 % of the height: 0.9 × 30/65 ≈ 0.41.
- * `strong` is an assumption that has to match the `strong` gradient in the section CSS (plan task 7).
+ * `strong` is `.shade.strong` in styles/sections/fold.css (and hero.css): 0.7 at 65 % and rising.
+ * `hero` is the hero gradient of the prototype (0 at 48 %, 0.86 at 86 %) at 65 %: 0.86 × 17/38 ≈ 0.38,
+ * the weakest point of the strip. It applies to a hero photo whose YAML says `shade: normal`.
  */
-export const SHADE_OPACITY = { normal: 0.41, strong: 0.7 } as const;
+export const SHADE_OPACITY = { normal: 0.41, strong: 0.7, hero: 0.38 } as const;
+export type ShadeName = keyof typeof SHADE_OPACITY;
 
 /** The photos with text over them (the hero and the two folds of the prototype). Pass ids to override. */
 export const TEXT_OVER_PHOTOS = ['smoke', 'ball', 'soccer-goal'] as const;
+/** Which of them is the hero (it has its own, weaker gradient). Keep in step with Home.astro. */
+export const HERO_PHOTOS: readonly string[] = ['smoke'];
 
 type Rgb = [number, number, number];
 
@@ -55,7 +60,7 @@ function contrast(a: number, b: number): number {
 export async function bottomContrast(
   file: string,
   inkHex = INK,
-  shade: 'normal' | 'strong',
+  shade: ShadeName,
 ): Promise<number> {
   const oriented = sharp(file).rotate();
   const { width, height } = await sharp(await oriented.clone().toBuffer()).metadata();
@@ -84,7 +89,7 @@ export async function bottomContrast(
 interface PhotoEntry {
   id: string;
   image: string;
-  shade: 'normal' | 'strong';
+  shade: ShadeName;
 }
 
 /** Reads one `<id>.yaml`. Throws when the file is missing or unreadable; the caller reports that per photo. */
@@ -94,7 +99,12 @@ async function loadPhoto(dir: string, id: string): Promise<PhotoEntry> {
     shade?: 'normal' | 'strong';
   };
   if (!data?.image) throw new Error('no `image` in the YAML');
-  return { id, image: resolve(dir, data.image), shade: data.shade ?? 'normal' };
+  const shade = data.shade ?? 'normal';
+  return {
+    id,
+    image: resolve(dir, data.image),
+    shade: shade === 'normal' && HERO_PHOTOS.includes(id) ? 'hero' : shade,
+  };
 }
 
 /** Reports, never fails (exit 0): the check guides the choice of `shade`, it is no gate. */
@@ -122,7 +132,7 @@ async function main(ids: string[]): Promise<void> {
     }
     below++;
     const strong =
-      photo.shade === 'normal' ? await bottomContrast(photo.image, INK, 'strong') : undefined;
+      photo.shade !== 'strong' ? await bottomContrast(photo.image, INK, 'strong') : undefined;
     const hint =
       strong === undefined
         ? 'even the strong shade is not enough'

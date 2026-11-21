@@ -1,14 +1,5 @@
 ---
-import Base from '../layouts/Base.astro';
-import Todo from '../components/Todo.astro';
+import Home from '../components/Home.astro';
 ---
 
-<!-- Temporary page for task 2: replaced by the real home page in task 6 -->
-<Base locale="cs" title="Martin Růžek" description="TODO: popis stránky" route="home">
-  <h1 class="name" data-rise>Martin Růžek</h1>
-  <p data-split><Todo>obsah úvodní stránky</Todo></p>
-  <ul data-stagger>
-    <li><a href="#a">první</a></li>
-    <li><a href="#b">druhá</a></li>
-  </ul>
-</Base>
+<Home locale="cs" />

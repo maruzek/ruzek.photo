@@ -1,0 +1,32 @@
+---
+import '../styles/sections/marquee.css';
+import { t, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const d = t(locale).marquee;
+---
+
+<div class="marquee" role="group" aria-label={d.label}>
+  <div class="track">
+    <ul>
+      {d.items.map((item) => (
+        <li>{item}</li>
+      ))}
+    </ul>
+    <!-- second copy closes the loop; hidden from assistive technology -->
+    <ul aria-hidden="true">
+      {d.items.map((item) => (
+        <li>{item}</li>
+      ))}
+    </ul>
+  </div>
+  <!-- WCAG 2.2.2: the choreography (task 8) reveals the button when it starts the loop and wires it up -->
+  <button class="marquee-toggle mono" type="button" aria-pressed="false" hidden>
+    <span class="when-moving">{d.pause}</span>
+    <span class="when-paused">{d.play}</span>
+  </button>
+</div>

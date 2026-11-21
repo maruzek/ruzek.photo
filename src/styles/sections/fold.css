@@ -1,0 +1,89 @@
+/* Photographic folds. Source: index.html "PHOTOGRAPHIC FOLDS" and its @media rules.
+   The grid collapse of .sec-head, .about and .inq at 900 px belongs to their own sections (task 7). */
+.fold {
+  position: relative;
+  height: 100svh;
+  min-height: 600px;
+  display: grid;
+  align-items: end;
+  overflow: hidden;
+}
+.fold .dph {
+  position: absolute;
+  inset: 0;
+}
+/* Contrast: 0 at 35 % of the height, 0.9 at the bottom → 0.9 × 30 / 65 ≈ 0.41 at 65 %, where the text strip
+   starts. SHADE_OPACITY.normal in scripts/check-contrast.ts has to say the same. */
+.fold .shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgb(7 8 11 / 20%) 0%,
+    rgb(7 8 11 / 0%) 35%,
+    rgb(7 8 11 / 90%) 100%
+  );
+  pointer-events: none;
+}
+/* For bright photos (YAML `shade: strong`): 0.7 at 65 % and rising, so SHADE_OPACITY.strong is 0.7 */
+.fold .shade.strong {
+  background: linear-gradient(
+    180deg,
+    rgb(7 8 11 / 30%) 0%,
+    rgb(7 8 11 / 10%) 35%,
+    rgb(7 8 11 / 70%) 65%,
+    rgb(7 8 11 / 95%) 100%
+  );
+}
+.fold .note {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 6fr) minmax(0, 3fr) minmax(0, 3fr);
+  gap: var(--gap);
+  align-items: end;
+  padding: var(--m);
+}
+.fold .note p {
+  max-width: 22.8em; /* 34ch of Stack Sans Text, in em so the fallback font wraps the same way (RZ2-11) */
+  font-size: var(--t-m);
+  line-height: 1.5;
+}
+.fold .idx {
+  justify-self: end;
+  text-align: right;
+  color: var(--muted);
+  overflow: hidden;
+}
+.fold .idx b {
+  display: block;
+  font-family: var(--f-name);
+  font-weight: 700;
+  font-size: clamp(72px, 8vw, 136px);
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+  color: var(--ink);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+.chips li {
+  border: 1px solid rgb(233 234 238 / 40%);
+  padding: 5px 14px;
+  border-radius: 24px;
+  font-size: 14px;
+  backdrop-filter: blur(6px);
+  background: rgb(7 8 11 / 25%);
+}
+
+@media (max-width: 900px) {
+  .fold .note {
+    grid-template-columns: 1fr;
+  }
+  .fold .idx {
+    justify-self: start;
+    text-align: left;
+  }
+}

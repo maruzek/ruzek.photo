@@ -1,0 +1,9 @@
+/* Dithered wipe between zones. Source: index.html "Shared dither containers" (canvas.dwipe).
+   Without the script the canvas stays empty, so the gradient is a hard edge from one colour to the other. */
+canvas.dwipe {
+  display: block;
+  width: 100%;
+  height: clamp(120px, 18vh, 220px);
+  image-rendering: pixelated;
+  background: linear-gradient(var(--from) 50%, var(--to) 50%);
+}

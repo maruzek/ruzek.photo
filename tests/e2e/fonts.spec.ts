@@ -17,7 +17,7 @@ test('fonts are self-hosted', async ({ page }) => {
 
   // Astro's Fonts API gives every family a unique name ("Stack Sans Notch-<hash>"), so read the real one
   // from the element that is set in --f-name instead of hard-coding it.
-  const family = await page.locator('.name').evaluate((el) => getComputedStyle(el).fontFamily);
+  const family = await page.locator('#name').evaluate((el) => getComputedStyle(el).fontFamily);
   expect(family).toMatch(/^"Stack Sans Notch/);
   const first = family.split(',')[0] ?? '';
   expect(await page.evaluate((f) => document.fonts.check(`700 64px ${f}`), first)).toBe(true);
@@ -29,7 +29,7 @@ test('fonts are self-hosted', async ({ page }) => {
 
 test('Stack Sans Notch is never below 64 px in the rendered page', async ({ page }) => {
   await page.goto('/');
-  const px = await page.locator('.name').evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  const px = await page.locator('#name').evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
   expect(px).toBeGreaterThanOrEqual(64);
 });
 

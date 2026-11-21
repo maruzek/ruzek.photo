@@ -1,0 +1,17 @@
+---
+// Coral call-to-action link with the diamond tile (styles: base.css, .btn)
+interface Props {
+  href: string;
+  variant?: 'dark';
+  size?: 'sm';
+  /** Hook for the magnetic pull (motion layer, fine pointers only) */
+  magnetic?: boolean;
+}
+
+const { href, variant, size, magnetic = false } = Astro.props;
+---
+
+<a class:list={['btn', variant, size]} href={href} data-magnetic={magnetic ? '' : undefined}>
+  <slot />
+  <span class="tile" aria-hidden="true"></span>
+</a>

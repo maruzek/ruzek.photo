@@ -1,0 +1,186 @@
+/* Hero. Source: index.html "HERO" block and its @media rules */
+.hero {
+  position: relative;
+  height: 100svh;
+  min-height: 640px;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  overflow: hidden;
+  background: var(--night);
+}
+.hero .media {
+  position: absolute;
+  inset: 0;
+}
+.hero .media picture {
+  display: contents;
+}
+.hero .media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hero canvas.ascii {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* Contrast: the weakest point of the bottom 35 % is at 65 % of the height, 0.86 × (65 − 48) / (86 − 48) ≈ 0.38.
+   HERO_SHADE_OPACITY in scripts/check-contrast.ts has to say the same. */
+.hero .shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgb(7 8 11 / 55%) 0%,
+    rgb(7 8 11 / 0%) 22%,
+    rgb(7 8 11 / 0%) 48%,
+    rgb(7 8 11 / 86%) 86%,
+    rgb(7 8 11 / 96%) 100%
+  );
+}
+/* YAML `shade: strong`: 0.7 at 65 % and rising (SHADE_OPACITY.strong) */
+.hero .shade.strong {
+  background: linear-gradient(
+    180deg,
+    rgb(7 8 11 / 55%) 0%,
+    rgb(7 8 11 / 0%) 22%,
+    rgb(7 8 11 / 15%) 40%,
+    rgb(7 8 11 / 70%) 65%,
+    rgb(7 8 11 / 95%) 100%
+  );
+}
+.hero .kick {
+  position: relative;
+  align-self: start;
+  padding: 112px var(--m) 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--ink);
+}
+.hero .base {
+  position: relative;
+  padding: 0 var(--m) clamp(28px, 3vw, 44px);
+}
+.hero h1 {
+  font-family: var(--f-name);
+  font-weight: 700;
+  font-size: var(--t-name);
+  line-height: 0.84;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  margin-left: -0.05em;
+}
+.hero .row {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3fr);
+  gap: var(--gap);
+  align-items: end;
+  margin-top: clamp(24px, 2.6vw, 40px);
+  padding-top: 24px;
+  border-top: 1px solid rgb(233 234 238 / 28%);
+}
+.hero .row p {
+  font-size: var(--t-m);
+  line-height: 1.5;
+  /* the prototype says 40ch, which is 26.8em in Stack Sans Text; ch of the fallback font is narrower, the
+     paragraph wrapped on one more line and shifted the name when the font arrived (RZ2-11) */
+  max-width: 26.8em;
+  text-wrap: pretty;
+}
+.hero .row .cta {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.hero .row .meta {
+  justify-self: end;
+  text-align: right;
+  color: var(--muted);
+  display: grid;
+  gap: 6px;
+}
+.hero .ph-tag {
+  top: auto;
+  bottom: 16px;
+  left: auto;
+  right: var(--m);
+  z-index: 2;
+}
+.scroll-hint {
+  position: absolute;
+  right: var(--m);
+  top: 50%;
+  writing-mode: vertical-rl;
+  color: var(--muted);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.scroll-hint::after {
+  content: '';
+  width: 1px;
+  height: 48px;
+  background: currentcolor;
+  animation: hint 2.4s var(--ease) infinite;
+}
+@keyframes hint {
+  0% {
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+  50% {
+    transform: scaleY(1);
+    transform-origin: top;
+  }
+  51% {
+    transform-origin: bottom;
+  }
+  100% {
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+}
+
+@media (max-width: 1100px) {
+  .hero .row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hero .row .meta {
+    grid-column: 1 / -1;
+    justify-self: start;
+    text-align: left;
+  }
+}
+@media (max-width: 900px) {
+  .scroll-hint {
+    display: none;
+  }
+  .hero {
+    min-height: 600px;
+  }
+  .hero h1 {
+    white-space: normal;
+    font-size: clamp(68px, 22vw, 128px);
+  }
+  .hero .row {
+    grid-template-columns: 1fr;
+  }
+  /* room for the placeholder tag under the meta lines (not in the prototype, whose TODO was shorter) */
+  .hero .base {
+    padding-bottom: 52px;
+  }
+  .hero .kick {
+    padding-top: 88px;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint::after {
+    animation: none;
+  }
+}
