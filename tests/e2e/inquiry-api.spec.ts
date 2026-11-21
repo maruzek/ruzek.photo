@@ -46,6 +46,9 @@ const valid = {
 };
 
 test.describe.configure({ mode: 'serial' });
+// Its own rate-limit key (wrangler dev passes this header through; Cloudflare sets it itself in production), so
+// these requests do not use up the bucket of the form test that sends through the real widget (inquiry.spec.ts)
+test.use({ extraHTTPHeaders: { 'cf-connecting-ip': '192.0.2.10' } });
 
 test('GET is not allowed', async ({ request }) => {
   const res = await request.get('/api/inquiry');

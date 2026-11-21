@@ -104,4 +104,7 @@ const typeNames = d.inquiry.form.type.options;
     </span>
     <b>{price}</b>
   </div>
+  <a class="lnk" href={`#${d.anchors.inquiry}?${locale === 'cs' ? 'sluzba' : 'service'}=${ids[0]}`}>
+    {d.services.calcLink}
+  </a>
 </article>

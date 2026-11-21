@@ -1,11 +1,10 @@
 ---
-// The inquiry section. The form is a React island (islands/InquiryForm.tsx, tasks 10–11) that goes into the
-// default slot; this component renders the side column and the estimate box the form updates.
+// The inquiry section. The React island (islands/InquiryForm.tsx) renders the side column with the live estimate
+// and the form; this component passes it the dictionary and the static parts of the side column as slots.
 import '../styles/sections/inquiry.css';
-import { services } from '../config/pricing';
+import InquiryForm from '../islands/InquiryForm.tsx';
 import { site } from '../config/site';
-import { t, type Locale } from '../i18n';
-import { formatRange } from '../lib/pricing/format';
+import { localePath, t, type Locale } from '../i18n';
 import Rich from './Rich.astro';
 import Todo from './Todo.astro';
 
@@ -16,27 +15,25 @@ interface Props {
 const { locale } = Astro.props;
 const d = t(locale);
 const q = d.inquiry;
-// the lowest starting price of any service: the honest "from" before the visitor picks anything
-const lowest = Math.min(
-  ...services.map((s) =>
-    s.pricing.kind === 'hourly' ? s.pricing.firstHour : s.pricing.price.from,
-  ),
-);
 ---
 
 <section class="sec inq" id={d.anchors.inquiry} tabindex="-1" aria-labelledby="inq-h">
-  <div class="inq-side">
-    <span class="eyebrow mono">{q.eyebrow}</span>
-    <h2 class="h" id="inq-h" data-split>
-      <Rich text={q.title} />
-    </h2>
-    <p>{q.lead}</p>
-    <div class="est" aria-live="polite">
-      <span class="mono">{q.estimate.label}</span>
-      <output id="inq-est">{formatRange({ from: lowest, to: lowest }, locale)}</output>
-      <small>{q.estimate.note}</small>
-    </div>
-    <div class="direct">
+  <InquiryForm
+    client:visible
+    locale={locale}
+    siteKey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY}
+    text={q}
+    addonText={d.services.addons}
+    privacyHref={localePath(locale, 'privacy')}
+  >
+    <Fragment slot="intro">
+      <span class="eyebrow mono">{q.eyebrow}</span>
+      <h2 class="h" id="inq-h" data-split>
+        <Rich text={q.title} />
+      </h2>
+      <p>{q.lead}</p>
+    </Fragment>
+    <div slot="direct" class="direct">
       <span class="mono">{q.direct.label}</span>
       <span>
         {q.direct.phone} {site.contact.phone ?? <Todo>{q.direct.phoneTodo}</Todo>}
@@ -45,8 +42,9 @@ const lowest = Math.min(
         {q.direct.email} <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
       </span>
     </div>
-  </div>
-  <div class="inq-main">
-    <slot />
-  </div>
+  </InquiryForm>
 </section>
+
+<script>
+  import '../scripts/inquiry-anchor';
+</script>

@@ -40,9 +40,7 @@ async function fillRequired(page: Page): Promise<void> {
 }
 
 const ok = (r: Route) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
-
-// enabled after the island is wired into Inquiry.astro
-test.describe.skip('inquiry form', () => {
+test.describe('inquiry form', () => {
   test('estimate follows the type, hours and add-ons', async ({ page }) => {
     await open(page);
     await toForm(page);
@@ -187,7 +185,13 @@ test.describe.skip('inquiry form', () => {
 
   test('"Spočítat cenu" at Sport preselects the match', async ({ page }) => {
     await open(page);
-    await page.locator('a[href*="sluzba=match"]').first().click();
+    const link = page.locator('a[href*="sluzba=match"]').first();
+    // the service cards rise in when scrolled to; a click during that entrance lands on the moving card
+    await link.scrollIntoViewIfNeeded();
+    const card = page.locator('.svc').filter({ has: link });
+    await expect(card).toHaveCSS('opacity', '1');
+    await expect(card).toHaveCSS('transform', /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/); // GSAP ends on identity
+    await link.click();
     await expect(page.getByLabel('Co fotíme')).toHaveValue('match');
   });
 

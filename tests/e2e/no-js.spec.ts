@@ -79,38 +79,39 @@ for (const cssDelay of [0, 800]) {
   });
 }
 
-// The page has no [data-stagger] group yet, so the next two tests add one (the CSS rule matches at insertion)
+// The next two tests add their own [data-stagger] group (the CSS rule matches at insertion) and address only it,
+// because the page's own groups (services, facts) come first in the document
 async function addStaggerGroup(page: Page): Promise<void> {
   await page.evaluate(() => {
     document.body.insertAdjacentHTML(
       'beforeend',
-      '<ul data-stagger><li><a href="#a">first</a></li><li><a href="#b">second</a></li></ul>'
+      '<ul data-stagger id="stagger-test"><li><a href="#a">first</a></li><li><a href="#b">second</a></li></ul>'
     );
   });
   // right after insertion the first style read can still say 1; wait until the rule has really hidden them
-  await expect(page.locator('[data-stagger] > li').first()).toHaveCSS('opacity', '0');
+  await expect(page.locator('#stagger-test > li').first()).toHaveCSS('opacity', '0');
 }
 
 test('a focused link inside a stagger group is visible at once', async ({ page }) => {
   await page.route('**/*.js', (r) => r.abort());
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await addStaggerGroup(page);
-  const link = page.locator('[data-stagger] a').first();
+  const link = page.locator('#stagger-test a').first();
   await link.focus();
   await expect(link).toBeFocused();
   // well before the 3 s timer: the group item holding focus is already opaque, the other one is not
-  await expect(page.locator('[data-stagger] > li').first()).toHaveCSS('opacity', '1', { timeout: 1000 });
-  await expect(page.locator('[data-stagger] > li').nth(1)).toHaveCSS('opacity', '0', { timeout: 500 });
+  await expect(page.locator('#stagger-test > li').first()).toHaveCSS('opacity', '1', { timeout: 1000 });
+  await expect(page.locator('#stagger-test > li').nth(1)).toHaveCSS('opacity', '0', { timeout: 500 });
 });
 
 test('content revealed by the fallback stays visible after focus leaves it', async ({ page }) => {
   await page.route('**/*.js', (r) => r.abort());
   await page.goto('/', { waitUntil: 'domcontentloaded' });
   await addStaggerGroup(page);
-  const first = page.locator('[data-stagger] > li').first();
+  const first = page.locator('#stagger-test > li').first();
   await expect(first).toHaveCSS('opacity', '1', { timeout: 3500 });
-  await page.locator('[data-stagger] a').first().focus();
-  await page.locator('[data-stagger] a').nth(1).focus();
+  await page.locator('#stagger-test a').first().focus();
+  await page.locator('#stagger-test a').nth(1).focus();
   await page.waitForTimeout(300);
   await expect(first).toHaveCSS('opacity', '1', { timeout: 100 });
 });

@@ -12,8 +12,10 @@
   font-size: clamp(30px, 2.8vw, 44px);
   letter-spacing: -0.025em;
   font-variant-numeric: tabular-nums;
-  /* amounts never wrap inside (non-breaking spaces); a break is allowed only after the en dash (<wbr>) */
+  /* The amounts never break inside (non-breaking spaces from formatRange), but the line may break after the en
+     dash (<wbr>): the longest English estimate is wider than the box at 360 px (lead note T4-02) */
   white-space: normal;
+  overflow-wrap: normal;
 }
 .inq .est small {
   color: var(--light-muted);
@@ -62,7 +64,7 @@
   resize: vertical;
 }
 .inq-form :is(input, textarea)::placeholder {
-  color: #8a8e96;
+  color: #6b6f77;
 }
 .inq-form :is(input, select, textarea):hover {
   border-color: var(--light-ink);
