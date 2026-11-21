@@ -4,7 +4,14 @@ import { ADDON_IDS, SERVICE_IDS } from '../../config/pricing';
 /** Upper limit for every source value (referrer, landing path, UTM). */
 export const SOURCE_MAX = 200;
 
-const time = z.string().regex(/^\d{2}:\d{2}$/);
+/** "18:30": hours 00–23, minutes 00–59. */
+const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
+
+/** "2027-03-14" that exists in the calendar (no 2027-02-31). */
+const isRealDate = (v: string): boolean => {
+  const d = new Date(`${v}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v;
+};
 
 /**
  * One schema for the form (field by field on blur, whole on submit) and the endpoint.
@@ -21,6 +28,7 @@ export const inquirySchema = z.object({
   date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .refine(isRealDate)
     .optional(),
   timeFrom: time.optional(),
   timeTo: time.optional(),
@@ -31,7 +39,10 @@ export const inquirySchema = z.object({
   locale: z.enum(['cs', 'en']),
   source: z
     .object({
-      referrer: z.url({ protocol: /^https?$/ }).max(SOURCE_MAX).optional(),
+      referrer: z
+        .url({ protocol: /^https?$/ })
+        .max(SOURCE_MAX)
+        .optional(),
       landingPath: z.string().startsWith('/').max(SOURCE_MAX).optional(),
       utmSource: z.string().max(SOURCE_MAX).optional(),
       utmMedium: z.string().max(SOURCE_MAX).optional(),
@@ -39,6 +50,8 @@ export const inquirySchema = z.object({
     })
     .default({}),
   turnstileToken: z.string().min(1).max(2048),
+  // generated once per inquiry in the browser and kept across retries: a resent request is not a new inquiry
+  submissionId: z.uuid(),
   website: z.string().max(0).optional(), // honeypot: people never see it, bots fill it
 });
 

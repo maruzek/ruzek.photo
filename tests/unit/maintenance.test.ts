@@ -8,6 +8,7 @@ const FIRST = Date.UTC(2027, 6, 1, 3);
 
 const rec = (id: string, over: Partial<InquiryRecord> = {}): InquiryRecord => ({
   id,
+  submissionId: `sub-${id}`,
   createdAt: NOW - DAY,
   locale: 'cs',
   status: 'new',
@@ -26,6 +27,7 @@ const rec = (id: string, over: Partial<InquiryRecord> = {}): InquiryRecord => ({
   utmCampaign: null,
   notifiedAt: NOW - DAY,
   confirmedAt: NOW - DAY,
+  previewedAt: null,
   anonymizedAt: null,
   ...over,
 });
@@ -34,15 +36,27 @@ const rec = (id: string, over: Partial<InquiryRecord> = {}): InquiryRecord => ({
 function memoryStore(rows: InquiryRecord[]): InquiryStore {
   const anonymizable = (r: InquiryRecord, before: number) =>
     r.status !== 'won' && r.anonymizedAt === null && r.createdAt < before;
+  const byId = (id: string) => rows.find((r) => r.id === id)!;
   return {
-    insert: async (r) => void rows.push(r),
-    markNotified: async (id, at) => void Object.assign(rows.find((r) => r.id === id)!, { notifiedAt: at }),
-    markConfirmed: async (id, at) => void Object.assign(rows.find((r) => r.id === id)!, { confirmedAt: at }),
-    listUnnotified: async (before, limit) =>
-      rows.filter((r) => r.notifiedAt === null && r.anonymizedAt === null && r.createdAt < before).slice(0, limit),
-    listAnonymizable: async (before) => rows.filter((r) => anonymizable(r, before)),
-    anonymizeCreatedBefore: async (before, at) => {
-      const hit = rows.filter((r) => anonymizable(r, before));
+    insert: async (r) => (rows.push(r), true),
+    markNotified: async (id, at) => void Object.assign(byId(id), { notifiedAt: at }),
+    markConfirmed: async (id, at) => void Object.assign(byId(id), { confirmedAt: at }),
+    listPendingMail: async (after, before, limit) =>
+      rows
+        .filter(
+          (r) =>
+            (r.notifiedAt === null || r.confirmedAt === null) &&
+            r.anonymizedAt === null &&
+            r.createdAt >= after &&
+            r.createdAt < before,
+        )
+        .slice(0, limit),
+    listPreviewDue: async (before) => rows.filter((r) => anonymizable(r, before) && r.previewedAt === null),
+    markPreviewed: async (ids, at) => ids.forEach((id) => Object.assign(byId(id), { previewedAt: at })),
+    anonymizeCreatedBefore: async (before, at, previewedBefore) => {
+      const hit = rows.filter(
+        (r) => anonymizable(r, before) && r.previewedAt !== null && r.previewedAt <= previewedBefore,
+      );
       for (const r of hit) Object.assign(r, { name: '', email: '', anonymizedAt: at });
       return hit.length;
     },
@@ -73,11 +87,12 @@ function deps(rows: InquiryRecord[], over: { now?: number; days?: number; failTo
 describe('runMaintenance', () => {
   it('anonymizes old new and lost rows, keeps won and young rows', async () => {
     const old = NOW - 366 * DAY;
+    const previewedAt = NOW - 14 * DAY;
     const { d, rows } = deps([
-      rec('a', { createdAt: old }),
-      rec('b', { createdAt: old, status: 'lost' }),
+      rec('a', { createdAt: old, previewedAt }),
+      rec('b', { createdAt: old, status: 'lost', previewedAt }),
       rec('c', { createdAt: old, status: 'won' }),
-      rec('d', { createdAt: NOW - 364 * DAY }),
+      rec('d', { createdAt: NOW - 364 * DAY, previewedAt }),
     ]);
     const res = await runMaintenance(d);
     expect(res.anonymized).toBe(2);
@@ -95,7 +110,7 @@ describe('runMaintenance', () => {
       rec('fresh', { createdAt: NOW - 2 * 60_000, notifiedAt: null }),
     ]);
     const res = await runMaintenance(d);
-    expect(res.resent).toBe(1);
+    expect(res.resent).toBe(2); // counts mails, not rows
     expect(sent.map((m) => [m.to, m.replyTo])).toEqual([
       ['foto@martinruzek.cz', 'old@example.com'],
       ['old@example.com', 'foto@martinruzek.cz'], // the confirmation was missing too
@@ -103,6 +118,19 @@ describe('runMaintenance', () => {
     expect(rows[0]!.notifiedAt).toBe(NOW);
     expect(rows[0]!.confirmedAt).toBe(NOW);
     expect(rows[1]!.notifiedAt).toBeNull();
+  });
+
+  it('resends only the confirmation when only the confirmation is missing (FM-02)', async () => {
+    const { d, rows, sent } = deps([
+      rec('c', { createdAt: NOW - DAY, confirmedAt: null }),
+      rec('stale', { createdAt: NOW - 8 * DAY, confirmedAt: null }), // past the retry window
+    ]);
+    const res = await runMaintenance(d);
+    expect(sent.map((m) => m.to)).toEqual(['c@example.com']);
+    expect(res.resent).toBe(1);
+    expect(rows[0]!.confirmedAt).toBe(NOW);
+    expect(rows[0]!.notifiedAt).toBe(NOW - DAY);
+    expect(rows[1]!.confirmedAt).toBeNull();
   });
 
   it('a failing mail does not stop the others', async () => {
@@ -145,35 +173,63 @@ describe('runMaintenance', () => {
     expect(rows[0]!.anonymizedAt).toBeNull();
   });
 
-  it('on the first day of a month previews what will be anonymized within 31 days', async () => {
-    const { d, sent } = deps(
+  it('on the 1st previews what is due within 35 days and anonymizes it only after the notice (FM-04)', async () => {
+    const { d, sent, rows } = deps(
       [
         rec('soon', { createdAt: FIRST - 340 * DAY, name: 'Jana Nováková' }),
         rec('due', { createdAt: FIRST - 366 * DAY }),
-        rec('later', { createdAt: FIRST - 300 * DAY }),
+        rec('edge', { createdAt: FIRST - 331 * DAY }), // due on day 34 of the window
+        rec('later', { createdAt: FIRST - 329 * DAY }), // due on day 36
         rec('won', { createdAt: FIRST - 340 * DAY, status: 'won' }),
       ],
       { now: FIRST },
     );
     const res = await runMaintenance(d);
-    expect(res.previewed).toBe(2);
+    expect(res.previewed).toBe(3);
     const preview = sent.find((m) => m.to === 'foto@martinruzek.cz' && /anonymiz/.test(m.subject));
-    expect(preview).toBeDefined();
     expect(preview!.text).toContain('Jana Nováková');
-    expect(preview!.text).toContain('soon');
-    expect(preview!.text).toContain('due');
+    for (const id of ['soon', 'due', 'edge']) expect(preview!.text).toContain(id);
     expect(preview!.text).not.toContain('later');
     expect(preview!.text).not.toContain('Jméno won');
-    expect(res.anonymized).toBe(1);
+    expect(rows.find((r) => r.id === 'later')!.previewedAt).toBeNull();
+    // overdue, but just previewed: it waits for the notice period
+    expect(res.anonymized).toBe(0);
+
+    const after = await runMaintenance({ ...d, now: () => FIRST + 3 * DAY });
+    expect(after.anonymized).toBe(1);
+    expect(after.previewed).toBe(0); // nothing new, no second mail
+    expect(rows.find((r) => r.id === 'due')!.anonymizedAt).toBe(FIRST + 3 * DAY);
   });
 
-  it('no preview mail when nothing is due, and none on other days', async () => {
+  it('a failed preview is retried the next day and nothing is anonymized without it (FM-04)', async () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { d, rows, sent } = deps([rec('due', { createdAt: FIRST - 400 * DAY })], {
+      now: FIRST,
+      failTo: 'foto@martinruzek.cz',
+    });
+    const first = await runMaintenance(d);
+    expect(first).toMatchObject({ previewed: 0, anonymized: 0 });
+    expect(rows[0]!.previewedAt).toBeNull();
+    quiet.mockRestore();
+
+    // the provider is back the next day
+    const next = await runMaintenance({
+      ...d,
+      mailer: { send: async (m) => void sent.push(m) },
+      now: () => FIRST + DAY,
+    });
+    expect(next.previewed).toBe(1);
+    expect(next.anonymized).toBe(0);
+    expect(rows[0]!.previewedAt).toBe(FIRST + DAY);
+  });
+
+  it('no preview mail when nothing is due or everything due was previewed', async () => {
     const empty = deps([rec('later', { createdAt: FIRST - 300 * DAY })], { now: FIRST });
     expect((await runMaintenance(empty.d)).previewed).toBe(0);
     expect(empty.sent).toHaveLength(0);
 
-    const otherDay = deps([rec('soon', { createdAt: NOW - 340 * DAY })]);
-    expect((await runMaintenance(otherDay.d)).previewed).toBe(0);
-    expect(otherDay.sent).toHaveLength(0);
+    const done = deps([rec('soon', { createdAt: NOW - 340 * DAY, previewedAt: NOW - 14 * DAY })]);
+    expect((await runMaintenance(done.d)).previewed).toBe(0);
+    expect(done.sent).toHaveLength(0);
   });
 });

@@ -57,6 +57,15 @@ test.describe.skip('inquiry form', () => {
   });
 
   test('empty submit focuses the name and links the error', async ({ page }) => {
+    // what a screen reader gets at the moment of focus: the description must already be there (FM-08)
+    await page.addInitScript(() => {
+      const w = window as unknown as { __focus: (string | null)[] };
+      w.__focus = [];
+      document.addEventListener('focusin', (e) => {
+        const id = (e.target as Element).getAttribute('aria-describedby');
+        w.__focus.push(id && document.getElementById(id) ? document.getElementById(id)!.textContent : null);
+      });
+    });
     await open(page);
     await toForm(page);
     await page.locator('#inq button[type="submit"]').click();
@@ -66,6 +75,39 @@ test.describe.skip('inquiry form', () => {
     const msgId = await name.getAttribute('aria-describedby');
     expect(msgId).toBeTruthy();
     await expect(page.locator(`#${msgId}`)).toHaveText(/komu odpovídám/);
+    const atFocus = await page.evaluate(() => (window as unknown as { __focus: (string | null)[] }).__focus);
+    expect(atFocus.at(-1)).toMatch(/komu odpovídám/);
+  });
+
+  test('the alert region is in the accessibility tree before a message arrives (FM-08)', async ({ page }) => {
+    await open(page);
+    await toForm(page);
+    await expect(page.getByRole('alert')).toBeAttached();
+    expect(await page.getByRole('alert').evaluate((el) => getComputedStyle(el).display)).not.toBe('none');
+  });
+
+  test('a focused add-on shows a focus ring (FM-08)', async ({ page }, info) => {
+    test.skip(info.project.name !== 'desktop', 'keyboard');
+    await open(page);
+    await toForm(page);
+    await page.getByLabel(/Co mám vědět/).focus();
+    await page.keyboard.press('Shift+Tab'); // the last add-on
+    const tick = page.locator('.tick').filter({ has: page.locator('input:focus-visible') });
+    await expect(tick).toHaveCount(1);
+    expect(await tick.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('solid');
+  });
+
+  test('text the browser cannot parse in a number field is an error (FM-09)', async ({ page }) => {
+    let calls = 0;
+    await page.route('**/api/inquiry', (r) => (calls++, ok(r)));
+    await open(page);
+    await toForm(page);
+    await fillRequired(page);
+    await page.getByLabel(/Počet lidí/).pressSequentially('1e'); // the value reads as ""
+    await page.getByLabel(/Počet lidí/).press('Enter'); // submit without leaving the field
+    await expect(page.getByLabel(/Počet lidí/)).toBeFocused();
+    await expect(page.getByLabel(/Počet lidí/)).toHaveAttribute('aria-invalid', 'true');
+    expect(calls).toBe(0);
   });
 
   test('a double click sends a single request', async ({ page }) => {
@@ -81,12 +123,55 @@ test.describe.skip('inquiry form', () => {
     await page.locator('#inq button[type="submit"]').dblclick();
     await expect(page.locator('.done')).toBeVisible();
     expect(calls).toBe(1);
+    // a sent inquiry cannot be sent again until "send another" (FM-03)
+    await expect(page.locator('#inq button[type="submit"]')).toBeDisabled();
   });
 
-  for (const failure of ['network', 'server'] as const) {
+  test('a retry after a lost response reuses the submission id, a new inquiry gets a new one (FM-03)', async ({
+    page,
+  }) => {
+    const ids: string[] = [];
+    await page.route('**/api/inquiry', (r) => {
+      ids.push((r.request().postDataJSON() as { submissionId: string }).submissionId);
+      return ids.length === 1 ? r.abort() : ok(r); // the first response never arrives
+    });
+    await open(page);
+    await toForm(page);
+    await fillRequired(page);
+    await page.locator('#inq button[type="submit"]').click();
+    await expect(page.getByRole('alert')).toHaveText(/připojení/);
+    await page.locator('#inq button[type="submit"]').click();
+    await expect(page.locator('.done')).toBeVisible();
+    await page.locator('.done button').click();
+    await fillRequired(page);
+    await page.locator('#inq button[type="submit"]').click();
+    await expect(page.locator('.done')).toBeVisible();
+    expect(ids).toHaveLength(3);
+    expect(ids[1]).toBe(ids[0]);
+    expect(ids[2]).not.toBe(ids[0]);
+  });
+
+  test('Turnstile that never loads ends in the verification error, values kept (FM-07)', async ({ page }) => {
+    await page.route('https://challenges.cloudflare.com/**', () => {}); // hangs forever
+    await page.goto(HOME.cs);
+    await toForm(page);
+    await fillRequired(page);
+    await page.locator('#inq button[type="submit"]').click();
+    await expect(page.getByRole('alert')).toHaveText(/ověřit/, { timeout: 15_000 });
+    await expect(page.getByLabel('Jméno')).toHaveValue('Jana Nováková');
+    await expect(page.locator('#inq button[type="submit"]')).toBeEnabled();
+  });
+
+  for (const failure of ['network', 'server', 'unknown shape'] as const) {
     test(`${failure} failure shows an alert and keeps the values`, async ({ page }) => {
-      await page.route('**/api/inquiry', (r) =>
-        failure === 'network' ? r.abort() : r.fulfill({ status: 500, body: 'oops' }),
+      await page.route(
+        '**/api/inquiry',
+        (r) =>
+          failure === 'network'
+            ? r.abort()
+            : failure === 'server'
+              ? r.fulfill({ status: 500, body: 'oops' })
+              : r.fulfill({ status: 500, contentType: 'application/json', body: '{"ok":false}' }), // FM-07
       );
       await open(page);
       await toForm(page);
@@ -135,7 +220,10 @@ test.describe.skip('inquiry form', () => {
 
   test('Umami events on success and on error', async ({ page }) => {
     await page.addInitScript(() => {
-      const w = window as unknown as { __ev: unknown[]; umami: { track(e: string, d?: unknown): void } };
+      const w = window as unknown as {
+        __ev: unknown[];
+        umami: { track(e: string, d?: unknown): void };
+      };
       w.__ev = [];
       w.umami = { track: (e, d) => w.__ev.push(d === undefined ? [e] : [e, d]) };
     });
@@ -174,23 +262,16 @@ test.describe.skip('inquiry form', () => {
   });
 
   // the real endpoint (wrangler dev, local D1, Turnstile test keys); desktop only because of the rate limit
-  test('sends to the real endpoint', async ({ page }, info) => {
+  test('sends to the real endpoint', async ({ page, context }, info) => {
     test.skip(info.project.name !== 'desktop', 'rate limited endpoint: once per run');
     await page.goto(HOME.cs); // the real Turnstile widget with the public test site key
     await toForm(page);
     await fillRequired(page);
     await page.locator('#inq button[type="submit"]').click();
     await expect(page.locator('.done')).toBeVisible({ timeout: 15_000 });
-  });
-
-  test('the page sets no cookies and writes nothing to storage while sending', async ({ page, context }) => {
-    await page.route('**/api/inquiry', ok);
-    await open(page);
-    await toForm(page);
-    await fillRequired(page);
-    await page.locator('#inq button[type="submit"]').click();
-    await expect(page.locator('.done')).toBeVisible();
-    expect(await context.cookies()).toEqual([]);
+    // our page and endpoint set no cookies and write nothing to storage (FM-12); Turnstile's own iframe is
+    // Cloudflare's, so only cookies for this origin count
+    expect(await context.cookies(page.url())).toEqual([]);
     expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
   });
 });

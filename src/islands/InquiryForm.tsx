@@ -3,7 +3,7 @@ import { addons as addonConfig, services, type AddonId, type ServiceId } from '.
 import { site } from '../config/site';
 import type { Dictionary, Locale } from '../i18n';
 import { inquirySchema, type InquiryField } from '../lib/inquiry/schema';
-import { readSource, type InquiryResponse } from '../lib/inquiry/source';
+import { readSource } from '../lib/inquiry/source';
 import { estimate } from '../lib/pricing/estimate';
 import { formatPercentRange, formatRange } from '../lib/pricing/format';
 import { track } from '../scripts/analytics';
@@ -31,8 +31,15 @@ interface Props {
 const ENDPOINT = '/api/inquiry';
 /** How long a submit waits for Turnstile before it shows the verification error. */
 const TURNSTILE_WAIT_MS = 10_000;
+/** How long a submit waits for the endpoint (request and response body) before it shows the network error. */
+const FETCH_TIMEOUT_MS = 15_000;
+/** Inputs the browser can hold unparsable text in (`validity.badInput`) while the value reads as empty. */
+const PARSED_INPUTS: readonly InquiryField[] = ['hours', 'date', 'timeFrom', 'timeTo', 'guests'];
 
-type Text = 'name' | 'email' | 'phone' | 'hours' | 'date' | 'timeFrom' | 'timeTo' | 'place' | 'guests' | 'note' | 'website';
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
+
+type Text =
+  'name' | 'email' | 'phone' | 'hours' | 'date' | 'timeFrom' | 'timeTo' | 'place' | 'guests' | 'note' | 'website';
 type Values = Record<Text, string> & { service: ServiceId; addons: AddonId[] };
 type Errors = Partial<Record<InquiryField | 'form', string>>;
 type Status = 'idle' | 'sending' | 'sent' | 'error';
@@ -101,10 +108,11 @@ function fieldValue(v: Values, f: InquiryField): unknown {
   }
 }
 
-function payload(v: Values, locale: Locale, turnstileToken: string): Record<string, unknown> {
+function payload(v: Values, locale: Locale, turnstileToken: string, submissionId: string): Record<string, unknown> {
   const out: Record<string, unknown> = {
     locale,
     turnstileToken,
+    submissionId,
     source: readSource(location, document.referrer, location.host),
   };
   for (const f of [...ORDER, 'website'] as const) {
@@ -152,6 +160,10 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
   const formRef = useRef<HTMLFormElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
   const doneRef = useRef<HTMLDivElement>(null);
+  /** Same key for every retry of one inquiry, so a retry after a lost response is not stored twice. */
+  const submissionId = useRef('');
+  /** The field to focus once the errors are rendered (so its aria-describedby already points at the message). */
+  const focusNext = useRef<InquiryField | null>(null);
   const turnstile = useTurnstile(siteKey, locale, formRef, widgetRef);
 
   const message = (field: InquiryField): string => {
@@ -208,8 +220,23 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     return () => removeEventListener('hashchange', apply);
   }, []);
 
+  useEffect(() => {
+    if (!focusNext.current) return;
+    const id = DOM_ID[focusNext.current];
+    focusNext.current = null;
+    if (id) document.getElementById(id)?.focus();
+  });
+
+  /** Text the browser could not parse (e.g. "abc" in a number field) reads as an empty value: it is still an error. */
+  const badInput = (field: InquiryField, v: Values): boolean => {
+    if (!PARSED_INPUTS.includes(field) || (field === 'hours' && !isHourly(v.service))) return false;
+    const id = DOM_ID[field];
+    const el = id ? document.getElementById(id) : null;
+    return el instanceof HTMLInputElement && el.validity.badInput;
+  };
+
   const validate = (field: InquiryField, v: Values): boolean => {
-    const ok = inquirySchema.shape[field].safeParse(fieldValue(v, field)).success;
+    const ok = !badInput(field, v) && inquirySchema.shape[field].safeParse(fieldValue(v, field)).success;
     setErrors((e) => {
       const next = { ...e };
       if (ok) delete next[field];
@@ -229,11 +256,6 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     set('addons', on ? [...new Set([...values.addons, id])] : values.addons.filter((a) => a !== id));
   };
 
-  const focusField = (field: InquiryField): void => {
-    const id = DOM_ID[field];
-    if (id) document.getElementById(id)?.focus();
-  };
-
   async function onSubmit(ev: SubmitEvent<HTMLFormElement>): Promise<void> {
     ev.preventDefault();
     if (sending.current) return; // double click: the second submit is dropped before React re-renders
@@ -241,17 +263,20 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     setStatus('sending');
     try {
       // Validate everything except the token, which comes last
-      const check = inquirySchema.safeParse(payload(values, locale, 'pending'));
-      if (!check.success) {
-        const next: Errors = {};
+      submissionId.current ||= crypto.randomUUID();
+      const check = inquirySchema.safeParse(payload(values, locale, 'pending', submissionId.current));
+      const invalid: Errors = {};
+      if (!check.success)
         for (const issue of check.error.issues) {
           const field = issue.path[0] as InquiryField | undefined;
-          if (field && field !== 'website' && !next[field]) next[field] = message(field);
+          if (field && field !== 'website' && !invalid[field]) invalid[field] = message(field);
         }
-        setErrors(next);
+      for (const field of PARSED_INPUTS)
+        if (!invalid[field] && badInput(field, values)) invalid[field] = message(field);
+      if (Object.keys(invalid).length) {
+        setErrors(invalid);
         setStatus('idle');
-        const first = ORDER.find((x) => next[x]);
-        if (first) focusField(first);
+        focusNext.current = ORDER.find((x) => invalid[x]) ?? null;
         return;
       }
 
@@ -266,7 +291,8 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
         res = await fetch(ENDPOINT, {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload(values, locale, token)),
+          body: JSON.stringify(payload(values, locale, token, submissionId.current)),
+          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS), // also covers reading the body below
         });
       } catch {
         fail({ form: formMessage('network') });
@@ -275,8 +301,9 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
         turnstile.reset(); // a token is valid for one request only
       }
 
-      const body = (await res.json().catch(() => null)) as InquiryResponse | null;
-      if (res.ok && body?.ok) {
+      // anything but the documented shape (a proxy error page, a cut-off body) is a server error
+      const body: unknown = await res.json().catch(() => null);
+      if (res.ok && isObject(body) && body['ok'] === true) {
         setErrors({});
         setStatus('sent');
         track('inquiry_sent', { service: values.service });
@@ -284,15 +311,15 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
         return;
       }
 
-      const serverErrors = body && !body.ok ? body.errors : {};
+      const serverErrors: Errors =
+        isObject(body) && body['ok'] === false && isObject(body['errors']) ? (body['errors'] as Errors) : {};
       const next: Errors = {};
       for (const field of ORDER) if (serverErrors[field]) next[field] = message(field);
       next.form = formMessage(
         res.status === 429 ? 'rateLimit' : res.status === 403 ? (serverErrors.form ?? 'server') : serverErrors.form,
       );
       fail(next);
-      const first = ORDER.find((x) => next[x]);
-      if (first) focusField(first);
+      focusNext.current = ORDER.find((x) => next[x]) ?? null;
     } finally {
       sending.current = false;
     }
@@ -308,7 +335,8 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     setValues(INITIAL);
     setErrors({});
     setStatus('idle');
-    focusField('name');
+    submissionId.current = ''; // a new inquiry
+    focusNext.current = 'name';
   };
 
   const range = estimate({
@@ -603,7 +631,12 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
         <div className="turnstile" ref={widgetRef} />
 
         <div className="actions">
-          <button className="btn dark" type="submit" disabled={!hydrated || status === 'sending'} data-magnetic="">
+          <button
+            className="btn dark"
+            type="submit"
+            disabled={!hydrated || status === 'sending' || status === 'sent'}
+            data-magnetic=""
+          >
             {status === 'sending' ? f.sending : f.send}
             <span className="tile" aria-hidden="true" />
           </button>

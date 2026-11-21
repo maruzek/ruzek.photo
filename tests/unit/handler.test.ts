@@ -11,6 +11,7 @@ const valid = {
   addons: ['sameDay'],
   locale: 'cs',
   turnstileToken: 'ok',
+  submissionId: '6f1c2a4e-8b1d-4c3a-9e2f-1a2b3c4d5e6f',
   source: { utmSource: 'ig' },
 };
 
@@ -37,11 +38,25 @@ function fakeDeps(over: Partial<InquiryDeps> & { failMailTo?: string } = {}): Fa
   const limited: string[] = [];
   const used = new Set<string>();
   const store: InquiryStore = {
-    insert: async (r) => void rows.push({ ...r }),
-    markNotified: async (id, at) => void Object.assign(rows.find((r) => r.id === id)!, { notifiedAt: at }),
-    markConfirmed: async (id, at) => void Object.assign(rows.find((r) => r.id === id)!, { confirmedAt: at }),
-    listUnnotified: async () => [],
-    listAnonymizable: async () => [],
+    // like the UNIQUE submission_id column
+    insert: async (r) => {
+      if (rows.some((x) => x.submissionId === r.submissionId)) return false;
+      rows.push({ ...r });
+      return true;
+    },
+    markNotified: async (id, at) =>
+      void Object.assign(
+        rows.find((r) => r.id === id)!,
+        { notifiedAt: at },
+      ),
+    markConfirmed: async (id, at) =>
+      void Object.assign(
+        rows.find((r) => r.id === id)!,
+        { confirmedAt: at },
+      ),
+    listPendingMail: async () => [],
+    listPreviewDue: async () => [],
+    markPreviewed: async () => {},
     anonymizeCreatedBefore: async () => 0,
   };
   let n = 0;
@@ -174,7 +189,10 @@ describe('handleInquiry', () => {
     expect((await handleInquiry(req('{not json'), d)).status).toBe(400);
     const form = new Request('https://martinruzek.eu/api/inquiry', {
       method: 'POST',
-      headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://martinruzek.eu' },
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        origin: 'https://martinruzek.eu',
+      },
       body: 'name=x',
     });
     expect((await handleInquiry(form, d)).status).toBe(415);
@@ -235,18 +253,94 @@ describe('handleInquiry', () => {
     expect(d.rows).toHaveLength(1);
   });
 
-  it('normalizes the referrer and keeps the source', async () => {
+  it('keeps only the referrer host, known landing paths and plain UTM tags (FM-01)', async () => {
     const d = fakeDeps();
     await handleInquiry(
-      req({ ...valid, source: { referrer: 'https://www.instagram.com', landingPath: '/en/', utmCampaign: 'jaro' } }),
+      req({
+        ...valid,
+        source: {
+          referrer: 'https://jana:secret@www.Instagram.com/jana.novakova?id=7',
+          landingPath: '/en/',
+          utmSource: 'IG',
+          utmMedium: 'jana@example.com',
+          utmCampaign: 'call-777123456',
+        },
+      }),
       d,
     );
     expect(d.rows[0]).toMatchObject({
-      referrer: 'https://www.instagram.com/',
+      referrer: 'www.instagram.com',
       landingPath: '/en/',
-      utmCampaign: 'jaro',
+      utmSource: 'ig',
       utmMedium: null,
+      utmCampaign: null,
     });
+    const other = fakeDeps();
+    await handleInquiry(
+      req({
+        ...valid,
+        source: { landingPath: '/?email=jana@example.com', utmCampaign: 'x'.repeat(65) },
+      }),
+      other,
+    );
+    expect(other.rows[0]).toMatchObject({ landingPath: null, utmCampaign: null });
+    const study = fakeDeps();
+    await handleInquiry(req({ ...valid, source: { landingPath: '/pripadove-studie/turnaj-2027/' } }), study);
+    expect(study.rows[0]!.landingPath).toBe('/pripadove-studie/turnaj-2027/');
+  });
+
+  it('a retry after a lost response stores one row and sends one set of mails (FM-03)', async () => {
+    const d = fakeDeps();
+    // first request: written and mailed, but the browser never saw the response
+    expect((await handleInquiry(req({ ...valid, turnstileToken: 'ok-1' }), d)).status).toBe(200);
+    // the retry carries the same submission id and a fresh Turnstile token
+    const res = await handleInquiry(req({ ...valid, turnstileToken: 'ok-2' }), d);
+    expect(res.status).toBe(200);
+    expect(await json(res)).toEqual({ ok: true });
+    await Promise.all(d.pending);
+    expect(d.rows).toHaveLength(1);
+    expect(d.sent).toHaveLength(2);
+  });
+
+  it('passes a per-mail idempotency key to the mailer', async () => {
+    const d = fakeDeps();
+    await handleInquiry(req({ ...valid }), d);
+    await Promise.all(d.pending);
+    expect(d.sent.map((m) => m.idempotencyKey)).toEqual(['id-1/owner', 'id-1/client']);
+  });
+
+  it('413 for a multi-byte body over 32 KiB even though it has fewer UTF-16 units (FM-06)', async () => {
+    const d = fakeDeps();
+    const note = 'ř'.repeat(17_000); // 34 000 bytes, 17 000 UTF-16 units
+    const body = new TextEncoder().encode(JSON.stringify({ ...valid, note }));
+    const stream = new ReadableStream({
+      start(c) {
+        c.enqueue(body);
+        c.close();
+      },
+    });
+    const r = new Request('https://martinruzek.eu/api/inquiry', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'https://martinruzek.eu' },
+      body: stream,
+      duplex: 'half',
+    } as RequestInit);
+    expect((await handleInquiry(r, d)).status).toBe(413);
+    expect(d.verified).toHaveLength(0);
+  });
+
+  it('413 from Content-Length before reading the body (FM-06)', async () => {
+    const d = fakeDeps();
+    const r = new Request('https://martinruzek.eu/api/inquiry', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        origin: 'https://martinruzek.eu',
+        'content-length': '40000',
+      },
+      body: '{}',
+    });
+    expect((await handleInquiry(r, d)).status).toBe(413);
   });
 
   it('500 without leaking details when the database fails', async () => {

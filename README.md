@@ -94,4 +94,4 @@ pnpm exec wrangler d1 execute ruzek-inquiries --remote --command "UPDATE inquiri
 
 Poptávku, ze které nic nebylo, můžete označit `status='lost'`. Na anonymizaci to nic nemění.
 
-**Údržbový worker** (`workers/maintenance/`, nasazení `pnpm deploy:maintenance`) běží každý den ve 3:00 UTC. Znovu pošle e-maily, které neodešly, a anonymizuje staré poptávky. Prvního dne v měsíci pošle na `foto@martinruzek.cz` seznam poptávek, které se během 31 dnů anonymizují. ID pro příkaz výše najdete v tomto seznamu i v každém e-mailu s poptávkou.
+**Údržbový worker** (`workers/maintenance/`, nasazení `pnpm deploy:maintenance`) běží každý den ve 3:00 UTC. Až 7 dní po poptávce zkouší znovu poslat e-maily, které neodešly (vám i potvrzení klientovi), a anonymizuje staré poptávky. Prvního dne v měsíci pošle na `foto@martinruzek.cz` seznam poptávek, které se anonymizují do 35. dne od začátku měsíce. Když se seznam neodešle, zkusí to další den znovu. Poptávka se anonymizuje až 3 dny poté, co odešel seznam, ve kterém byla. ID pro příkaz výše najdete v tomto seznamu i v každém e-mailu s poptávkou. Po anonymizaci dostane poptávka nové ID, takže ji s e-mailem už nespojíte.

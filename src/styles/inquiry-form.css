@@ -67,7 +67,7 @@
 .inq-form :is(input, select, textarea):hover {
   border-color: var(--light-ink);
 }
-.inq-form :is(input, select, textarea):focus-visible {
+.inq-form :is(input:not([type='checkbox']), select, textarea):focus-visible {
   outline: none;
   border-bottom: 2px solid var(--light-ink);
 }
@@ -81,8 +81,14 @@
 .inq-form .form-msg {
   grid-column: 1 / -1;
 }
+/* visually hidden, but kept in the accessibility tree so the alert region exists before a message arrives */
 .inq-form .form-msg:empty {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .inq-form .ticks {
   grid-column: 1 / -1;
@@ -107,6 +113,10 @@
 }
 .inq-form .tick:hover {
   border-color: var(--light-ink);
+}
+.inq-form .tick:has(input:focus-visible) {
+  outline: 2px solid var(--light-ink);
+  outline-offset: 2px;
 }
 .inq-form .tick:has(input:checked) {
   border-color: var(--light-ink);

@@ -9,6 +9,7 @@ const valid = {
   addons: ['sameDay'],
   locale: 'cs',
   turnstileToken: 'token',
+  submissionId: '6f1c2a4e-8b1d-4c3a-9e2f-1a2b3c4d5e6f',
 };
 
 describe('inquirySchema', () => {
@@ -62,5 +63,19 @@ describe('inquirySchema', () => {
 describe('inquirySchema e-mail', () => {
   it('trims spaces around the e-mail', () => {
     expect(inquirySchema.safeParse({ ...valid, email: ' jana@example.com ' }).data?.email).toBe('jana@example.com');
+  });
+});
+
+describe('inquirySchema dates, times and submission id', () => {
+  it('rejects dates that do not exist and times out of range (FM-09)', () => {
+    expect(inquirySchema.safeParse({ ...valid, date: '2027-02-31' }).success).toBe(false);
+    expect(inquirySchema.safeParse({ ...valid, date: '2028-02-29' }).success).toBe(true);
+    expect(inquirySchema.safeParse({ ...valid, timeFrom: '29:75' }).success).toBe(false);
+    expect(inquirySchema.safeParse({ ...valid, timeTo: '23:60' }).success).toBe(false);
+    expect(inquirySchema.safeParse({ ...valid, timeFrom: '00:00', timeTo: '23:59' }).success).toBe(true);
+  });
+  it('requires a UUID submission id (FM-03)', () => {
+    expect(inquirySchema.safeParse({ ...valid, submissionId: undefined }).success).toBe(false);
+    expect(inquirySchema.safeParse({ ...valid, submissionId: 'abc' }).success).toBe(false);
   });
 });

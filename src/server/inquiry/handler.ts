@@ -3,6 +3,7 @@ import { inquirySchema, type InquiryField } from '../../lib/inquiry/schema';
 import type { InquiryFormError, InquiryResponse } from '../../lib/inquiry/source';
 import { estimate } from '../../lib/pricing/estimate';
 import { confirmClient, notifyOwner } from './notify';
+import { sanitizeSource } from './source';
 import type { InquiryDeps, InquiryRecord } from './types';
 
 /** A real inquiry is a few kB; anything bigger is refused before parsing. */
@@ -22,19 +23,37 @@ function omit<T extends object, K extends keyof T>(o: T, keys: readonly K[]): Om
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-/** Stored as `URL.href`, so anonymization can cut it to the origin at the first "/" after the host. */
-function normalizeReferrer(ref: string | undefined): string | null {
-  if (!ref) return null;
-  try {
-    return new URL(ref).href;
-  } catch {
-    return null;
+/**
+ * Reads the body as UTF-8 and stops as soon as it is larger than `max` bytes (not UTF-16 units).
+ * Returns null when it is too large.
+ */
+async function readLimited(req: Request, max: number): Promise<string | null> {
+  if (!req.body) return '';
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > max) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
   }
+  const all = new Uint8Array(size);
+  let at = 0;
+  for (const c of chunks) {
+    all.set(c, at);
+    at += c.byteLength;
+  }
+  return new TextDecoder().decode(all);
 }
 
 /**
  * POST /api/inquiry (concept.md, kap. 11). Order: method → origin → rate limit → JSON → Turnstile →
- * honeypot → schema → server-side estimate → insert → mails in waitUntil. The IP is used for the rate
+ * honeypot → schema → server-side estimate → insert (once per submission id) → mails in waitUntil. The IP is used for the rate
  * limit and siteverify only and is never stored.
  */
 export async function handleInquiry(req: Request, deps: InquiryDeps): Promise<Response> {
@@ -46,8 +65,9 @@ export async function handleInquiry(req: Request, deps: InquiryDeps): Promise<Re
 
   if (!(req.headers.get('content-type') ?? '').toLowerCase().startsWith('application/json'))
     return formError(415, 'invalid');
-  const raw = await req.text();
-  if (raw.length > MAX_BODY_BYTES) return formError(413, 'invalid');
+  if (Number(req.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) return formError(413, 'invalid');
+  const raw = await readLimited(req, MAX_BODY_BYTES);
+  if (raw === null) return formError(413, 'invalid');
   let body: unknown;
   try {
     body = JSON.parse(raw);
@@ -77,7 +97,11 @@ export async function handleInquiry(req: Request, deps: InquiryDeps): Promise<Re
   // the token and the honeypot are not stored; the source goes into its own columns
   const { source, ...rest } = parsed.data;
   const input = omit(rest, ['turnstileToken', 'website']);
-  const range = estimate({ service: input.service, ...(input.hours ? { hours: input.hours } : {}), addons: input.addons });
+  const range = estimate({
+    service: input.service,
+    ...(input.hours ? { hours: input.hours } : {}),
+    addons: input.addons,
+  });
   const record: InquiryRecord = {
     ...input,
     id: deps.newId(),
@@ -86,22 +110,23 @@ export async function handleInquiry(req: Request, deps: InquiryDeps): Promise<Re
     estimateTo: range.to,
     noticeVersion: PRIVACY_NOTICE_VERSION,
     status: 'new',
-    referrer: normalizeReferrer(source.referrer),
-    landingPath: source.landingPath ?? null,
-    utmSource: source.utmSource ?? null,
-    utmMedium: source.utmMedium ?? null,
-    utmCampaign: source.utmCampaign ?? null,
+    ...sanitizeSource(source),
     notifiedAt: null,
     confirmedAt: null,
+    previewedAt: null,
     anonymizedAt: null,
   };
 
+  let inserted: boolean;
   try {
-    await deps.store.insert(record);
+    inserted = await deps.store.insert(record);
   } catch {
     console.error(`inquiry ${record.id}: insert failed`);
     return formError(500, 'server');
   }
+
+  // The same submission again (the first response got lost): it is stored already, so no new row and no mail
+  if (!inserted) return reply(200, { ok: true });
 
   // A failed mail leaves notified_at / confirmed_at NULL; the maintenance worker sends it again
   deps.waitUntil(Promise.all([notifyOwner(record, deps), confirmClient(record, deps)]));

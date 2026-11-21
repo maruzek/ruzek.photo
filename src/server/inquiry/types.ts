@@ -17,22 +17,31 @@ export interface InquiryRecord extends Omit<InquiryInput, 'turnstileToken' | 'we
   utmCampaign: string | null;
   notifiedAt: number | null;
   confirmedAt: number | null;
+  /** Listed in a successfully sent anonymization preview at this time. */
+  previewedAt: number | null;
   anonymizedAt: number | null;
 }
 
 export interface InquiryStore {
-  insert(r: InquiryRecord): Promise<void>;
+  /** false when a row with the same `submissionId` exists already (a repeated request): nothing is written. */
+  insert(r: InquiryRecord): Promise<boolean>;
   markNotified(id: string, at: number): Promise<void>;
   markConfirmed(id: string, at: number): Promise<void>;
-  /** Not anonymized, owner mail not sent yet, created before `createdBefore`. */
-  listUnnotified(createdBefore: number, limit: number): Promise<InquiryRecord[]>;
-  /** status != 'won' AND anonymized_at IS NULL AND created before `createdBefore`. */
-  listAnonymizable(createdBefore: number): Promise<InquiryRecord[]>;
-  /** Same filter as `listAnonymizable`; returns the number of rows changed. */
-  anonymizeCreatedBefore(ts: number, at: number): Promise<number>;
+  /** Not anonymized, owner mail or confirmation not sent yet, created in [createdAfter, createdBefore). */
+  listPendingMail(createdAfter: number, createdBefore: number, limit: number): Promise<InquiryRecord[]>;
+  /** status != 'won', not anonymized, not yet in a sent preview, created before `createdBefore`. */
+  listPreviewDue(createdBefore: number): Promise<InquiryRecord[]>;
+  markPreviewed(ids: readonly string[], at: number): Promise<void>;
+  /**
+   * status != 'won', not anonymized, created before `ts` and listed in a preview sent no later than
+   * `previewedBefore`. Returns the number of rows changed.
+   */
+  anonymizeCreatedBefore(ts: number, at: number, previewedBefore: number): Promise<number>;
 }
 
 export interface MailMessage {
+  /** Lets the provider drop a repeated send of the same mail (Resend `Idempotency-Key`). */
+  idempotencyKey?: string;
   from: string;
   to: string;
   subject: string;

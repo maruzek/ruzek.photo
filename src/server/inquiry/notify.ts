@@ -13,7 +13,13 @@ export interface NotifyDeps {
 export async function notifyOwner(r: InquiryRecord, d: NotifyDeps): Promise<boolean> {
   try {
     const m = ownerEmail(r);
-    await d.mailer.send({ from: d.fromEmail, to: d.ownerEmail, replyTo: r.email, ...m });
+    await d.mailer.send({
+      idempotencyKey: `${r.id}/owner`,
+      from: d.fromEmail,
+      to: d.ownerEmail,
+      replyTo: r.email,
+      ...m,
+    });
     await d.store.markNotified(r.id, d.now());
     return true;
   } catch {
@@ -27,7 +33,13 @@ export async function notifyOwner(r: InquiryRecord, d: NotifyDeps): Promise<bool
 export async function confirmClient(r: InquiryRecord, d: NotifyDeps): Promise<boolean> {
   try {
     const m = clientConfirmation(r);
-    await d.mailer.send({ from: d.fromEmail, to: r.email, replyTo: d.ownerEmail, ...m });
+    await d.mailer.send({
+      idempotencyKey: `${r.id}/client`,
+      from: d.fromEmail,
+      to: r.email,
+      replyTo: d.ownerEmail,
+      ...m,
+    });
     await d.store.markConfirmed(r.id, d.now());
     return true;
   } catch {

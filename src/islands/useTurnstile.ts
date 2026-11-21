@@ -117,20 +117,20 @@ export function useTurnstile(
   }, [form, siteKey, start]);
 
   const getToken = useCallback(
-    async (timeoutMs: number): Promise<string | null> => {
-      if (token.current) return token.current;
-      await start();
-      if (token.current) return token.current;
+    (timeoutMs: number): Promise<string | null> => {
+      if (token.current) return Promise.resolve(token.current);
+      // the timeout covers loading the script too: a script that never loads must not hang the submit
       return new Promise((resolve) => {
         const done = (t: string | null): void => {
           clearTimeout(timer);
+          waiters.current = waiters.current.filter((w) => w !== done);
           resolve(t);
         };
-        const timer = setTimeout(() => {
-          waiters.current = waiters.current.filter((w) => w !== done);
-          resolve(null);
-        }, timeoutMs);
+        const timer = setTimeout(() => done(null), timeoutMs);
         waiters.current.push(done);
+        void start().then(() => {
+          if (token.current) done(token.current);
+        });
       });
     },
     [start],
