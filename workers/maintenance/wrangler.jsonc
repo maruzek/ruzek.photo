@@ -1,0 +1,21 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "ruzek-maintenance",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-21",
+  // every day at 03:00 UTC
+  "triggers": { "crons": ["0 3 * * *"] },
+  "d1_databases": [
+    {
+      // the same database as the site (wrangler.jsonc); the real id is added at deployment (plan task 16)
+      "binding": "DB",
+      "database_name": "ruzek-inquiries",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "../../db/migrations"
+    }
+  ],
+  "vars": {
+    "OWNER_EMAIL": "foto@martinruzek.cz"
+  }
+  // Secret: RESEND_API_KEY (wrangler secret put RESEND_API_KEY -c workers/maintenance/wrangler.jsonc)
+}

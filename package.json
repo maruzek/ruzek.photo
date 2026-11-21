@@ -10,6 +10,7 @@
     "dev": "astro dev",
     "build": "astro build && pnpm check:exif",
     "preview": "wrangler dev --port 8787",
+    "deploy:maintenance": "wrangler deploy -c workers/maintenance/wrangler.jsonc",
     "astro": "astro",
     "check": "pnpm types:worker && astro check && eslint . && vitest run && pnpm check:exif",
     "test": "vitest run",

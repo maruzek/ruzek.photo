@@ -71,3 +71,27 @@ Doplní se při implementaci:
 - `TODO:` jak rychle stáhnout fotku z webu
 - `TODO:` lokální vývoj, build a nasazení
 - `TODO:` proměnné prostředí a tajné klíče (e-mail, Turnstile)
+
+### Poptávky
+Formulář posílá poptávku na `/api/inquiry`. Endpoint ji ověří (Turnstile, limit 5 požadavků za minutu z jedné IP), uloží do D1 `ruzek-inquiries` a pošle e-mail na `foto@martinruzek.cz` a potvrzení klientovi. IP adresa se nikam neukládá.
+
+**Lokálně:** zkopírujte `.dev.vars.example` do `.dev.vars` (testovací klíče Turnstile, `MAILER=console`, takže se nic neodesílá), pak:
+
+```sh
+pnpm exec wrangler d1 migrations apply ruzek-inquiries --local -c wrangler.jsonc
+PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA pnpm build && pnpm preview
+```
+
+`pnpm test:e2e` si to všechno nastaví samo. Test úložiště nad lokální D1: `pnpm test:workers`. Typy pro Worker vygeneruje `pnpm types:worker` (spouští ho i `pnpm check`).
+
+**Tajné klíče** (jen přes `wrangler secret put`, nikdy do repozitáře): `TURNSTILE_SECRET` a `RESEND_API_KEY` pro web, `RESEND_API_KEY` i pro údržbový worker (`-c workers/maintenance/wrangler.jsonc`). Veřejný klíč Turnstile jde do buildu jako `PUBLIC_TURNSTILE_SITE_KEY`. Bez poskytovatele e-mailu se poptávky uloží a odešlou se, až bude nastavený.
+
+**Označit zakázku:** poptávky bez zakázky se po 365 dnech anonymizují (`src/config/privacy.ts`). Když se z poptávky stala zakázka, označte ji, aby údaje zůstaly:
+
+```sh
+pnpm exec wrangler d1 execute ruzek-inquiries --remote --command "UPDATE inquiries SET status='won' WHERE id='…'"
+```
+
+Poptávku, ze které nic nebylo, můžete označit `status='lost'`. Na anonymizaci to nic nemění.
+
+**Údržbový worker** (`workers/maintenance/`, nasazení `pnpm deploy:maintenance`) běží každý den ve 3:00 UTC. Znovu pošle e-maily, které neodešly, a anonymizuje staré poptávky. Prvního dne v měsíci pošle na `foto@martinruzek.cz` seznam poptávek, které se během 31 dnů anonymizují. ID pro příkaz výše najdete v tomto seznamu i v každém e-mailu s poptávkou.

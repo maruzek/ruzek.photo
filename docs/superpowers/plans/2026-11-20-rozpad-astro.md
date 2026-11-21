@@ -828,9 +828,9 @@ it('same turnstile token twice stores one row', async () => { /* second verify r
 - Consumes: `InquiryStore`, `Mailer`, `ownerEmail`, `clientConfirmation` (úkol 11).
 - Produces: `runMaintenance(deps: { store: InquiryStore; mailer: Mailer; now(): number; anonymizeAfterDays: number; ownerEmail: string; fromEmail: string }): Promise<{ anonymized: number; resent: number; previewed: number }>`. `anonymizeAfterDays` se bere z `ANONYMIZE_AFTER_DAYS` (úkol 10).
 
-- [ ] **Step 1:** Unit testy: záznam `new` nebo `lost` starší než `anonymizeAfterDays` se anonymizuje, `won` a mladší zůstanou; záznam s `notifiedAt = null` starší než 10 min se pošle znovu a označí; selhání mailu u jednoho záznamu nezastaví ostatní; `anonymizeAfterDays` ≤ 30 nebo `NaN` vyhodí chybu (nikdy neanonymizuje všechno); **přehled předem** (riziko R11): první den v měsíci pošle na `ownerEmail` seznam poptávek, které se během příštích 31 dnů anonymizují (datum, typ, jméno), aby Martin mohl označit zakázky jako `won`. Prázdný seznam = žádný e-mail.
-- [ ] **Step 2:** FAIL → implementovat. `index.ts` exportuje `scheduled` (cron `0 3 * * *`) a importuje `ANONYMIZE_AFTER_DAYS` ze sdíleného `src/config/privacy.ts`. README: jak označit zakázku (`wrangler d1 execute ruzek-inquiries --remote --command "UPDATE inquiries SET status='won' WHERE id='…'"`).
-- [ ] **Step 3:** PASS. Commit `feat: maintenance worker for anonymization and mail retries`.
+- [x] **Step 1:** Unit testy: záznam `new` nebo `lost` starší než `anonymizeAfterDays` se anonymizuje, `won` a mladší zůstanou; záznam s `notifiedAt = null` starší než 10 min se pošle znovu a označí; selhání mailu u jednoho záznamu nezastaví ostatní; `anonymizeAfterDays` ≤ 30 nebo `NaN` vyhodí chybu (nikdy neanonymizuje všechno); **přehled předem** (riziko R11): první den v měsíci pošle na `ownerEmail` seznam poptávek, které se během příštích 31 dnů anonymizují (datum, typ, jméno), aby Martin mohl označit zakázky jako `won`. Prázdný seznam = žádný e-mail.
+- [x] **Step 2:** FAIL → implementovat. `index.ts` exportuje `scheduled` (cron `0 3 * * *`) a importuje `ANONYMIZE_AFTER_DAYS` ze sdíleného `src/config/privacy.ts`. README: jak označit zakázku (`wrangler d1 execute ruzek-inquiries --remote --command "UPDATE inquiries SET status='won' WHERE id='…'"`).
+- [x] **Step 3:** PASS. Commit `feat: maintenance worker for anonymization and mail retries`.
 
 ---
 

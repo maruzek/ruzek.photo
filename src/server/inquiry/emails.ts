@@ -112,3 +112,17 @@ export function clientConfirmation(r: InquiryRecord): MailText {
   ].join('\n');
   return { subject: oneLine(m.subject), text };
 }
+
+/**
+ * For Martin, before anonymization (risk R11): the inquiries that will lose their personal data within
+ * `days` days, so he can mark the ones that became an order as `won`. Always in Czech.
+ */
+export function anonymizationPreview(rows: readonly InquiryRecord[], days: number): MailText {
+  const d = t('cs');
+  const m = d.inquiry.mail.preview;
+  const list = rows.map((r) => {
+    const created = DATE_FORMAT.cs.format(new Date(r.createdAt));
+    return `- ${created} · ${d.inquiry.form.type.options[r.service]} · ${oneLine(r.name)} · ${r.id}`;
+  });
+  return { subject: oneLine(fill(m.subject, { days })), text: [fill(m.intro, { days }), '', ...list].join('\n') };
+}
