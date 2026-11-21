@@ -1,17 +1,25 @@
 ---
-// The home page for one language. TEMPORARY composition (task 6): header, hero, marquee, two folds and the
-// wipe into the light zone. Task 7 adds the remaining sections and the footer.
+// The home page for one language; both pages only pass the locale. Section order and zones follow the
+// prototype: night (hero, marquee, folds) → light (work, services, same day) → night (about) → light
+// (inquiry) → night (footer), with a dithered wipe at every change.
 import Base from '../layouts/Base.astro';
 import { t, type Locale } from '../i18n';
 import { PLACEMENT } from '../config/placement';
 import { getPhoto } from '../lib/photos/get';
+import About from './About.astro';
 import DitherWipe from './DitherWipe.astro';
+import Footer from './Footer.astro';
 import Header from './Header.astro';
 import Hero from './Hero.astro';
 import HeroPreload from './HeroPreload.astro';
+import Inquiry from './Inquiry.astro';
+import Lightbox from './Lightbox.astro';
 import Marquee from './Marquee.astro';
 import PhotoFold from './PhotoFold.astro';
+import SameDay from './SameDay.astro';
+import Services from './Services.astro';
 import Todo from './Todo.astro';
+import WorkGrid from './WorkGrid.astro';
 
 interface Props {
   locale: Locale;
@@ -20,7 +28,7 @@ interface Props {
 const { locale } = Astro.props;
 const d = t(locale);
 // Which photos go where lives in config/placement.ts. A withdrawn photo comes back as `undefined` and its
-// section renders on the plain surface.
+// section renders without it.
 const [hero, events, sport] = await Promise.all([
   getPhoto(PLACEMENT.hero),
   ...PLACEMENT.folds.map((id) => getPhoto(id)),
@@ -45,5 +53,19 @@ const [hero, events, sport] = await Promise.all([
     <PhotoFold locale={locale} photo={events} id="fold-events" {...d.folds.events} />
     <PhotoFold locale={locale} photo={sport} id="fold-sport" {...d.folds.sport} />
     <DitherWipe from="night" to="light" />
+    <div class="light">
+      <WorkGrid locale={locale} />
+      <Services locale={locale} />
+      <SameDay locale={locale} />
+    </div>
+    <DitherWipe from="light" to="night" />
+    <About locale={locale} />
+    <DitherWipe from="night" to="light" />
+    <div class="light">
+      <Inquiry locale={locale} />
+    </div>
+    <DitherWipe from="light" to="night" />
   </main>
+  <Footer locale={locale} />
+  <Lightbox locale={locale} />
 </Base>

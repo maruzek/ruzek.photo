@@ -1,0 +1,66 @@
+/* Footer. Source: index.html "FOOTER" */
+.foot {
+  background: var(--night);
+  color: var(--ink);
+  padding: clamp(80px, 9vw, 144px) var(--m) 32px;
+}
+.foot .lead {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 56px;
+}
+.foot .lead p {
+  font-size: var(--t-m);
+  max-width: 30ch;
+}
+.foot .big {
+  font-family: var(--f-name);
+  font-weight: 700;
+  font-size: clamp(64px, 13.4vw, 236px);
+  line-height: 0.84;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+  margin-left: -0.05em;
+}
+.foot .cols {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gap);
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule-d);
+}
+.foot .cols .mono {
+  color: var(--muted);
+  display: block;
+  margin-bottom: 10px;
+}
+.foot .cols a {
+  color: var(--ink);
+  text-underline-offset: 4px;
+  overflow-wrap: anywhere;
+}
+.foot .legal {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 56px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.foot .legal a {
+  color: inherit;
+}
+@media (max-width: 900px) {
+  .foot .cols {
+    grid-template-columns: 1fr 1fr;
+  }
+  .foot .big {
+    white-space: normal;
+    font-size: clamp(64px, 22vw, 128px);
+  }
+}

@@ -1,0 +1,188 @@
+/* Inquiry. Source: index.html "INQUIRY". The form styles are scoped to .inq so the island (tasks 10–11) gets
+   the prototype's look without its own copy of them. */
+.inq {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: clamp(32px, 5vw, 96px);
+}
+.inq-side {
+  display: grid;
+  gap: 24px;
+  align-content: start;
+}
+.inq-side .eyebrow {
+  margin: 0;
+}
+.inq-side p {
+  color: var(--light-muted);
+  font-size: var(--t-m);
+  line-height: 1.5;
+  max-width: 34ch;
+}
+.est {
+  border: 1px solid var(--light-ink);
+  padding: 22px;
+  display: grid;
+  gap: 6px;
+}
+/* The amounts never break inside (non-breaking spaces from formatRange), but the line may break after the en
+   dash: the longest English estimate is wider than the box at 360 px (lead note T4-02) */
+.est output {
+  font-family: var(--f-text);
+  font-weight: 600;
+  font-size: clamp(30px, 2.8vw, 44px);
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: normal;
+}
+.est small {
+  color: var(--light-muted);
+}
+.direct {
+  display: grid;
+  gap: 6px;
+  border-top: 1px solid var(--rule-l);
+  padding-top: 20px;
+}
+.direct a {
+  text-underline-offset: 4px;
+}
+.inq form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px var(--gap);
+}
+.inq .field {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.inq .field.full {
+  grid-column: 1 / -1;
+}
+.inq label {
+  font-weight: 500;
+}
+.inq label .opt {
+  color: var(--light-muted);
+  font-weight: 400;
+}
+.inq :is(input, select, textarea) {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid var(--control);
+  border-radius: 0;
+  background: transparent;
+  color: var(--light-ink);
+  font-size: 18px;
+  transition: border-color 0.3s var(--ease);
+}
+.inq select {
+  appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, var(--light-ink) 50%) right 6px center / 7px 7px
+      no-repeat,
+    linear-gradient(-45deg, transparent 50%, var(--light-ink) 50%) right 0 center / 7px 7px
+      no-repeat;
+  padding-right: 28px;
+}
+.inq textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+.inq :is(input, textarea)::placeholder {
+  color: #6b6f77;
+}
+.inq :is(input, select, textarea):hover {
+  border-color: var(--light-ink);
+}
+.inq :is(input, select, textarea):focus-visible {
+  outline: none;
+  border-bottom: 2px solid var(--light-ink);
+}
+.inq .field.bad input {
+  border-color: var(--err);
+}
+.inq .msg {
+  color: var(--err);
+  font-size: 15px;
+}
+.inq .ticks {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px var(--gap);
+}
+.inq .tick {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  border: 1px solid var(--rule-l);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition:
+    border-color 0.3s var(--ease),
+    background 0.3s var(--ease);
+}
+.inq .tick:hover {
+  border-color: var(--light-ink);
+}
+.inq .tick:has(input:checked) {
+  border-color: var(--light-ink);
+  background: #fff;
+}
+.inq .tick input {
+  width: 20px;
+  min-height: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--light-ink);
+  border: 0;
+}
+.inq .tick small {
+  display: block;
+  color: var(--light-muted);
+}
+.inq .actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.inq .done {
+  grid-column: 1 / -1;
+  background: var(--ok-bg);
+  color: var(--ok);
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.inq .done button {
+  background: none;
+  border: 0;
+  color: var(--ok);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 500;
+}
+.inq .privacy {
+  grid-column: 1 / -1;
+  color: var(--light-muted);
+  font-size: 14px;
+  max-width: 70ch;
+}
+@media (max-width: 900px) {
+  .inq,
+  .inq form,
+  .inq .ticks {
+    grid-template-columns: 1fr;
+  }
+}

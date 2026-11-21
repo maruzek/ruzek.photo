@@ -1,0 +1,25 @@
+---
+import type { Addon } from '../config/pricing';
+import { t, type Locale } from '../i18n';
+import { formatPercentRange, formatRange } from '../lib/pricing/format';
+
+interface Props {
+  locale: Locale;
+  addon: Addon;
+}
+
+const { locale, addon } = Astro.props;
+const text = t(locale).services.addons[addon.id];
+const value =
+  addon.kind === 'percent'
+    ? formatPercentRange(addon.value, locale)
+    : formatRange(addon.value, locale);
+---
+
+<div class="addon">
+  <span>
+    {text.label}
+    <small>{text.note}</small>
+  </span>
+  <b>+{value}</b>
+</div>

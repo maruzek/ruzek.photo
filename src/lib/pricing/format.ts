@@ -25,6 +25,11 @@ export function formatRange(r: Range, locale: Locale): string {
   return locale === 'cs' ? `${body}${NBSP}Kč` : `CZK${NBSP}${body}`;
 }
 
+/** "30–50" | "24": a count range without a unit, spaces non-breaking. */
+export function formatCount(r: Range, locale: Locale): string {
+  return span(r.from, r.to, locale);
+}
+
 /** "20–30 %" (cs) | "20–30%" (en), for percent add-ons. */
 export function formatPercentRange(r: Range, locale: Locale): string {
   const body = span(r.from, r.to, locale);

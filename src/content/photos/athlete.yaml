@@ -1,5 +1,6 @@
 image: ../../assets/photos/athlete.jpg
 alt: { cs: "Hráč v dresu v hale", en: "A player in a jersey in a hall" }
+caption: { cs: "Hala", en: "Indoor" }
 category: sport
 published: true
 placeholder: true

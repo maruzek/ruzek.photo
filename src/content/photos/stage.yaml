@@ -1,5 +1,6 @@
 image: ../../assets/photos/stage.jpg
 alt: { cs: "Řečník s mikrofonem na pódiu", en: "A speaker with a microphone on stage" }
+caption: { cs: "Konference", en: "Conference" }
 category: event
 published: true
 placeholder: true

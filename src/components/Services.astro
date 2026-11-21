@@ -1,0 +1,54 @@
+---
+import '../styles/sections/services.css';
+import { PLACEMENT } from '../config/placement';
+import { addons, type ServiceId } from '../config/pricing';
+import { t, type Locale } from '../i18n';
+import { getPhoto } from '../lib/photos/get';
+import Addon from './Addon.astro';
+import Rich from './Rich.astro';
+import ServiceCard from './ServiceCard.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const d = t(locale);
+
+// Three cards like the prototype (lead note T3-09): both `short` and `portrait` stay separate pricing ids for
+// the calculator but share one card
+const CARDS: readonly { card: keyof typeof PLACEMENT.services; ids: readonly ServiceId[] }[] = [
+  { card: 'event', ids: ['event'] },
+  { card: 'match', ids: ['match'] },
+  { card: 'short', ids: ['short', 'portrait'] },
+];
+const photos = await Promise.all(CARDS.map(({ card }) => getPhoto(PLACEMENT.services[card])));
+---
+
+<section class="sec svc-sec" id={d.anchors.services} tabindex="-1" aria-labelledby="svc-h">
+  <div class="sec-head">
+    <div>
+      <span class="eyebrow mono">{d.services.eyebrow}</span>
+      <h2 class="h" id="svc-h" data-split>
+        <Rich text={d.services.title} />
+      </h2>
+    </div>
+    <p data-rise>{d.services.lead}</p>
+  </div>
+  <div class="services" data-stagger>
+    {CARDS.map(({ card, ids }, i) => (
+      <ServiceCard
+        locale={locale}
+        card={card}
+        ids={ids}
+        photo={photos[i]}
+        index={String(i + 1).padStart(2, '0')}
+      />
+    ))}
+  </div>
+  <div class="addons" data-stagger>
+    {addons.map((addon) => (
+      <Addon locale={locale} addon={addon} />
+    ))}
+  </div>
+</section>

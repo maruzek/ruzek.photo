@@ -89,6 +89,7 @@ export const en = {
     lead: 'Samples from events and sport. Click a photo to open it in full.',
     foot: 'I deliver the photos from an event to clients in a private online gallery. The website only shows photos with the consent of the client or organiser.',
     footLink: 'I want photos like these',
+    captionTodo: 'place and date',
   },
   services: {
     eyebrow: 'Services and prices',
@@ -110,6 +111,15 @@ export const en = {
       },
       short: shortAndPortraitCard,
       portrait: shortAndPortraitCard,
+    },
+    deliverables: {
+      photos: '{range}\u00A0photos',
+      photosPerHour: '{range}\u00A0photos per hour',
+      turnaroundDays: 'within {range}\u00A0days',
+      turnaroundHours: 'within {range}\u00A0h',
+      durationMin: '{range}\u00A0min',
+      durationMaxHours: 'shoot up to {n}\u00A0h',
+      durationMaxMinutes: 'shoot up to {n}\u00A0min',
     },
     addons: {
       sameDay: { label: 'Same-day selection for social media', note: 'Selected photos on the day of the event' },

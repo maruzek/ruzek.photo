@@ -1,0 +1,107 @@
+---
+// One service card. Prices and deliverables come from pricing.ts, the words from the dictionary.
+// A card can stand for more services (the short shoot and the portrait share one): the price is then the span
+// over all of them and each service lists its own deliverables.
+import { services, type Service, type ServiceId } from '../config/pricing';
+import { fill, t, type Locale } from '../i18n';
+import type { PublishedPhoto } from '../lib/photos/get';
+import { formatCount, formatRange } from '../lib/pricing/format';
+import DitherImage from './DitherImage.astro';
+import PlaceholderTag from './PlaceholderTag.astro';
+import Rich from './Rich.astro';
+
+interface Props {
+  locale: Locale;
+  /** Dictionary key of the card (`services.cards`) */
+  card: 'event' | 'match' | 'short';
+  ids: readonly ServiceId[];
+  photo: PublishedPhoto | undefined;
+  /** `01`, `02`, … */
+  index: string;
+}
+
+const { locale, card, ids, photo, index } = Astro.props;
+const d = t(locale);
+const text = d.services.cards[card];
+const dl = d.services.deliverables;
+const items = ids
+  .map((id) => services.find((s) => s.id === id))
+  .filter((s): s is Service => s !== undefined);
+if (items.length !== ids.length)
+  throw new Error(`ServiceCard: unknown service in ${ids.join(', ')}`);
+
+/** "30–50 fotek za hodinu · do 3–5 dnů"; parts that brief.md does not state are left out */
+function deliverables(s: Service): string {
+  const v = s.deliverables;
+  const range = (r: { from: number; to: number }): string => formatCount(r, locale);
+  const parts: string[] = [];
+  if (v.durationMax !== undefined) {
+    parts.push(
+      v.durationMax % 60 === 0
+        ? fill(dl.durationMaxHours, { n: v.durationMax / 60 })
+        : fill(dl.durationMaxMinutes, { n: v.durationMax }),
+    );
+  }
+  if (v.durationMin) parts.push(fill(dl.durationMin, { range: range(v.durationMin) }));
+  parts.push(fill(v.perHour ? dl.photosPerHour : dl.photos, { range: range(v.photos) }));
+  if (v.turnaround) {
+    parts.push(
+      fill(v.turnaround.unit === 'days' ? dl.turnaroundDays : dl.turnaroundHours, {
+        range: range(v.turnaround.value),
+      }),
+    );
+  }
+  return parts.join(' · ');
+}
+
+const first = items[0];
+const hourly = first?.pricing.kind === 'hourly' ? first.pricing : undefined;
+// flat prices: one span over every service of the card
+const flat = items.flatMap((s) => (s.pricing.kind === 'flat' ? [s.pricing.price] : []));
+const price = hourly
+  ? formatRange({ from: hourly.firstHour, to: hourly.firstHour }, locale)
+  : formatRange(
+      { from: Math.min(...flat.map((p) => p.from)), to: Math.max(...flat.map((p) => p.to)) },
+      locale,
+    );
+const typeNames = d.inquiry.form.type.options;
+---
+
+<article class="svc">
+  {photo ? (
+    <DitherImage
+      photo={photo}
+      locale={locale}
+      sizes="(max-width: 900px) 100vw, 33vw"
+      mode="hover"
+      cover="light"
+    >
+      <span class="lbl mono">{index}</span>
+      {photo.data.placeholder && <PlaceholderTag locale={locale} />}
+    </DitherImage>
+  ) : (
+    <span class="lbl lbl-plain mono">{index}</span>
+  )}
+  <h3>
+    <Rich text={text.title} />
+    {'tag' in text && <span class="tag">{text.tag}</span>}
+  </h3>
+  <p>{text.text}</p>
+  <ul class="dlv">
+    {items.map((s) => (
+      <li>
+        {items.length > 1 && <b>{typeNames[s.id]}: </b>}
+        {deliverables(s)}
+      </li>
+    ))}
+  </ul>
+  <div class="price">
+    <span>
+      {text.priceLabel}
+      {hourly && 'priceNote' in text && (
+        <small>{fill(text.priceNote, { price: formatRange(hourly.nextHour, locale) })}</small>
+      )}
+    </span>
+    <b>{price}</b>
+  </div>
+</article>

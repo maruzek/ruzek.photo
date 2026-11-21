@@ -1,5 +1,6 @@
 image: ../../assets/photos/dance.jpg
 alt: { cs: "Tanečníci v objetí, černobíle", en: "Dancers in an embrace, black and white" }
+caption: { cs: "Ples", en: "Ball" }
 category: event
 published: true
 placeholder: true

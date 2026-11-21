@@ -1,0 +1,67 @@
+---
+// "About": text only from docs/brief.md; the story and the portrait are TODO
+import '../styles/sections/about.css';
+import { PLACEMENT } from '../config/placement';
+import { site } from '../config/site';
+import { t, type Locale } from '../i18n';
+import { getPhoto } from '../lib/photos/get';
+import DitherImage from './DitherImage.astro';
+import Rich from './Rich.astro';
+import Todo from './Todo.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const d = t(locale);
+const a = d.about;
+const portrait = await getPhoto(PLACEMENT.about);
+---
+
+<section class="sec about" id={d.anchors.about} tabindex="-1" aria-labelledby="about-h">
+  {portrait ? (
+    <DitherImage
+      photo={portrait}
+      locale={locale}
+      sizes="(max-width: 900px) 100vw, 40vw"
+      cover="night"
+      alt={a.portraitAlt}
+    >
+      <span class="ph-tag">
+        <Todo>{a.portraitTodo}</Todo>
+      </span>
+    </DitherImage>
+  ) : (
+    <p class="about-todo">
+      <Todo>{a.portraitTodo}</Todo>
+    </p>
+  )}
+  <div class="txt">
+    <span class="eyebrow mono">{a.eyebrow}</span>
+    <h2 class="h" id="about-h" data-split>
+      <Rich text={a.title} />
+    </h2>
+    <p data-rise>
+      <strong>{a.leadStrong}</strong> {a.lead}
+    </p>
+    <p data-rise>{a.speed}</p>
+    <p data-rise>
+      <Todo>{a.storyTodo}</Todo>
+    </p>
+    <dl class="facts mono" data-stagger>
+      <div>
+        <dt>{a.facts.where.label}</dt>
+        <dd>{a.facts.where.value}</dd>
+      </div>
+      <div>
+        <dt>{a.facts.forWhom.label}</dt>
+        <dd>{a.facts.forWhom.value}</dd>
+      </div>
+      <div>
+        <dt>{a.facts.instagram.label}</dt>
+        <dd>{site.handle}</dd>
+      </div>
+    </dl>
+  </div>
+</section>

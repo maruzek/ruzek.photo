@@ -1,0 +1,58 @@
+---
+// "Same day": three steps. Without the motion layer every step is active; the pin and the progress line are
+// motion only (desktop).
+import '../styles/sections/day.css';
+import { PLACEMENT } from '../config/placement';
+import { t, type Locale } from '../i18n';
+import { getPhoto } from '../lib/photos/get';
+import DitherImage from './DitherImage.astro';
+import PlaceholderTag from './PlaceholderTag.astro';
+import Rich from './Rich.astro';
+import Todo from './Todo.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const d = t(locale).day;
+const vertical = await getPhoto(PLACEMENT.sameDay);
+const last = d.steps.length - 1;
+---
+
+<section class="day" aria-labelledby="day-h">
+  <div class="sec-head">
+    <div>
+      <span class="eyebrow mono">{d.eyebrow}</span>
+      <h2 class="h" id="day-h" data-split>
+        <Rich text={d.title} />
+      </h2>
+    </div>
+    <p data-rise>{d.lead}</p>
+  </div>
+  <div class="progress" aria-hidden="true">
+    <i></i>
+  </div>
+  <ol class="steps">
+    {d.steps.map((step, i) => (
+      <li class="step is-on">
+        <span class="no mono">{step.no}</span>
+        <h3>{step.title}</h3>
+        <p>
+          {step.text}
+          {i === last && (
+            <>
+              {' '}
+              <Todo>{d.galleryTodo}</Todo>.
+            </>
+          )}
+        </p>
+        {i === 1 && vertical && (
+          <DitherImage photo={vertical} locale={locale} sizes="168px" cover="light">
+            {vertical.data.placeholder && <PlaceholderTag locale={locale} />}
+          </DitherImage>
+        )}
+      </li>
+    ))}
+  </ol>
+</section>

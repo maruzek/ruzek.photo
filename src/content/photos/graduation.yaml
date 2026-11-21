@@ -1,5 +1,6 @@
 image: ../../assets/photos/graduation.jpg
 alt: { cs: "Absolventi v talárech", en: "Graduates in gowns" }
+caption: { cs: "Univerzita", en: "University" }
 category: event
 published: true
 placeholder: true

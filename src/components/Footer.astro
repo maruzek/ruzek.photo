@@ -1,0 +1,59 @@
+---
+import '../styles/sections/footer.css';
+import { site } from '../config/site';
+import { fill, localePath, t, type Locale } from '../i18n';
+import Button from './Button.astro';
+import Todo from './Todo.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const d = t(locale);
+const f = d.footer;
+const year = new Date().getFullYear();
+---
+
+<footer class="foot">
+  <div class="lead">
+    <p>{f.lead}</p>
+    <Button href={`#${d.anchors.inquiry}`} magnetic>
+      {f.cta}
+    </Button>
+  </div>
+  <div class="big" aria-hidden="true">
+    {site.name}
+  </div>
+  <div class="cols">
+    <div>
+      <span class="mono">{f.shoot.label}</span>
+      {f.shoot.value}
+    </div>
+    <div>
+      <span class="mono">{f.where.label}</span>
+      {f.where.value}
+    </div>
+    <div>
+      <span class="mono">{f.instagram.label}</span>
+      <a href={site.instagram} rel="me">
+        {site.handle}
+      </a>
+    </div>
+    <div>
+      <span class="mono">{f.contact.label}</span>
+      <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>
+      <br />
+      {site.contact.phone ?? <Todo>{f.contact.phoneTodo}</Todo>}
+    </div>
+  </div>
+  <div class="legal">
+    <span>
+      {fill(f.legal.copyright, { year, name: site.name })} ·{' '}
+      {site.legal.ico ? `${f.legal.ico} ${site.legal.ico}` : <Todo>{f.legal.ico}</Todo>} ·{' '}
+      {site.legal.seat ? `${f.legal.seat} ${site.legal.seat}` : <Todo>{f.legal.seat}</Todo>} ·{' '}
+      {f.legal.vat}
+    </span>
+    <a href={localePath(locale, 'privacy')}>{f.legal.privacy}</a>
+  </div>
+</footer>

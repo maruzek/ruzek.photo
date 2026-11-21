@@ -1,0 +1,64 @@
+---
+import '../styles/sections/work.css';
+import { PLACEMENT } from '../config/placement';
+import { t, type Locale } from '../i18n';
+import { getPhoto } from '../lib/photos/get';
+import Rich from './Rich.astro';
+import Shot from './Shot.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const d = t(locale);
+
+// The prototype's asymmetric grid: slot class, parallax offset and the rendered width (≤ 900 px: 6 columns)
+const SLOTS = [
+  { slot: 'w1', sizes: '(max-width: 900px) 100vw, 58vw' },
+  { slot: 'w2', sizes: '(max-width: 900px) 50vw, 33vw', par: 40 },
+  { slot: 'w3', sizes: '(max-width: 900px) 50vw, 33vw', par: 24 },
+  { slot: 'w4', sizes: '(max-width: 900px) 100vw, 50vw' },
+  { slot: 'w5', sizes: '(max-width: 900px) 50vw, 33vw', par: 56 },
+  { slot: 'w6', sizes: '(max-width: 900px) 50vw, 33vw' },
+  { slot: 'w7', sizes: '(max-width: 900px) 50vw, 25vw', par: 32 },
+  { slot: 'w8', sizes: '(max-width: 900px) 100vw, 50vw' },
+] as const;
+
+// A withdrawn photo leaves the grid; the others keep the prototype's order and slots
+const photos = (await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)))).filter(
+  (p) => p !== undefined,
+);
+---
+
+<section class="sec" id={d.anchors.work} tabindex="-1" aria-labelledby="work-h">
+  <div class="sec-head">
+    <div>
+      <span class="eyebrow mono">{d.work.eyebrow}</span>
+      <h2 class="h" id="work-h" data-split>
+        <Rich text={d.work.title} />
+      </h2>
+    </div>
+    <p data-rise>{d.work.lead}</p>
+  </div>
+  <div class="work">
+    {photos.map((photo, i) => {
+      const s = SLOTS[i % SLOTS.length] ?? SLOTS[0];
+      return (
+        <Shot
+          photo={photo}
+          locale={locale}
+          slot={s.slot}
+          sizes={s.sizes}
+          par={'par' in s ? s.par : undefined}
+        />
+      );
+    })}
+  </div>
+  <div class="work-foot">
+    <p>{d.work.foot}</p>
+    <a class="lnk" href={`#${d.anchors.inquiry}`}>
+      {d.work.footLink}
+    </a>
+  </div>
+</section>

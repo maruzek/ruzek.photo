@@ -1,5 +1,6 @@
 image: ../../assets/photos/bartender.jpg
 alt: { cs: "Barman připravuje drinky", en: "A bartender preparing drinks" }
+caption: { cs: "Bar", en: "Bar" }
 category: event
 published: true
 placeholder: true

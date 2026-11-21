@@ -418,7 +418,7 @@ it('unpublished photo needs nothing', () =>
   - `Shot` vykreslí `<button data-lb={caption} data-full={getImage(2000).src}>`.
   - `lightbox.ts` exportuje `initLightbox(root: HTMLDialogElement, hooks?: { onOpen?(): void; onClose?(): void }): void`. Hooky použije úkol 8 pro Lenis.
 
-- [ ] **Step 1:** Napsat e2e testy:
+- [x] **Step 1:** Napsat e2e testy:
 
 ```ts
 // tests/e2e/layout.spec.ts
@@ -459,10 +459,10 @@ test('lightbox keyboard and focus return', async ({ page }) => {
 });
 ```
 
-- [ ] **Step 2:** `pnpm test:e2e`. Očekávání: FAIL.
-- [ ] **Step 3:** Komponenty převést z `index.html` (markup 315–432, CSS 112–232). Služby a příplatky generovat ze `services`/`addons`, popisy služeb ze slovníku podle `id`. `lightbox.ts` přepsat z `rozpad.js` (blok Lightbox) do TS, s `data-full` místo `currentSrc`. Mřížka práce bere 8 publikovaných fotek s polem `featured` v pořadí `w1`–`w8`.
-- [ ] **Step 4:** Testy PASS na projektech `mobile-360` i `desktop`.
-- [ ] **Step 5:** Commit `feat: complete static home page in cs and en`.
+- [x] **Step 2:** `pnpm test:e2e`. Očekávání: FAIL.
+- [x] **Step 3:** Komponenty převést z `index.html` (markup 315–432, CSS 112–232). Služby a příplatky generovat ze `services`/`addons`, popisy služeb ze slovníku podle `id`. `lightbox.ts` přepsat z `rozpad.js` (blok Lightbox) do TS, s `data-full` místo `currentSrc`. Mřížka práce bere 8 publikovaných fotek s polem `featured` v pořadí `w1`–`w8`.
+- [x] **Step 4:** Testy PASS na projektech `mobile-360` i `desktop`.
+- [x] **Step 5:** Commit `feat: complete static home page in cs and en`.
 
 ---
 

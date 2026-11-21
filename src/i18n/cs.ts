@@ -101,6 +101,8 @@ export const cs = {
     lead: 'Ukázky z\u00A0akcí a\u00A0sportu. Klikněte na fotku a\u00A0otevře se celá.',
     foot: 'Fotky z\u00A0akce předávám klientům v\u00A0soukromé online galerii. Na webu jsou jen fotky se souhlasem klienta nebo pořadatele.',
     footLink: 'Chci podobné fotky',
+    // A photo caption names the event; the place and date are not known yet
+    captionTodo: 'místo a\u00A0datum',
   },
   services: {
     eyebrow: 'Služby a\u00A0ceny',
@@ -122,6 +124,16 @@ export const cs = {
       },
       short: shortAndPortraitCard,
       portrait: shortAndPortraitCard,
+    },
+    // What a shoot delivers, from pricing.ts (numbers come in as `{range}` / `{n}`); joined with ' · '
+    deliverables: {
+      photos: '{range}\u00A0fotek',
+      photosPerHour: '{range}\u00A0fotek za hodinu',
+      turnaroundDays: 'do\u00A0{range}\u00A0dnů',
+      turnaroundHours: 'do\u00A0{range}\u00A0h',
+      durationMin: '{range}\u00A0min',
+      durationMaxHours: 'focení do\u00A0{n}\u00A0h',
+      durationMaxMinutes: 'focení do\u00A0{n}\u00A0min',
     },
     addons: {
       sameDay: { label: 'Výběr na sítě týž den', note: 'Vybrané fotky ještě v\u00A0den akce' },

@@ -1,0 +1,71 @@
+/* Same day. Source: index.html "SAME DAY". Every step is active until the motion layer takes over (task 8). */
+.day {
+  min-height: 100svh;
+  display: grid;
+  align-content: center;
+  padding: var(--sec) var(--m);
+}
+.progress {
+  height: 2px;
+  background: var(--rule-l);
+  margin: 0 0 40px;
+  position: relative;
+}
+.progress i {
+  position: absolute;
+  inset: 0;
+  background: var(--light-ink);
+  transform-origin: left;
+  transform: scaleX(1);
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap);
+}
+.step {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  transition: opacity 0.5s var(--ease);
+}
+.step .no {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.step .no::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--light-ink);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  background: transparent;
+  transition: background 0.3s;
+}
+.step.is-on .no::before {
+  background: var(--accent);
+}
+.step h3 {
+  font-weight: 600;
+  font-size: clamp(24px, 2vw, 32px);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+.step p {
+  color: var(--light-muted);
+  max-width: 34ch;
+}
+.step .dph {
+  width: min(168px, 52%);
+  aspect-ratio: 9 / 16;
+  margin-top: 8px;
+}
+@media (max-width: 900px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+  .day {
+    min-height: 0;
+  }
+}
