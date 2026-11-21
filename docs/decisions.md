@@ -12,6 +12,7 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 | Fotky v repozitáři, nebo v R2 | Primárně repozitář. R2 jen tam, kde to dává smysl, rozhodne koncept |
 | Podoba ceníku | Hodinové ceny, nebo balíčky? Řeší se mimo repozitář |
 | Využití `martinruzek.cz` | Zatím neurčeno (přesměrování na .eu?) |
+| Poskytovatel odesílání e-mailů (úkol 11) | Neověřeno: implementace se nesměla přihlásit k Martinovu účtu Cloudflare. Hotový je Resend za rozhraním `Mailer` (`src/server/inquiry/mailer.ts`, secret `RESEND_API_KEY`). Bez nastaveného poskytovatele e-maily selžou, poptávka zůstane uložená s `notified_at = NULL` a údržbový worker ji pošle, jakmile poskytovatel bude. Když Cloudflare Email Service na účtu umí posílat na libovolné adresy, stačí přidat jeho implementaci do `createMailer`. Rozhodne Martin |
 
 ## Rozhodnuto
 

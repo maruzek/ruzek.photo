@@ -216,6 +216,55 @@ export const en = {
       acknowledge: 'By sending it you acknowledge the',
       link: 'privacy policy',
     },
+    // Form island, endpoint and e-mails (tasks 10–12). Keys the prototype did not need.
+    fields: {
+      phone: { label: 'Phone' },
+      timeFrom: { label: 'Start' },
+      timeTo: { label: 'End' },
+      guests: { label: 'Number of people' },
+      addons: { legend: 'Requested deliverables' },
+      honeypot: { label: 'Leave this field empty' },
+    },
+    errors: {
+      service: 'Choose what we are shooting.',
+      hours: 'Enter the event length in whole hours, from 1 to 12.',
+      date: 'The date could not be read. Pick it in the calendar.',
+      time: 'The time could not be read. Enter it like 18:30.',
+      guests: 'Enter the number of people as a whole number.',
+      tooLong: 'The text is too long. Please shorten it.',
+      turnstile: 'We could not verify that a person is sending the inquiry. Please send it again.',
+      rateLimit: 'Several inquiries came from your network in a short time. Please try again in a few minutes.',
+      network: 'The inquiry was not sent, the connection dropped. Check your connection and send it again. Your details are still in the form.',
+      server: 'The inquiry was not sent because of an error on my side. Please try again shortly, or send me an e-mail.',
+    },
+    noscript: 'The form needs JavaScript. Write to me directly:',
+    mail: {
+      // To Martin, always in Czech
+      owner: {
+        subject: 'Inquiry from the website: {service}, {name}',
+        intro: 'A new inquiry came from the website. If you reply to this e-mail, the reply goes straight to the client.',
+        estimate: 'Estimate',
+        source: 'Source',
+        locale: 'Website language',
+        id: 'Inquiry ID',
+        empty: '–',
+      },
+      // To the client, in the language of the page. Fixed text only, never free text from the form.
+      client: {
+        subject: 'Your photography inquiry is confirmed',
+        greeting: 'Hello,',
+        body: 'thank you for your inquiry. I will get back to you with a price and whether I am free on that date.',
+        summary: 'What you asked for:',
+        estimateNote: 'The estimate is indicative. I will send an exact offer based on the length and type of the event.',
+        reply: 'Want to add something? Reply to this e-mail.',
+        notYou: 'If you did not send this inquiry, please ignore this e-mail.',
+      },
+      // To Martin before inquiries are anonymized (maintenance worker)
+      preview: {
+        subject: 'Inquiries that will be anonymized within {days} days',
+        intro: 'These inquiries will be anonymized within {days} days: the name, e-mail, phone, place, time and note will be removed. If any of them became an order, mark it as won (see the README).',
+      },
+    },
   },
   footer: {
     lead: 'Have an event or a match? Tell me what you’d like photographed.',

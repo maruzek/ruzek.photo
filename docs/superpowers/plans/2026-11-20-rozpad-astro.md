@@ -668,8 +668,8 @@ export const inquirySchema = z.object({
 });
 ```
 
-- [ ] **Step 1:** Unit testy schématu: platná poptávka projde (i bez `source`); e-mail `jana@` neprojde; `source.landingPath` bez úvodního `/` neprojde; neznámá služba neprojde; `note` 4 001 znaků neprojde; vyplněný `website` neprojde. Testy `readSource`: `('https://martinruzek.eu/?utm_source=ig&utm_campaign=jaro', 'https://www.instagram.com/', 'martinruzek.eu')` → `{ referrer: 'https://www.instagram.com/', landingPath: '/', utmSource: 'ig', utmCampaign: 'jaro' }`; referrer z vlastní domény se vynechá; prázdný referrer se vynechá. Testy `readPrefill`: `'#poptavka?sluzba=match'` → `{ service: 'match' }`, neznámá hodnota → `{}`, `'#inquiry?service=event&hours=4'` → `{ service: 'event', hours: 4 }`.
-- [ ] **Step 2:** E2e (testovací klíče Turnstile `1x00000000000000000000AA` / `1x0000000000000000000000000000000AA` v `.dev.vars` pro testy; endpoint v tomto úkolu nahradí `page.route`):
+- [x] **Step 1:** Unit testy schématu: platná poptávka projde (i bez `source`); e-mail `jana@` neprojde; `source.landingPath` bez úvodního `/` neprojde; neznámá služba neprojde; `note` 4 001 znaků neprojde; vyplněný `website` neprojde. Testy `readSource`: `('https://martinruzek.eu/?utm_source=ig&utm_campaign=jaro', 'https://www.instagram.com/', 'martinruzek.eu')` → `{ referrer: 'https://www.instagram.com/', landingPath: '/', utmSource: 'ig', utmCampaign: 'jaro' }`; referrer z vlastní domény se vynechá; prázdný referrer se vynechá. Testy `readPrefill`: `'#poptavka?sluzba=match'` → `{ service: 'match' }`, neznámá hodnota → `{}`, `'#inquiry?service=event&hours=4'` → `{ service: 'event', hours: 4 }`.
+- [x] **Step 2:** E2e (testovací klíče Turnstile `1x00000000000000000000AA` / `1x0000000000000000000000000000000AA` v `.dev.vars` pro testy; endpoint v tomto úkolu nahradí `page.route`):
   - odhad se mění s typem, hodinami a příplatky (3 h + týž den → `4 200–5 070 Kč`);
   - odeslání prázdného formuláře přesune fokus na pole Jméno a ukáže chybu propojenou přes `aria-describedby`;
   - **dvojí klik** na Odeslat pošle jediný požadavek (tlačítko se během odesílání zakáže);
@@ -678,9 +678,9 @@ export const inquirySchema = z.object({
   - Turnstile skript se nestáhne, dokud formulář není blízko viewportu;
   - formulář nemá žádné zaškrtávátko souhlasu, nad tlačítkem je věta s odkazem na zásady ve správném jazyce;
   - po úspěšném odeslání se zavolá `umami.track('inquiry_sent', { service })` (v testu podstrčený `window.umami`), při chybě `inquiry_error`. Bez `window.umami` formulář funguje stejně.
-- [ ] **Step 3:** Spustit, FAIL. Implementovat `InquiryForm.tsx` (řízené pole, validace přes `inquirySchema.shape[pole].safeParse` při blur, celé schéma při submit, stavy `idle | sending | sent | error`, vzhled a třídy z `index.html:393-416`, zaškrtávátka souhlasu z prototypu se vynechají). Zdroj poptávky přes `readSource(location, document.referrer, location.host)` při odeslání, nic se neukládá do prohlížeče. Měření přes `track()` z `src/scripts/analytics.ts` (úkol 14 ho doplní, tady stačí funkce, která volá `window.umami?.track`). `useTurnstile` vloží skript `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` až po `IntersectionObserver` (rootMargin 400 px) nebo prvním `focusin` a vykreslí widget s `appearance: 'interaction-only'`. Pod formulářem `<noscript>` s přímými kontakty.
-- [ ] **Step 4:** Testy PASS.
-- [ ] **Step 5:** Commit `feat: inquiry form island with live estimate and Turnstile`.
+- [x] **Step 3:** Spustit, FAIL. Implementovat `InquiryForm.tsx` (řízené pole, validace přes `inquirySchema.shape[pole].safeParse` při blur, celé schéma při submit, stavy `idle | sending | sent | error`, vzhled a třídy z `index.html:393-416`, zaškrtávátka souhlasu z prototypu se vynechají). Zdroj poptávky přes `readSource(location, document.referrer, location.host)` při odeslání, nic se neukládá do prohlížeče. Měření přes `track()` z `src/scripts/analytics.ts` (úkol 14 ho doplní, tady stačí funkce, která volá `window.umami?.track`). `useTurnstile` vloží skript `https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit` až po `IntersectionObserver` (rootMargin 400 px) nebo prvním `focusin` a vykreslí widget s `appearance: 'interaction-only'`. Pod formulářem `<noscript>` s přímými kontakty.
+- [x] **Step 4:** Testy PASS.
+- [x] **Step 5:** Commit `feat: inquiry form island with live estimate and Turnstile`.
 
 ---
 
@@ -730,7 +730,7 @@ export function ownerEmail(r: InquiryRecord): { subject: string; text: string };
 export function clientConfirmation(r: InquiryRecord): { subject: string; text: string }; // fixed template: no free-text user input (note, place, name)
 ```
 
-- [ ] **Step 1:** Migrace:
+- [x] **Step 1:** Migrace:
 
 ```sql
 -- db/migrations/0001_inquiries.sql
@@ -770,7 +770,7 @@ CREATE INDEX idx_inquiries_created_at ON inquiries (created_at);
 CREATE INDEX idx_inquiries_unnotified ON inquiries (notified_at) WHERE notified_at IS NULL;
 ```
 
-- [ ] **Step 2:** Unit testy handleru s falešnými závislostmi (paměťový `InquiryStore`, mailer zapisující do pole, `waitUntil` sbírající promise):
+- [x] **Step 2:** Unit testy handleru s falešnými závislostmi (paměťový `InquiryStore`, mailer zapisující do pole, `waitUntil` sbírající promise):
 
 ```ts
 const valid = { name: 'Jana Nováková', email: 'jana@example.com', service: 'event', hours: 3, addons: ['sameDay'],
@@ -807,14 +807,14 @@ it('client confirmation never contains the free-text note', async () => {
 it('same turnstile token twice stores one row', async () => { /* second verify returns false like real siteverify */ });
 ```
 
-- [ ] **Step 3:** Workers test `tests/workers/store.test.ts` přes `@cloudflare/vitest-pool-workers` se skutečnou lokální D1 a aplikovanými migracemi: `insert` → `listUnnotified` ho vrátí; `markNotified` → už ne; `anonymizeCreatedBefore` u starých záznamů se stavem `new` a `lost` vynuluje `name`, `email`, `phone`, `place`, `note`, `time_from`, `time_to`, zkrátí `event_date` na `YYYY-MM` a `referrer` na origin, nastaví `anonymized_at` a vrátí počet; záznam `won` a mladší záznamy nechá beze změny; druhé spuštění nic nezmění (vrátí 0); řádek zůstane (počet řádků se nemění).
-- [ ] **Step 4:** Spustit, FAIL. Implementovat:
+- [x] **Step 3:** Workers test `tests/workers/store.test.ts` přes `@cloudflare/vitest-pool-workers` se skutečnou lokální D1 a aplikovanými migracemi: `insert` → `listUnnotified` ho vrátí; `markNotified` → už ne; `anonymizeCreatedBefore` u starých záznamů se stavem `new` a `lost` vynuluje `name`, `email`, `phone`, `place`, `note`, `time_from`, `time_to`, zkrátí `event_date` na `YYYY-MM` a `referrer` na origin, nastaví `anonymized_at` a vrátí počet; záznam `won` a mladší záznamy nechá beze změny; druhé spuštění nic nezmění (vrátí 0); řádek zůstane (počet řádků se nemění).
+- [x] **Step 4:** Spustit, FAIL. Implementovat:
   - `turnstile.ts`: `POST https://challenges.cloudflare.com/turnstile/v0/siteverify` jako `FormData` (`secret`, `response`, `remoteip`), vrátí `success === true`, při síťové chybě `false`.
   - `mailer.ts`: rozhraní `Mailer` a implementace pro poskytovatele odesílání. Nejdřív ověřit na Martinově účtu, jestli Cloudflare Email Service umí posílat na libovolné adresy. Pokud ano, použít ho, jinak Resend. Výsledek zapsat do `docs/decisions.md`. Pro vývoj a testy `consoleMailer`. Produkční build bez nastaveného poskytovatele selže v `check:launch`.
   - `handler.ts`: pořadí metoda → origin → rate limit (`cf-connecting-ip`) → JSON → Turnstile → schéma → honeypot → `estimate` → `insert` → `waitUntil(maily + markNotified/markConfirmed)`.
   - `src/pages/api/inquiry.ts`: `export const prerender = false`, `POST` sestaví `InquiryDeps` z bindingů podle dokumentace zamčeného adaptéru (env a `waitUntil`) a zavolá `handleInquiry`.
-- [ ] **Step 5:** Testy PASS. E2e z úkolu 10 přepnout z `page.route` na skutečný endpoint v `wrangler dev` s lokální D1 a testovacími klíči Turnstile. PASS.
-- [ ] **Step 6:** Commit `feat: inquiry endpoint with D1, Turnstile and mail`.
+- [x] **Step 5:** Testy PASS. E2e z úkolu 10 přepnout z `page.route` na skutečný endpoint v `wrangler dev` s lokální D1 a testovacími klíči Turnstile. PASS.
+- [x] **Step 6:** Commit `feat: inquiry endpoint with D1, Turnstile and mail`.
 
 ---
 
@@ -828,9 +828,9 @@ it('same turnstile token twice stores one row', async () => { /* second verify r
 - Consumes: `InquiryStore`, `Mailer`, `ownerEmail`, `clientConfirmation` (úkol 11).
 - Produces: `runMaintenance(deps: { store: InquiryStore; mailer: Mailer; now(): number; anonymizeAfterDays: number; ownerEmail: string; fromEmail: string }): Promise<{ anonymized: number; resent: number; previewed: number }>`. `anonymizeAfterDays` se bere z `ANONYMIZE_AFTER_DAYS` (úkol 10).
 
-- [ ] **Step 1:** Unit testy: záznam `new` nebo `lost` starší než `anonymizeAfterDays` se anonymizuje, `won` a mladší zůstanou; záznam s `notifiedAt = null` starší než 10 min se pošle znovu a označí; selhání mailu u jednoho záznamu nezastaví ostatní; `anonymizeAfterDays` ≤ 30 nebo `NaN` vyhodí chybu (nikdy neanonymizuje všechno); **přehled předem** (riziko R11): první den v měsíci pošle na `ownerEmail` seznam poptávek, které se během příštích 31 dnů anonymizují (datum, typ, jméno), aby Martin mohl označit zakázky jako `won`. Prázdný seznam = žádný e-mail.
-- [ ] **Step 2:** FAIL → implementovat. `index.ts` exportuje `scheduled` (cron `0 3 * * *`) a importuje `ANONYMIZE_AFTER_DAYS` ze sdíleného `src/config/privacy.ts`. README: jak označit zakázku (`wrangler d1 execute ruzek-inquiries --remote --command "UPDATE inquiries SET status='won' WHERE id='…'"`).
-- [ ] **Step 3:** PASS. Commit `feat: maintenance worker for anonymization and mail retries`.
+- [x] **Step 1:** Unit testy: záznam `new` nebo `lost` starší než `anonymizeAfterDays` se anonymizuje, `won` a mladší zůstanou; záznam s `notifiedAt = null` starší než 10 min se pošle znovu a označí; selhání mailu u jednoho záznamu nezastaví ostatní; `anonymizeAfterDays` ≤ 30 nebo `NaN` vyhodí chybu (nikdy neanonymizuje všechno); **přehled předem** (riziko R11): první den v měsíci pošle na `ownerEmail` seznam poptávek, které se během příštích 31 dnů anonymizují (datum, typ, jméno), aby Martin mohl označit zakázky jako `won`. Prázdný seznam = žádný e-mail.
+- [x] **Step 2:** FAIL → implementovat. `index.ts` exportuje `scheduled` (cron `0 3 * * *`) a importuje `ANONYMIZE_AFTER_DAYS` ze sdíleného `src/config/privacy.ts`. README: jak označit zakázku (`wrangler d1 execute ruzek-inquiries --remote --command "UPDATE inquiries SET status='won' WHERE id='…'"`).
+- [x] **Step 3:** PASS. Commit `feat: maintenance worker for anonymization and mail retries`.
 
 ---
 

@@ -230,6 +230,55 @@ export const cs = {
       acknowledge: 'Odesláním berete na vědomí',
       link: 'zásady ochrany osobních údajů',
     },
+    // Form island, endpoint and e-mails (tasks 10–12). Keys the prototype did not need.
+    fields: {
+      phone: { label: 'Telefon' },
+      timeFrom: { label: 'Začátek' },
+      timeTo: { label: 'Konec' },
+      guests: { label: 'Počet lidí' },
+      addons: { legend: 'Požadované výstupy' },
+      honeypot: { label: 'Toto pole nechte prázdné' },
+    },
+    errors: {
+      service: 'Vyberte, co budeme fotit.',
+      hours: 'Napište délku akce v\u00A0celých hodinách, od 1 do 12.',
+      date: 'Datum se nepodařilo přečíst. Vyberte ho v\u00A0kalendáři.',
+      time: 'Čas se nepodařilo přečíst. Napište ho jako 18:30.',
+      guests: 'Počet lidí napište celým číslem.',
+      tooLong: 'Text je moc dlouhý. Zkraťte ho prosím.',
+      turnstile: 'Nepodařilo se ověřit, že poptávku posílá člověk. Odešlete ji prosím znovu.',
+      rateLimit: 'Z\u00A0vaší sítě přišlo za krátkou dobu víc poptávek. Zkuste to prosím za pár minut.',
+      network: 'Poptávka neodešla, spojení se přerušilo. Zkontrolujte připojení a\u00A0odešlete ji znovu. Vyplněné údaje zůstaly ve formuláři.',
+      server: 'Poptávka neodešla kvůli chybě na mé straně. Zkuste to prosím za chvíli, nebo mi napište e-mail.',
+    },
+    noscript: 'Formulář potřebuje zapnutý JavaScript. Napište mi napřímo:',
+    mail: {
+      // To Martin, always in Czech
+      owner: {
+        subject: 'Poptávka z\u00A0webu: {service}, {name}',
+        intro: 'Z\u00A0webu přišla nová poptávka. Když odpovíte na tento e-mail, odpověď půjde rovnou klientovi.',
+        estimate: 'Orientační odhad',
+        source: 'Zdroj',
+        locale: 'Jazyk webu',
+        id: 'ID poptávky',
+        empty: '–',
+      },
+      // To the client, in the language of the page. Fixed text only, never free text from the form.
+      client: {
+        subject: 'Potvrzení poptávky focení',
+        greeting: 'Dobrý den,',
+        body: 'děkuji za poptávku. Ozvu se vám s\u00A0cenou a\u00A0tím, jestli mám v\u00A0termínu volno.',
+        summary: 'Co jste poptali:',
+        estimateNote: 'Odhad je orientační. Přesnou nabídku pošlu podle délky a\u00A0typu akce.',
+        reply: 'Chcete něco doplnit? Odpovězte na tento e-mail.',
+        notYou: 'Pokud jste poptávku neposílali vy, e-mail prosím ignorujte.',
+      },
+      // To Martin before inquiries are anonymized (maintenance worker)
+      preview: {
+        subject: 'Poptávky, které se do {days} dní anonymizují',
+        intro: 'Tyto poptávky se do {days} dní anonymizují: zmizí jméno, e-mail, telefon, místo, čas a\u00A0poznámka. Pokud se z\u00A0některé stala zakázka, označte ji jako won (návod je v\u00A0README).',
+      },
+    },
   },
   footer: {
     lead: 'Máte akci nebo zápas? Napište mi, co chcete nafotit.',
