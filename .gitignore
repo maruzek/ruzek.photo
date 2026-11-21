@@ -25,3 +25,8 @@ private/
 
 # Orchestrated build run state (local only)
 .run/
+
+# Test and audit output
+test-results/
+playwright-report/
+.lighthouseci/

@@ -52,8 +52,8 @@
 **Interfaces:**
 - Produces: skripty `pnpm dev`, `pnpm build`, `pnpm preview` (wrangler dev nad `dist/`), `pnpm check`, `pnpm test`, `pnpm test:e2e`. Alias `@/` → `src/`.
 
-- [ ] **Step 1:** `pnpm create astro@latest . --template minimal --typescript strictest --no-git --install`, pak `pnpm astro add cloudflare react sitemap`. Do `README.md` zapsat zamčené verze Astra a adaptéru.
-- [ ] **Step 2:** `astro.config.ts`:
+- [x] **Step 1:** `pnpm create astro@latest . --template minimal --typescript strictest --no-git --install`, pak `pnpm astro add cloudflare react sitemap`. Do `README.md` zapsat zamčené verze Astra a adaptéru.
+- [x] **Step 2:** `astro.config.ts`:
 
 ```ts
 import { defineConfig } from 'astro/config';
@@ -71,8 +71,8 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 3:** `wrangler.jsonc` s `name: "ruzek-web"`, `assets.directory: "./dist"`, binding `DB` (D1 `ruzek-inquiries`, zatím lokální) a `compatibility_date` ze dne instalace. Přesný tvar (`main`) podle dokumentace zamčeného adaptéru.
-- [ ] **Step 4:** Nástroje: `pnpm add -D vitest @playwright/test @axe-core/playwright eslint typescript-eslint eslint-plugin-astro eslint-plugin-jsx-a11y prettier prettier-plugin-astro`. Skripty:
+- [x] **Step 3:** `wrangler.jsonc` s `name: "ruzek-web"`, `assets.directory: "./dist"`, binding `DB` (D1 `ruzek-inquiries`, zatím lokální) a `compatibility_date` ze dne instalace. Přesný tvar (`main`) podle dokumentace zamčeného adaptéru.
+- [x] **Step 4:** Nástroje: `pnpm add -D vitest @playwright/test @axe-core/playwright eslint typescript-eslint eslint-plugin-astro eslint-plugin-jsx-a11y prettier prettier-plugin-astro`. Skripty:
 
 ```json
 {
@@ -85,7 +85,7 @@ export default defineConfig({
 
 (`check:exif` zatím jen vypíše „no images“ a skončí s 0. Plnou logiku dostane v úkolu 5.)
 
-- [ ] **Step 5:** Napsat smoke test:
+- [x] **Step 5:** Napsat smoke test:
 
 ```ts
 // tests/e2e/smoke.spec.ts
@@ -98,8 +98,8 @@ test('home responds with Czech lang', async ({ page }) => {
 ```
 
 `playwright.config.ts`: `webServer: { command: 'pnpm build && pnpm preview', url: 'http://localhost:8787' }`, projekty `mobile-360` (360 × 780, dotyk), `desktop` (1440 × 900).
-- [ ] **Step 6:** `pnpm test:e2e`. Očekávání: FAIL, dokud dočasná stránka nemá `lang="cs"`. Doplnit `<html lang="cs">` a spustit znovu: PASS. `pnpm check`: PASS.
-- [ ] **Step 7:** Commit `chore: scaffold Astro project on Cloudflare with test tooling`.
+- [x] **Step 6:** `pnpm test:e2e`. Očekávání: FAIL, dokud dočasná stránka nemá `lang="cs"`. Doplnit `<html lang="cs">` a spustit znovu: PASS. `pnpm check`: PASS.
+- [x] **Step 7:** Commit `chore: scaffold Astro project on Cloudflare with test tooling`.
 
 ---
 

@@ -1,0 +1,31 @@
+import js from '@eslint/js';
+import { defineConfig } from 'eslint/config';
+import tseslint from 'typescript-eslint';
+import astro from 'eslint-plugin-astro';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+
+export default defineConfig(
+  {
+    ignores: [
+      'dist/',
+      '.astro/',
+      '.wrangler/',
+      'node_modules/',
+      'playwright-report/',
+      'test-results/',
+      '.lighthouseci/',
+      'design/',
+      'research/',
+      'docs/',
+      'private/',
+    ],
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  ...astro.configs.recommended,
+  ...astro.configs['jsx-a11y-recommended'],
+  {
+    files: ['**/*.{jsx,tsx}'],
+    ...jsxA11y.flatConfigs.recommended,
+  },
+);

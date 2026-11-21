@@ -18,6 +18,22 @@ Portfolio a obchodní web fotografa Martina Růžka (`@ruzek.jpg`), Praha a Karl
 ## Plánované technologie
 Astro (statický výstup) s React islands, TypeScript, GSAP a Lenis. Na Cloudflare poběží Pages/Workers, D1, Turnstile, Stream nebo R2 a Web Analytics. Detaily a pravidla jsou v [AGENTS.md](AGENTS.md).
 
+### Zamčené verze (2026-11-21)
+Přesné verze drží `pnpm-lock.yaml`. Hlavní nástroje:
+
+| Nástroj | Verze |
+|---|---|
+| Astro | 7.4.13 |
+| `@astrojs/cloudflare` (adaptér) | 14.4.9 |
+| `@astrojs/react` | 7.1.9 |
+| `@astrojs/sitemap` | 3.7.6 |
+| Wrangler | 4.166.0 |
+| Vitest | 5.1.1 |
+| Playwright | 1.65.1 |
+| TypeScript | 6.0.3 (`astro check` zatím nepodporuje 7.x) |
+
+Příkazy: `pnpm dev`, `pnpm build`, `pnpm preview` (Wrangler nad `dist/` na portu 8787), `pnpm check`, `pnpm test`, `pnpm test:e2e`. Vždy `pnpm`, nikdy `npm`.
+
 ## Dokumentace
 | Soubor | Obsah |
 |---|---|

@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ruzek-web",
+  "compatibility_date": "2026-11-21",
+  "d1_databases": [
+    {
+      // Local only for now; the real database id is added at deployment (plan task 16).
+      "binding": "DB",
+      "database_name": "ruzek-inquiries",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "db/migrations"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+# Copy to .dev.vars (git-ignored) and fill in. Names only, never commit real values.
+TURNSTILE_SECRET=
