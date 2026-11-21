@@ -24,7 +24,7 @@ export const cs = {
   meta: {
     title: 'Fotograf akcí a sportu Praha · Martin Růžek',
     description:
-      'Fotograf akcí a sportu v Praze a Karlových Varech: firemní akce, konference, plesy, zápasy. Výběr fotek na sítě ještě týž den. Poptejte focení.',
+      'Fotograf akcí a sportu v Praze a Karlových Varech: firemní akce, konference, plesy, zápasy. Výběr fotek na sítě ještě ten den. Poptejte focení.',
     // Shown on the English page until Martin approves the translation (concept.md, kap. 5).
     translationTodo: 'kontrola překladu',
   },
@@ -59,7 +59,7 @@ export const cs = {
     kicker: 'Fotograf akcí a\u00A0sportu',
     places: 'Praha · Karlovy Vary',
     scrollHint: 'Dolů',
-    lead: 'Fotím firemní akce, konference, plesy a\u00A0sport. Výběr na vaše sítě máte *ještě týž den.*',
+    lead: 'Fotím firemní akce, konference, plesy a\u00A0sport. Výběr na vaše sítě máte *ještě ten den.*',
     cta: 'Poptat focení',
     ctaWork: 'Prohlédnout práci',
     instagram: 'Instagram {handle}',
@@ -137,7 +137,7 @@ export const cs = {
       durationMaxMinutes: 'focení do\u00A0{n}\u00A0min',
     },
     addons: {
-      sameDay: { label: 'Výběr na sítě týž den', note: 'Expres' },
+      sameDay: { label: 'Výběr na sítě ještě ten den', note: 'Expres' },
       video: { label: 'Videa pro sítě', note: '1–3 videa na výšku' },
     },
   },
@@ -157,7 +157,7 @@ export const cs = {
         text: 'Z\u00A0celého dne vyberu snímky pro sítě. Na přání přidám videa na výšku.',
       },
       {
-        no: '03 · Týž den',
+        no: '03 · Ještě ten den',
         title: 'Posílám výběr',
         // Followed by <Todo>{galleryTodo}</Todo> and a full stop.
         text: 'Celou galerii dodám',
