@@ -730,7 +730,7 @@ export function ownerEmail(r: InquiryRecord): { subject: string; text: string };
 export function clientConfirmation(r: InquiryRecord): { subject: string; text: string }; // fixed template: no free-text user input (note, place, name)
 ```
 
-- [ ] **Step 1:** Migrace:
+- [x] **Step 1:** Migrace:
 
 ```sql
 -- db/migrations/0001_inquiries.sql
@@ -770,7 +770,7 @@ CREATE INDEX idx_inquiries_created_at ON inquiries (created_at);
 CREATE INDEX idx_inquiries_unnotified ON inquiries (notified_at) WHERE notified_at IS NULL;
 ```
 
-- [ ] **Step 2:** Unit testy handleru s falešnými závislostmi (paměťový `InquiryStore`, mailer zapisující do pole, `waitUntil` sbírající promise):
+- [x] **Step 2:** Unit testy handleru s falešnými závislostmi (paměťový `InquiryStore`, mailer zapisující do pole, `waitUntil` sbírající promise):
 
 ```ts
 const valid = { name: 'Jana Nováková', email: 'jana@example.com', service: 'event', hours: 3, addons: ['sameDay'],
@@ -807,14 +807,14 @@ it('client confirmation never contains the free-text note', async () => {
 it('same turnstile token twice stores one row', async () => { /* second verify returns false like real siteverify */ });
 ```
 
-- [ ] **Step 3:** Workers test `tests/workers/store.test.ts` přes `@cloudflare/vitest-pool-workers` se skutečnou lokální D1 a aplikovanými migracemi: `insert` → `listUnnotified` ho vrátí; `markNotified` → už ne; `anonymizeCreatedBefore` u starých záznamů se stavem `new` a `lost` vynuluje `name`, `email`, `phone`, `place`, `note`, `time_from`, `time_to`, zkrátí `event_date` na `YYYY-MM` a `referrer` na origin, nastaví `anonymized_at` a vrátí počet; záznam `won` a mladší záznamy nechá beze změny; druhé spuštění nic nezmění (vrátí 0); řádek zůstane (počet řádků se nemění).
-- [ ] **Step 4:** Spustit, FAIL. Implementovat:
+- [x] **Step 3:** Workers test `tests/workers/store.test.ts` přes `@cloudflare/vitest-pool-workers` se skutečnou lokální D1 a aplikovanými migracemi: `insert` → `listUnnotified` ho vrátí; `markNotified` → už ne; `anonymizeCreatedBefore` u starých záznamů se stavem `new` a `lost` vynuluje `name`, `email`, `phone`, `place`, `note`, `time_from`, `time_to`, zkrátí `event_date` na `YYYY-MM` a `referrer` na origin, nastaví `anonymized_at` a vrátí počet; záznam `won` a mladší záznamy nechá beze změny; druhé spuštění nic nezmění (vrátí 0); řádek zůstane (počet řádků se nemění).
+- [x] **Step 4:** Spustit, FAIL. Implementovat:
   - `turnstile.ts`: `POST https://challenges.cloudflare.com/turnstile/v0/siteverify` jako `FormData` (`secret`, `response`, `remoteip`), vrátí `success === true`, při síťové chybě `false`.
   - `mailer.ts`: rozhraní `Mailer` a implementace pro poskytovatele odesílání. Nejdřív ověřit na Martinově účtu, jestli Cloudflare Email Service umí posílat na libovolné adresy. Pokud ano, použít ho, jinak Resend. Výsledek zapsat do `docs/decisions.md`. Pro vývoj a testy `consoleMailer`. Produkční build bez nastaveného poskytovatele selže v `check:launch`.
   - `handler.ts`: pořadí metoda → origin → rate limit (`cf-connecting-ip`) → JSON → Turnstile → schéma → honeypot → `estimate` → `insert` → `waitUntil(maily + markNotified/markConfirmed)`.
   - `src/pages/api/inquiry.ts`: `export const prerender = false`, `POST` sestaví `InquiryDeps` z bindingů podle dokumentace zamčeného adaptéru (env a `waitUntil`) a zavolá `handleInquiry`.
-- [ ] **Step 5:** Testy PASS. E2e z úkolu 10 přepnout z `page.route` na skutečný endpoint v `wrangler dev` s lokální D1 a testovacími klíči Turnstile. PASS.
-- [ ] **Step 6:** Commit `feat: inquiry endpoint with D1, Turnstile and mail`.
+- [x] **Step 5:** Testy PASS. E2e z úkolu 10 přepnout z `page.route` na skutečný endpoint v `wrangler dev` s lokální D1 a testovacími klíči Turnstile. PASS.
+- [x] **Step 6:** Commit `feat: inquiry endpoint with D1, Turnstile and mail`.
 
 ---
 

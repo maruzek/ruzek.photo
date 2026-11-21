@@ -1,7 +1,8 @@
 import { test, expect, type Page, type Route } from '@playwright/test';
 
-// The inquiry form island (task 10). The endpoint is mocked with page.route where a failure has to be forced
-// (network down, server error, slow response); the real endpoint is covered by inquiry-api.spec.ts.
+// The inquiry form island (tasks 10 and 11). The endpoint is mocked with page.route where a failure has to be
+// forced (network down, server error, slow response); one test sends to the real endpoint, and the endpoint
+// itself is covered by inquiry-api.spec.ts.
 
 const HOME = { cs: '/', en: '/en/' } as const;
 const PRIVACY = { cs: '/zasady-ochrany-osobnich-udaju/', en: '/en/privacy/' } as const;
@@ -170,6 +171,16 @@ test.describe.skip('inquiry form', () => {
     const out = await page.locator('.est output').evaluate((el) => el.scrollWidth <= el.clientWidth);
     expect(box!.x + box!.width).toBeLessThanOrEqual(360);
     expect(out).toBe(true);
+  });
+
+  // the real endpoint (wrangler dev, local D1, Turnstile test keys); desktop only because of the rate limit
+  test('sends to the real endpoint', async ({ page }, info) => {
+    test.skip(info.project.name !== 'desktop', 'rate limited endpoint: once per run');
+    await page.goto(HOME.cs); // the real Turnstile widget with the public test site key
+    await toForm(page);
+    await fillRequired(page);
+    await page.locator('#inq button[type="submit"]').click();
+    await expect(page.locator('.done')).toBeVisible({ timeout: 15_000 });
   });
 
   test('the page sets no cookies and writes nothing to storage while sending', async ({ page, context }) => {

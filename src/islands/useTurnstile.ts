@@ -39,7 +39,7 @@ function loadScript(): Promise<TurnstileApi> {
       scriptPromise = null; // allow a retry on the next submit
       reject(new Error('turnstile failed to load'));
     };
-    document.head.append(s);
+    document.head.appendChild(s); // not append(): the Worker runtime types (wrangler types) overload Element.append
   });
   return scriptPromise;
 }

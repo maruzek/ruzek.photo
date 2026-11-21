@@ -11,9 +11,11 @@
     "build": "astro build && pnpm check:exif",
     "preview": "wrangler dev --port 8787",
     "astro": "astro",
-    "check": "astro check && eslint . && vitest run && pnpm check:exif",
+    "check": "pnpm types:worker && astro check && eslint . && vitest run && pnpm check:exif",
     "test": "vitest run",
+    "test:workers": "vitest run -c vitest.workers.config.ts",
     "test:e2e": "playwright test",
+    "types:worker": "wrangler types",
     "check:exif": "tsx scripts/check-exif.ts",
     "check:contrast": "tsx scripts/check-contrast.ts",
     "photos:import": "tsx scripts/photos-import.ts"

@@ -32,3 +32,6 @@ private/
 test-results/
 playwright-report/
 .lighthouseci/
+
+# Generated Worker types (pnpm types:worker, run by pnpm check)
+worker-configuration.d.ts

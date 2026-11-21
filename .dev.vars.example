@@ -1,2 +1,8 @@
 # Copy to .dev.vars (git-ignored) and fill in. Names only, never commit real values.
+# Turnstile secret. For local runs use Cloudflare's public test secret that always passes:
+# 1x0000000000000000000000000000000AA (with the test site key 1x00000000000000000000AA in PUBLIC_TURNSTILE_SITE_KEY)
 TURNSTILE_SECRET=
+# Mail provider (src/server/inquiry/mailer.ts). Leave empty and set MAILER=console for local runs.
+RESEND_API_KEY=
+MAILER=console
+ALLOWED_ORIGIN=http://localhost:8787
