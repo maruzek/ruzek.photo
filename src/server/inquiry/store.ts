@@ -170,13 +170,13 @@ export function d1Store(db: D1Database): InquiryStore {
       if (!ids.length) return;
       await db.batch(ids.map((id) => db.prepare('UPDATE inquiries SET previewed_at = ?2 WHERE id = ?1').bind(id, at)));
     },
-    async anonymizeCreatedBefore(ts, at, previewedBefore) {
+    async anonymizeCreatedBefore(ts, at, previewedBefore, hardBefore) {
       const res = await db
         .prepare(
           `UPDATE inquiries SET ${ANONYMIZE_SET}
-           WHERE ${ANONYMIZABLE} AND previewed_at IS NOT NULL AND previewed_at <= ?3`,
+           WHERE ${ANONYMIZABLE} AND ((previewed_at IS NOT NULL AND previewed_at <= ?3) OR created_at < ?4)`,
         )
-        .bind(ts, at, previewedBefore)
+        .bind(ts, at, previewedBefore, Math.min(hardBefore, ts))
         .run();
       return res.meta.changes;
     },

@@ -36,7 +36,9 @@ export interface InquiryStore {
    * status != 'won', not anonymized, created before `ts` and listed in a preview sent no later than
    * `previewedBefore`. Returns the number of rows changed.
    */
-  anonymizeCreatedBefore(ts: number, at: number, previewedBefore: number): Promise<number>;
+  /** Anonymizes rows created before `ts` that a sent preview listed before `previewedBefore`, and every row created
+   * before `hardBefore` even without a preview (the retention limit must hold when mail is broken). */
+  anonymizeCreatedBefore(ts: number, at: number, previewedBefore: number, hardBefore: number): Promise<number>;
 }
 
 export interface MailMessage {

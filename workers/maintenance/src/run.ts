@@ -16,6 +16,11 @@ export const RESEND_BATCH = 50;
 export const PREVIEW_DAYS = 35;
 /** A row is anonymized only once a preview listing it went out at least this many days ago. */
 export const MIN_NOTICE_DAYS = 3;
+/**
+ * Hard limit: a row is anonymized this many days after the retention period even if no preview could be sent
+ * (e.g. mail is misconfigured for weeks), so personal data never outlives the retention period without bound (FM-13).
+ */
+export const NOTICE_GRACE_DAYS = 30;
 /** A retention period this short is a configuration error: refuse instead of anonymizing (almost) everything. */
 export const MIN_ANONYMIZE_DAYS = 30;
 
@@ -79,6 +84,7 @@ export async function runMaintenance(d: MaintenanceDeps): Promise<MaintenanceRes
     now - d.anonymizeAfterDays * DAY,
     now,
     now - MIN_NOTICE_DAYS * DAY,
+    now - (d.anonymizeAfterDays + NOTICE_GRACE_DAYS) * DAY,
   );
   return { anonymized, resent, previewed };
 }

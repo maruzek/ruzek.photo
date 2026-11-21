@@ -53,9 +53,11 @@ function memoryStore(rows: InquiryRecord[]): InquiryStore {
         .slice(0, limit),
     listPreviewDue: async (before) => rows.filter((r) => anonymizable(r, before) && r.previewedAt === null),
     markPreviewed: async (ids, at) => ids.forEach((id) => Object.assign(byId(id), { previewedAt: at })),
-    anonymizeCreatedBefore: async (before, at, previewedBefore) => {
+    anonymizeCreatedBefore: async (before, at, previewedBefore, hardBefore) => {
       const hit = rows.filter(
-        (r) => anonymizable(r, before) && r.previewedAt !== null && r.previewedAt <= previewedBefore,
+        (r) =>
+          anonymizable(r, before) &&
+          ((r.previewedAt !== null && r.previewedAt <= previewedBefore) || r.createdAt < hardBefore),
       );
       for (const r of hit) Object.assign(r, { name: '', email: '', anonymizedAt: at });
       return hit.length;
@@ -203,7 +205,8 @@ describe('runMaintenance', () => {
 
   it('a failed preview is retried the next day and nothing is anonymized without it (FM-04)', async () => {
     const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { d, rows, sent } = deps([rec('due', { createdAt: FIRST - 400 * DAY })], {
+    // past the retention period but within NOTICE_GRACE_DAYS
+    const { d, rows, sent } = deps([rec('due', { createdAt: FIRST - 370 * DAY })], {
       now: FIRST,
       failTo: 'foto@martinruzek.cz',
     });
@@ -221,6 +224,17 @@ describe('runMaintenance', () => {
     expect(next.previewed).toBe(1);
     expect(next.anonymized).toBe(0);
     expect(rows[0]!.previewedAt).toBe(FIRST + DAY);
+  });
+
+  it('past the grace period a row is anonymized even though no preview could be sent (FM-13)', async () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { d, rows } = deps([rec('stuck', { createdAt: FIRST - 400 * DAY })], {
+      now: FIRST,
+      failTo: 'foto@martinruzek.cz',
+    });
+    expect(await runMaintenance(d)).toMatchObject({ previewed: 0, anonymized: 1 });
+    expect(rows[0]!.anonymizedAt).toBe(FIRST);
+    quiet.mockRestore();
   });
 
   it('no preview mail when nothing is due or everything due was previewed', async () => {

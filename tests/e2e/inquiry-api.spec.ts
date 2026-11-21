@@ -86,13 +86,17 @@ test('a valid inquiry is stored', async ({ request, baseURL }) => {
 });
 
 test('the same submission again (the response got lost) adds no row', async ({ request, baseURL }) => {
-  const res = await request.post('/api/inquiry', {
-    data: valid,
-    headers: { origin: new URL(baseURL!).origin },
-  });
-  expect(res.status()).toBe(200);
-  expect(await res.json()).toEqual({ ok: true });
-  expect(stored(valid.email)).toBe(1);
+  // both posts inside this test, so it does not depend on the previous test having run (FM-16)
+  const data = { ...valid, email: email('retry'), submissionId: randomUUID() };
+  for (let i = 0; i < 2; i++) {
+    const res = await request.post('/api/inquiry', {
+      data,
+      headers: { origin: new URL(baseURL!).origin },
+    });
+    expect(res.status()).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+  }
+  expect(stored(data.email)).toBe(1);
 });
 
 test('a filled honeypot looks like a success', async ({ request, baseURL }) => {

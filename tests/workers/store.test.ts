@@ -137,8 +137,8 @@ describe('d1Store', () => {
     await store.markPreviewed(['old-new', 'old-lost'], seen);
     expect((await store.listPreviewDue(cut)).map((r) => r.id)).toEqual(['old-unseen']);
     // the preview must be old enough
-    expect(await store.anonymizeCreatedBefore(cut, NOW, seen - 1)).toBe(0);
-    expect(await store.anonymizeCreatedBefore(cut, NOW, NOW - 3 * DAY)).toBe(2);
+    expect(await store.anonymizeCreatedBefore(cut, NOW, seen - 1, 0)).toBe(0);
+    expect(await store.anonymizeCreatedBefore(cut, NOW, NOW - 3 * DAY, 0)).toBe(2);
 
     const anon = await rowAt(old);
     expect(anon).toMatchObject({
@@ -177,9 +177,18 @@ describe('d1Store', () => {
     expect(await row('old-unseen')).toMatchObject({ name: 'Jana Nováková', anonymized_at: null });
     expect(await row('young')).toMatchObject({ name: 'Jana Nováková', anonymized_at: null });
 
-    expect(await store.anonymizeCreatedBefore(cut, NOW + 1, NOW)).toBe(0);
+    expect(await store.anonymizeCreatedBefore(cut, NOW + 1, NOW, 0)).toBe(0);
     expect(await rowAt(old)).toMatchObject({ anonymized_at: NOW });
     expect(await count()).toBe(before);
+  });
+
+  it('anonymizes an unpreviewed row past the hard limit, so broken mail cannot extend retention (FM-13)', async () => {
+    await store.insert(rec({ id: 'stuck', createdAt: NOW - 400 * DAY }));
+    await store.insert(rec({ id: 'stuck-won', createdAt: NOW - 400 * DAY + 1, status: 'won' }));
+    await store.insert(rec({ id: 'grace', createdAt: NOW - 380 * DAY }));
+    // no preview was ever sent: only the row older than the hard limit (here 395 days) goes
+    expect(await store.anonymizeCreatedBefore(NOW - 365 * DAY, NOW, NOW - 3 * DAY, NOW - 395 * DAY)).toBe(1);
+    expect((await store.listPreviewDue(NOW - 365 * DAY)).map((r) => r.id)).toEqual(['grace']);
   });
 
   it('anonymization drops identifiers hidden in the source columns (FM-01)', async () => {
@@ -195,7 +204,7 @@ describe('d1Store', () => {
         previewedAt: NOW - 10 * DAY,
       }),
     );
-    expect(await store.anonymizeCreatedBefore(NOW - 365 * DAY, NOW, NOW - 3 * DAY)).toBe(1);
+    expect(await store.anonymizeCreatedBefore(NOW - 365 * DAY, NOW, NOW - 3 * DAY, 0)).toBe(1);
     const r = await rowAt(NOW - 400 * DAY);
     expect(r).toMatchObject({
       referrer: null,
@@ -210,7 +219,7 @@ describe('d1Store', () => {
 
   it('anonymized rows are not resent', async () => {
     await store.insert(rec({ createdAt: NOW - 400 * DAY, previewedAt: NOW - 10 * DAY }));
-    await store.anonymizeCreatedBefore(NOW - 365 * DAY, NOW, NOW);
+    await store.anonymizeCreatedBefore(NOW - 365 * DAY, NOW, NOW, 0);
     expect(await store.listPendingMail(0, NOW, 10)).toHaveLength(0);
   });
 
