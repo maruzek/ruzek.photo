@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { findMetadataViolations, hasJpegComment } from '../../scripts/check-exif';
+import { findMetadataViolations, hasJpegComment, hasPngText } from '../../scripts/check-exif';
 import { importPhoto } from '../../scripts/photos-import';
 
 // Obviously fake coordinates (0° N, 0° E, "Null Island"), written to the GPS IFD (IFD3 in sharp).
@@ -132,6 +132,28 @@ describe('metadata outside EXIF, XMP and IPTC (forbid "any")', () => {
       Buffer.concat([png.subarray(0, ihdrEnd), head, body, crc, png.subarray(ihdrEnd)]),
     );
     expect(await scan(dir)).toEqual([file]);
+  });
+
+  it('finds a COM segment after the scans of a progressive JPEG', async () => {
+    const clean = await sharp(grey).jpeg({ progressive: true }).toBuffer();
+    const text = Buffer.from('client data');
+    const com = Buffer.concat([Buffer.from([0xff, 0xfe, 0, text.length + 2]), text]);
+    const late = Buffer.concat([clean.subarray(0, -2), com, clean.subarray(-2)]); // just before EOI
+    expect(hasJpegComment(clean)).toBe(false);
+    expect(hasJpegComment(late)).toBe(true);
+  });
+
+  it('finds a PNG text chunk after the image data', async () => {
+    const png = await sharp(grey).png().toBuffer();
+    const body = Buffer.from('Comment\0client data');
+    const head = Buffer.alloc(8);
+    head.writeUInt32BE(body.length, 0);
+    head.write('tEXt', 4, 'latin1');
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(Buffer.concat([head.subarray(4), body])), 0);
+    const late = Buffer.concat([png.subarray(0, -12), head, body, crc, png.subarray(-12)]); // before IEND
+    expect(hasPngText(png)).toBe(false);
+    expect(hasPngText(late)).toBe(true);
   });
 
   it('reports an embedded ICC profile in a WebP, but not a plain one', async () => {

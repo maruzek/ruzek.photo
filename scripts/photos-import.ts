@@ -76,6 +76,8 @@ export async function importPhoto(source: string, options: ImportOptions): Promi
     await writeFile(yamlPath, skeleton(slug), { flag: 'wx' });
   } catch (error) {
     await rm(imagePath, { force: true });
+    // `wx` opened the YAML only if it did not exist, so anything but EEXIST means a partial file of ours
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') await rm(yamlPath, { force: true });
     throw error;
   }
   return { slug, imagePath, yamlPath };

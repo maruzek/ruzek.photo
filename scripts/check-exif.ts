@@ -16,24 +16,49 @@ export interface MetadataRule {
 
 const GPS_IN_XMP = /GPS(Latitude|Longitude)/i;
 
-/** True when the JPEG has a `COM` (0xFFFE) segment. Walks the segments up to the start of the scan. */
+/**
+ * True when the JPEG has a `COM` (0xFFFE) segment anywhere up to `EOI`, also between or after the scans of a
+ * progressive JPEG. Inside entropy-coded data a 0xFF byte is followed only by 0x00 (stuffing), a restart marker
+ * (0xD0–0xD7) or a fill byte, so any other marker found there starts a new segment.
+ */
 export function hasJpegComment(data: Buffer): boolean {
   if (data.length < 4 || data[0] !== 0xff || data[1] !== 0xd8) return false;
   let pos = 2;
-  while (pos + 4 <= data.length) {
-    if (data[pos] !== 0xff) return false;
+  while (pos + 1 < data.length) {
+    if (data[pos] !== 0xff) {
+      pos += 1; // entropy-coded scan data
+      continue;
+    }
     const marker = data[pos + 1] ?? 0;
     if (marker === 0xff) {
       pos += 1; // fill byte
       continue;
     }
-    if (marker === 0xfe) return true;
-    if (marker === 0xda || marker === 0xd9) return false; // scan data or end of image: no more headers
-    if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd8)) {
-      pos += 2; // standalone markers without a length
+    if (marker === 0x00 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd8)) {
+      pos += 2; // stuffed 0xFF, TEM, restart markers, SOI: no length
       continue;
     }
-    pos += 2 + data.readUInt16BE(pos + 2);
+    if (marker === 0xfe) return true;
+    if (marker === 0xd9) return false; // end of image
+    if (pos + 4 > data.length) return false;
+    pos += 2 + data.readUInt16BE(pos + 2); // segment with a length (SOS: its header, then scan data follows)
+  }
+  return false;
+}
+
+/** PNG chunk types that carry free text (comments, EXIF). */
+const PNG_TEXT_CHUNKS = new Set(['tEXt', 'zTXt', 'iTXt', 'eXIf']);
+
+/** True when the PNG has a text or EXIF chunk anywhere up to `IEND`, including after the image data. */
+export function hasPngText(data: Buffer): boolean {
+  if (data.length < 8 || data.readUInt32BE(0) !== 0x89504e47) return false;
+  let pos = 8;
+  while (pos + 8 <= data.length) {
+    const length = data.readUInt32BE(pos);
+    const type = data.toString('latin1', pos + 4, pos + 8);
+    if (PNG_TEXT_CHUNKS.has(type)) return true;
+    if (type === 'IEND') return false;
+    pos += 12 + length; // length + type + data + CRC
   }
   return false;
 }
@@ -57,6 +82,7 @@ async function violation(
     if (meta.iptc) return 'IPTC';
     if (meta.icc) return 'ICC profile'; // Astro's own output has none (verified), and a profile can hold text
     if (meta.comments && meta.comments.length > 0) return 'PNG text chunk';
+    if (meta.format === 'png' && hasPngText(await readFile(file))) return 'PNG text chunk';
     if (meta.format === 'jpeg' && hasJpegComment(await readFile(file))) return 'JPEG comment';
     return undefined;
   }
