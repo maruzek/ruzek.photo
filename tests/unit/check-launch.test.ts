@@ -1,8 +1,13 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
-import { launchEnv, launchProblems, leftoverTodos } from '../../scripts/check-launch';
+import {
+  launchEnv,
+  launchProblems,
+  leftoverTodos,
+  TURNSTILE_TEST_SECRETS,
+} from '../../scripts/check-launch';
 import type { Photo } from '../../src/lib/photos/schema';
 
 const photo = (over: Partial<Photo<unknown>> = {}): Photo<unknown> => ({
@@ -160,5 +165,13 @@ describe('launchEnv', () => {
 
   it('lets the process environment win over every file', () => {
     expect(launchEnv(root, { [NAME]: 'from-process' })[NAME]).toBe('from-process');
+  });
+});
+
+describe('.dev.vars.example', () => {
+  it('ships a published Turnstile test secret, so a copied file lets the local form submit', () => {
+    const text = readFileSync(join(import.meta.dirname, '../../.dev.vars.example'), 'utf8');
+    const value = /^TURNSTILE_SECRET=(.*)$/m.exec(text)?.[1]?.trim();
+    expect(TURNSTILE_TEST_SECRETS).toContain(value);
   });
 });

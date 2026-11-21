@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ANALYTICS_TEST_ENV } from '../tests/e2e/analytics-env';
 import { BEACON_STUB, UMAMI_STUB } from '../tests/e2e/analytics-stubs';
+import { stubListener } from './lhci-stub';
 
 // The server `pnpm lhci` measures (lighthouserc.json: startServerCommand). It is the same setup as the e2e suite
 // (playwright.config.ts): a fresh build, the local D1 migrated, wrangler dev serving dist/ the way Workers with
@@ -56,17 +57,9 @@ execFileSync(
 );
 const stub = createServer(
   { key: readFileSync(join(certDir, 'key.pem')), cert: readFileSync(join(certDir, 'cert.pem')) },
-  (req, res) => {
-    const host = req.headers.host?.split(':')[0] ?? '';
-    const script =
-      host === new URL(ANALYTICS_TEST_ENV.PUBLIC_UMAMI_SRC).hostname ? UMAMI_STUB : BEACON_STUB;
-    if (req.method === 'POST') {
-      req.resume();
-      res.writeHead(200, { 'content-type': 'application/json' }).end('{}');
-    } else {
-      res.writeHead(200, { 'content-type': 'text/javascript' }).end(script);
-    }
-  },
+  stubListener((host) =>
+    host === new URL(ANALYTICS_TEST_ENV.PUBLIC_UMAMI_SRC).hostname ? UMAMI_STUB : BEACON_STUB,
+  ),
 ).listen(STUB_PORT, '127.0.0.1');
 
 const wrangler = spawn(

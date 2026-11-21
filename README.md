@@ -113,7 +113,7 @@ Všechny texty webu jsou ve slovnících: `src/i18n/cs.ts` (česky, určuje tvar
 ## Poptávky a anonymizace
 Formulář posílá poptávku na `/api/inquiry`. Endpoint ji ověří (Turnstile, limit 5 požadavků za minutu z jedné IP), uloží do D1 `ruzek-inquiries` a pošle e-mail na `foto@martinruzek.cz` a potvrzení klientovi. IP adresa se nikam neukládá. Formulář nemá zaškrtávátko souhlasu, jen větu s odkazem na zásady.
 
-**Lokálně:** zkopírujte `.dev.vars.example` do `.dev.vars` (testovací klíče Turnstile, `MAILER=console`, takže se nic neodesílá), pak:
+**Lokálně:** zkopírujte `.dev.vars.example` do `.dev.vars`. Už v něm je veřejný testovací tajný klíč Turnstile (`1x0000000000000000000000000000000AA`, vždy projde, není to tajemství) a `MAILER=console`, takže se nic neodesílá. Bez tajného klíče by se lokální formulář nikdy neodeslal. Pak:
 
 ```sh
 pnpm exec wrangler d1 migrations apply ruzek-inquiries --local -c wrangler.jsonc
@@ -178,13 +178,14 @@ Všechny názvy s komentářem jsou v [`.env.example`](.env.example). Soubor `.e
 | CLS | 0,05 |
 | Výkon (Performance) | alespoň 0,95 |
 | Přístupnost (Accessibility) | 1 |
-| JS celkem včetně měření (po načtení, bez scrollu) | 150 kB |
+| JS celkem (první vykreslení, pohyb, formulář a skutečné skripty měření) | 150 kB |
 | JS pro první vykreslení | 10 kB |
-| Písma nad ohybem (předem načtená písma) | 70 kB |
+| Písma nad ohybem (soubory, které první obrazovka na mobilu opravdu používá) | 70 kB |
 
-- Měření je při měření zapnuté, ale skripty Umami a Cloudflare se nestahují z internetu: Chrome je přesměruje na lokální náhradu (`scripts/lhci-server.ts`, stejné náhrady jako v e2e). Náhrady jsou mnohem menší než skutečné skripty, takže bajty měření jsou v číslech podhodnocené.
-- Lighthouse potřebuje Chrome. Použije se ten, který nainstaloval Playwright (`pnpm exec playwright install chromium`), nebo cesta v `CHROME_PATH`. Běží z dočasné složky, aby ve WSL nevznikaly adresáře se jmény z Windows v repozitáři.
-- Rozpočet „JS pro první vykreslení“ hlídá `scripts/lhci-budgets.ts` (JS načtené do `DOMContentLoaded`, tedy bez pohybové vrstvy a bez formuláře). Rozpočet „písma nad ohybem“ se bere jako předem načtená písma a hlídá ho test `tests/e2e/font-swap.spec.ts`.
+- Měření je při měření zapnuté, ale skripty Umami a Cloudflare se nestahují z internetu: Chrome je přesměruje na lokální náhradu (`scripts/lhci-server.ts`, `scripts/lhci-stub.ts`, stejné náhrady jako v e2e). Náhrady jsou mnohem menší než skutečné skripty, takže tyto bajty Lighthouse podhodnocuje a v rozpočtu JS jsou nahrazené pevnou konstantou skutečných velikostí (`TRACKER_GZIP_BYTES` v `scripts/lhci-budgets.ts`, změřeno 2026-11-21).
+- Lighthouse potřebuje Chrome. Použije se ten, který nainstaloval Playwright (`pnpm exec playwright install chromium`), nebo cesta v `CHROME_PATH`. Běží z dočasné složky, aby ve WSL nevznikaly adresáře se jmény z Windows v repozitáři. Když na portu 8787 (nebo `E2E_PORT`) už něco běží, například `pnpm preview`, odmítne se spustit, aby neměřil starý server.
+- Rozpočty na JS počítá `scripts/lhci-budgets.ts` z výstupu buildu (`dist/client`), ne z časování sítě. Velikost je gzip -9 každého skriptu zvlášť. „První vykreslení“ je inline spustitelné skripty plus moduly stránky a jejich statické importy. „Odložené“ je pohybová vrstva (dynamický `import()`), „island“ je formulář (`client:visible`) a k tomu skutečné skripty měření. Rozpis se vypíše při každém `pnpm lhci`.
+- Rozpočet „písma nad ohybem“ hlídá test `tests/e2e/font-swap.spec.ts`: spočítá soubory písem, které opravdu používá text v prvním viewportu 360 × 780 px, ať už byly předem načtené, nebo je našlo CSS.
 - Výsledky se ukládají do `.lighthouseci/` (je v `.gitignore`).
 - První měření (2026-11-21) a to, co zatím rozpočet nesplňuje, je v [docs/decisions.md](docs/decisions.md).
 

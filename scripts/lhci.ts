@@ -1,13 +1,14 @@
 import { spawn, type ChildProcess } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
-import { budgetProblems, type LhrLike } from './lhci-budgets';
+import { budgetProblems, describeJs, pageJs } from './lhci-budgets';
+import { isPortTaken } from './port';
 
 // `pnpm lhci`: starts the preview (scripts/lhci-server.ts), runs Lighthouse CI with lighthouserc.json, then checks
-// the first-render JS budget. Lighthouse runs from a temp directory: on WSL, the old chrome-launcher that Lighthouse
+// the JS budgets from the build output (scripts/lhci-budgets.ts). Lighthouse runs from a temp directory: on WSL, the old chrome-launcher that Lighthouse
 // CI bundles creates a profile directory named like a Windows path (`C:\Users\…\lighthouse.XXXX`) in the working
 // directory, and that must never land in the repository. Chrome is the one Playwright installed (`pnpm exec
 // playwright install chromium`), unless CHROME_PATH says otherwise.
@@ -41,6 +42,14 @@ function run(cmd: string, args: string[], cwd: string, env: NodeJS.ProcessEnv): 
   });
 }
 
+// Another server on the port (a running `pnpm preview`, say) would be audited instead of the fresh build.
+if (await isPortTaken(PORT)) {
+  console.error(
+    `Port ${PORT} is already in use, so Lighthouse could audit an old server. Stop it (for example \`pnpm preview\`) or set E2E_PORT to a free port.`,
+  );
+  process.exit(1);
+}
+
 const server = spawn('pnpm', ['exec', 'tsx', 'scripts/lhci-server.ts'], {
   cwd: root,
   stdio: 'inherit',
@@ -68,16 +77,21 @@ try {
     work,
     env,
   );
-  const dir = join(work, '.lighthouseci');
-  const runs = readdirSync(dir)
-    .filter((f) => /^lhr-.*\.json$/.test(f))
-    .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')) as LhrLike);
-  const problems = runs.length > 0 ? budgetProblems(runs) : ['no Lighthouse results to check'];
+  // the page JS comes from the build output the server just made (dist/client), for the pages Lighthouse audited
+  const problems: string[] = [];
+  for (const [path, file] of [
+    ['/', 'index.html'],
+    ['/en/', 'en/index.html'],
+  ] as const) {
+    const js = await pageJs(join(root, 'dist/client'), file);
+    console.log(`\n${describeJs(js, path)}`);
+    problems.push(...budgetProblems(js, path));
+  }
   if (problems.length > 0) {
-    console.error('\nfirst-render JS budget failed:');
-    for (const p of new Set(problems)) console.error(`  - ${p}`);
+    console.error('\nJS budget failed:');
+    for (const p of problems) console.error(`  - ${p}`);
   } else {
-    console.log('\nfirst-render JS budget: ok');
+    console.log('\nJS budgets: ok');
   }
   code = lhciCode !== 0 || problems.length > 0 ? 1 : 0;
 } finally {

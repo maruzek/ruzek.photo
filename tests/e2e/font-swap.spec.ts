@@ -2,12 +2,13 @@ import { expect, test, type Page } from '@playwright/test';
 
 // RZ2-11: when the WOFF2 files arrive late, the browser first shows the fallback faces (size-adjust and metric
 // overrides from the Fonts API) and swaps afterwards. The hero name and the paragraph below it must not move.
-// RZ2-04: the preloaded faces are the font budget above the fold (concept.md, kap. 13: 70 kB).
+// RZ2-04: the font files the first mobile viewport really uses are the font budget above the fold (concept.md,
+// kap. 13: 70 kB).
 
 /** Largest accepted movement of the hero name or lead after the swap, in CSS px (sub-pixel rounding only). */
 const MAX_SHIFT_PX = 2;
-/** Budget for the fonts the page preloads (the faces above the fold), bytes. */
-const FONT_PRELOAD_BUDGET = 70 * 1024;
+/** Budget for the font files used above the fold on a phone (concept.md, kap. 13: 2 × WOFF2, 70 kB), bytes. */
+const FONT_ABOVE_FOLD_BUDGET = 70 * 1024;
 
 // the tests open their own contexts with their own viewports, so one project is enough
 test.beforeEach(({ isMobile }) => {
@@ -68,6 +69,8 @@ async function useMetricCompatibleFallbacks(page: Page): Promise<void> {
 async function openWithHeldFonts(
   page: Page,
   path: string,
+  /** false keeps the production @font-face rules untouched (the fallback is then whatever this machine has) */
+  metricFallbacks = true,
 ): Promise<{ release: () => Promise<void> }> {
   let open!: () => void;
   const gate = new Promise<void>((resolve) => (open = resolve));
@@ -76,7 +79,7 @@ async function openWithHeldFonts(
     await route.continue();
   });
   await page.goto(path, { waitUntil: 'domcontentloaded' });
-  await useMetricCompatibleFallbacks(page);
+  if (metricFallbacks) await useMetricCompatibleFallbacks(page);
   return {
     release: async () => {
       open();
@@ -125,6 +128,45 @@ for (const reducedMotion of ['reduce', 'no-preference'] as const) {
   }
 }
 
+/**
+ * PF-08: the tests above point the fallback faces at a metric-compatible font, which a machine without Arial
+ * (most Android phones) does not have. This one leaves the production @font-face rules as they are, so the
+ * fallback is what this machine really picks when `local("Arial")` is missing.
+ */
+test('hero shift with the production fallback faces untouched (360 px)', async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 360, height: 800 },
+    reducedMotion: 'reduce',
+  });
+  const page = await context.newPage();
+  const { release } = await openWithHeldFonts(page, '/', false);
+  await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => r())));
+  const textWidth = (): Promise<number> =>
+    page.evaluate(() => {
+      const range = document.createRange();
+      range.selectNodeContents(document.querySelector('.hero .row > p') as Element);
+      return range.getBoundingClientRect().width;
+    });
+  const before = await heroBoxes(page);
+  const widthBefore = await textWidth();
+  await release();
+  await page.waitForTimeout(300);
+  const after = await heroBoxes(page);
+  // proof that a swap really happened: the glyphs of the lead changed width
+  expect(Math.abs((await textWidth()) - widthBefore), 'lead text width changed').toBeGreaterThan(1);
+  const shift = {
+    nameTop: Math.abs(after.name.top - before.name.top),
+    nameHeight: Math.abs(after.name.height - before.name.height),
+    leadTop: Math.abs(after.lead.top - before.lead.top),
+    leadHeight: Math.abs(after.lead.height - before.lead.height),
+  };
+  console.log('untouched fallback shift (px):', JSON.stringify(shift));
+  for (const [key, value] of Object.entries(shift)) {
+    expect(value, key).toBeLessThanOrEqual(MAX_SHIFT_PX);
+  }
+  await context.close();
+});
+
 test('layout shift of the font swap stays within the CLS budget', async ({ browser }) => {
   const context = await browser.newContext({
     viewport: { width: 360, height: 780 },
@@ -152,17 +194,118 @@ test('layout shift of the font swap stays within the CLS budget', async ({ brows
   await context.close();
 });
 
-test('preloaded fonts (the faces above the fold) fit the 70 kB budget', async ({
-  page,
-  request,
-}) => {
-  await page.goto('/');
-  const hrefs = await page
-    .locator('link[rel="preload"][as="font"]')
-    .evaluateAll((links) => links.map((l) => (l as HTMLLinkElement).href));
-  // Notch 700 and Text 400, each in latin and latin-ext (Czech diacritics)
-  expect(hrefs.length).toBeGreaterThan(0);
-  let bytes = 0;
-  for (const href of hrefs) bytes += (await (await request.get(href)).body()).length;
-  expect(bytes).toBeLessThanOrEqual(FONT_PRELOAD_BUDGET);
+/**
+ * The font files the first mobile viewport really uses, whether they were preloaded or found through the CSS. For
+ * every visible text node (inside the viewport, not scrolled) each character is matched against the page's
+ * @font-face rules (family, weight, style, unicode-range), and the unique files are collected.
+ */
+async function fontFilesAboveTheFold(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    interface Face {
+      family: string;
+      lo: number;
+      hi: number;
+      style: string;
+      ranges: Array<[number, number]>;
+      url: string;
+    }
+    const faces: Face[] = [];
+    const unq = (v: string): string => v.trim().replace(/^["']|["']$/g, '');
+    for (const sheet of document.styleSheets) {
+      for (const rule of sheet.cssRules) {
+        if (!(rule instanceof CSSFontFaceRule)) continue;
+        const url = /url\(["']?([^"')]+\.woff2)["']?\)/.exec(
+          rule.style.getPropertyValue('src'),
+        )?.[1];
+        if (!url) continue; // generated local() fallback faces
+        const weights = rule.style.getPropertyValue('font-weight').trim().split(/\s+/).map(Number);
+        const range = rule.style.getPropertyValue('unicode-range');
+        const ranges: Array<[number, number]> = range
+          ? range.split(',').map((part) => {
+              const [a = '0', b] = part.trim().replace(/^U\+/i, '').split('-');
+              return [
+                parseInt(a.replace(/\?/g, '0'), 16),
+                parseInt((b ?? a).replace(/\?/g, 'F'), 16),
+              ];
+            })
+          : [[0, 0x10ffff]];
+        faces.push({
+          family: unq(rule.style.getPropertyValue('font-family')),
+          lo: weights[0] ?? 400,
+          hi: weights[1] ?? weights[0] ?? 400,
+          style: rule.style.getPropertyValue('font-style').trim() || 'normal',
+          ranges,
+          url: new URL(url, document.baseURI).pathname,
+        });
+      }
+    }
+    const used = new Set<string>();
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const text = node.textContent ?? '';
+      const el = node.parentElement;
+      if (!el || !text.trim()) continue;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const rects = [...range.getClientRects()].filter(
+        (r) => r.width > 0 && r.height > 0 && r.top < innerHeight && r.bottom > 0,
+      );
+      if (rects.length === 0) continue;
+      const families = cs.fontFamily.split(',').map(unq);
+      const weight = Number(cs.fontWeight);
+      const style = cs.fontStyle === 'oblique' ? 'italic' : cs.fontStyle;
+      const shown = cs.textTransform === 'uppercase' ? text.toUpperCase() : text;
+      for (const ch of shown) {
+        const code = ch.codePointAt(0) ?? 0;
+        if (/\s/.test(ch)) continue;
+        for (const family of families) {
+          const face = faces.find(
+            (f) =>
+              f.family === family &&
+              f.style === style &&
+              weight >= f.lo &&
+              weight <= f.hi &&
+              f.ranges.some(([a, b]) => code >= a && code <= b),
+          );
+          if (face) {
+            used.add(face.url);
+            break;
+          }
+          // a declared family without a face for this character: the browser falls to the next family
+        }
+      }
+    }
+    return [...used].sort();
+  });
+}
+
+test('font files used above the fold on a phone fit the 70 kB budget', async ({ browser }) => {
+  const context = await browser.newContext({
+    viewport: { width: 360, height: 780 },
+    reducedMotion: 'reduce',
+  });
+  const page = await context.newPage();
+  await page.goto('/', { waitUntil: 'load' });
+  await page.evaluate(() => document.fonts.ready);
+  const files = await fontFilesAboveTheFold(page);
+  // cross-check with what the browser downloaded without any scrolling: every used file must be among them
+  const downloaded = await page.evaluate(() =>
+    performance
+      .getEntriesByType('resource')
+      .map((e) => new URL(e.name).pathname)
+      .filter((n) => n.endsWith('.woff2')),
+  );
+  expect(files.length).toBeGreaterThan(0);
+  expect(downloaded).toEqual(expect.arrayContaining(files));
+  const sizes: Record<string, number> = {};
+  for (const file of files) sizes[file] = (await (await page.request.get(file)).body()).length;
+  const bytes = Object.values(sizes).reduce((a, b) => a + b, 0);
+  console.log(
+    `fonts above the fold: ${files.length} files, ${(bytes / 1024).toFixed(1)} kB (downloaded by the page in total: ${new Set(downloaded).size} files)`,
+    JSON.stringify(sizes),
+  );
+  expect(bytes, `${files.length} font files`).toBeLessThanOrEqual(FONT_ABOVE_FOLD_BUDGET);
+  await context.close();
 });
