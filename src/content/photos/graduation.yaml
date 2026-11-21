@@ -1,0 +1,8 @@
+image: ../../assets/photos/graduation.jpg
+alt: { cs: "Absolventi v talárech", en: "Graduates in gowns" }
+category: event
+published: true
+placeholder: true
+credit: "Faustin Tuyambaze, CC0 (StockSnap)"
+minors: false
+shade: normal

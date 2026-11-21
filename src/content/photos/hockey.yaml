@@ -1,0 +1,8 @@
+image: ../../assets/photos/hockey.jpg
+alt: { cs: "Hráči při vhazování", en: "Players at a face-off" }
+category: sport
+published: true
+placeholder: true
+credit: "Nick Le, CC0 (StockSnap)"
+minors: false
+shade: normal

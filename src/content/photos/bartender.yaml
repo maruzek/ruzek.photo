@@ -1,0 +1,8 @@
+image: ../../assets/photos/bartender.jpg
+alt: { cs: "Barman připravuje drinky", en: "A bartender preparing drinks" }
+category: event
+published: true
+placeholder: true
+credit: "Leeroy, CC0 (StockSnap)"
+minors: false
+shade: normal

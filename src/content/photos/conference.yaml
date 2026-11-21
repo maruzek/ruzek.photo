@@ -1,0 +1,8 @@
+image: ../../assets/photos/conference.jpg
+alt: { cs: "Publikum na konferenci", en: "An audience at a conference" }
+category: event
+published: true
+placeholder: true
+credit: "Daria Nepriakhina, CC0 (StockSnap)"
+minors: false
+shade: normal

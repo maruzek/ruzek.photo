@@ -14,7 +14,9 @@
     "check": "astro check && eslint . && vitest run && pnpm check:exif",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "check:exif": "tsx scripts/check-exif.ts"
+    "check:exif": "tsx scripts/check-exif.ts",
+    "check:contrast": "tsx scripts/check-contrast.ts",
+    "photos:import": "tsx scripts/photos-import.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.9",
@@ -28,7 +30,8 @@
     "@types/react-dom": "^19.3.0",
     "astro": "^7.4.13",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "sharp": "^0.35.5"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
@@ -38,12 +41,14 @@
     "eslint": "^10.15.0",
     "eslint-plugin-astro": "^3.2.1",
     "eslint-plugin-jsx-a11y": "^6.10.2",
+    "exif-reader": "^2.0.3",
     "prettier": "^3.10.1",
     "prettier-plugin-astro": "^1.1.2",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.73.0",
     "vitest": "^5.1.1",
-    "wrangler": "^4.166.0"
+    "wrangler": "^4.166.0",
+    "yaml": "^2.9.1"
   }
 }

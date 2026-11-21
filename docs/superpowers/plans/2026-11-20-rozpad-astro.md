@@ -348,7 +348,7 @@ export async function bottomContrast(file: string, inkHex = '#E9EAEE', shade: 'n
 
 Kolekce `photos` (glob loader, `schema: ({ image }) => photoSchema(image())`) a `caseStudies` (Markdown, `draft: boolean`, `title/summary` CZ/EN, `date`, `photos: reference('photos')[]`, `matchReport?: { score: string; venue: string }`).
 
-- [ ] **Step 1:** Napsat test schématu:
+- [x] **Step 1:** Napsat test schématu:
 
 ```ts
 import { z } from 'astro/zod';
@@ -373,15 +373,15 @@ it('unpublished photo needs nothing', () =>
 ```
 
 (`consentRef` musí odpovídat `/^C-\d{4}-\d{3,}$/`.)
-- [ ] **Step 2:** Napsat test `check-exif`: fixture `gps.jpg` (vyrobit v testu přes sharp `withExifMerge` s GPS tagy) → `findMetadataViolations([{ path: tmp, forbid: 'gps' }])` vrátí jeho cestu. Stejná fotka po `photos:import` → prázdné pole. Pro `forbid: 'any'` vadí jakékoli EXIF.
-- [ ] **Step 3:** Napsat test `check-contrast`: `light.jpg` (spodek #DDDDDD) s `normal` → < 4,5. `dark.jpg` (spodek #202020) → ≥ 4,5. `light.jpg` se `strong` → vyšší než s `normal`.
-- [ ] **Step 4:** Spustit, FAIL. Implementovat:
+- [x] **Step 2:** Napsat test `check-exif`: fixture `gps.jpg` (vyrobit v testu přes sharp `withExifMerge` s GPS tagy) → `findMetadataViolations([{ path: tmp, forbid: 'gps' }])` vrátí jeho cestu. Stejná fotka po `photos:import` → prázdné pole. Pro `forbid: 'any'` vadí jakékoli EXIF.
+- [x] **Step 3:** Napsat test `check-contrast`: `light.jpg` (spodek #DDDDDD) s `normal` → < 4,5. `dark.jpg` (spodek #202020) → ≥ 4,5. `light.jpg` se `strong` → vyšší než s `normal`.
+- [x] **Step 4:** Spustit, FAIL. Implementovat:
   - `photos-import.ts <files…>`: sharp `rotate()` (aplikuje orientaci), `resize({ width: 3000, height: 3000, fit: 'inside', withoutEnlargement: true })`, `jpeg({ quality: 90, mozjpeg: true })` bez `withMetadata`. Výstup `src/assets/photos/<slug>.jpg` a kostra YAML s `alt: { cs: "TODO", en: "TODO" }` a bez `consentRef` (build pak selže, dokud se nedoplní, nebo se nenastaví `published: false`).
   - `check-exif.ts`: exif-reader nad `sharp(file).metadata().exif`. `src/assets` → `gps`, `dist` → `any` (když `dist` neexistuje, přeskočí). Nenulový exit při nálezu.
   - `check-contrast.ts`: výřez spodních 35 %, `stats()`, průměrný relativní jas, aplikovat průměrné krytí gradientu `.shade` (normal ≈ 0,75, strong ≈ 0,9 nad `--night`), kontrast podle WCAG. Projde kolekci fotek použitých ve `fold` a hero a vypíše varování pod 4,5. Neselhává, jen hlásí.
-- [ ] **Step 5:** Naimportovat 14 zástupných fotek z `design/final/rozpad/assets/stock/` s `placeholder: true` a kreditem z `credits.json`. Alt texty převzít z `index.html`.
-- [ ] **Step 6:** Testy PASS, `pnpm check` PASS.
-- [ ] **Step 7:** Commit `feat: photo collection with consent schema and EXIF-stripping import`.
+- [x] **Step 5:** Naimportovat 14 zástupných fotek z `design/final/rozpad/assets/stock/` s `placeholder: true` a kreditem z `credits.json`. Alt texty převzít z `index.html`.
+- [x] **Step 6:** Testy PASS, `pnpm check` PASS.
+- [x] **Step 7:** Commit `feat: photo collection with consent schema and EXIF-stripping import`.
 
 ---
 

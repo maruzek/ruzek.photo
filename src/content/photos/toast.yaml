@@ -1,0 +1,8 @@
+image: ../../assets/photos/toast.jpg
+alt: { cs: "Přípitek sklenkami šampaňského", en: "A toast with champagne glasses" }
+category: event
+published: true
+placeholder: true
+credit: "Piotr Lohunko, CC0 (StockSnap)"
+minors: false
+shade: normal
