@@ -179,7 +179,7 @@ export function alternates(route: RouteKey): { cs: string; en: string };
 export type RouteKey = 'home' | 'privacy' | 'caseStudy';
 ```
 
-- [ ] **Step 1:** Napsat test:
+- [x] **Step 1:** Napsat test:
 
 ```ts
 import { describe, it, expect } from 'vitest';
@@ -203,10 +203,10 @@ describe('i18n', () => {
 });
 ```
 
-- [ ] **Step 2:** `pnpm vitest run tests/unit/i18n.test.ts`. Očekávání: FAIL (moduly neexistují).
-- [ ] **Step 3:** `cs.ts`: všechny texty z `design/final/rozpad/index.html` (nav, hero, marquee, folds, práce, služby, týž den, o mně, poptávka, patička, lightbox, chybové hlášky formuláře), kotvy sekcí (`prace`, `sluzby`, `o-mne`, `poptavka`). Zvýrazněná slova jako `*…*`. `en.ts`: věrný překlad bez nových tvrzení, kotvy `work`, `services`, `about`, `inquiry`. Doplnit klíč `en.meta.translationTodo = 'TODO: kontrola překladu'`, který EN stránka vykreslí přes `<Todo>`, dokud Martin překlad neschválí.
-- [ ] **Step 4:** Test: PASS. `LangSwitch.astro` vykreslí odkaz na `alternates(route)[other]` s `hreflang` a `lang`.
-- [ ] **Step 5:** Commit `feat: cs/en dictionaries and locale routing helpers`.
+- [x] **Step 2:** `pnpm vitest run tests/unit/i18n.test.ts`. Očekávání: FAIL (moduly neexistují).
+- [x] **Step 3:** `cs.ts`: všechny texty z `design/final/rozpad/index.html` (nav, hero, marquee, folds, práce, služby, týž den, o mně, poptávka, patička, lightbox, chybové hlášky formuláře), kotvy sekcí (`prace`, `sluzby`, `o-mne`, `poptavka`). Zvýrazněná slova jako `*…*`. `en.ts`: věrný překlad bez nových tvrzení, kotvy `work`, `services`, `about`, `inquiry`. Doplnit klíč `en.meta.translationTodo = 'TODO: kontrola překladu'`, který EN stránka vykreslí přes `<Todo>`, dokud Martin překlad neschválí.
+- [x] **Step 4:** Test: PASS. `LangSwitch.astro` vykreslí odkaz na `alternates(route)[other]` s `hreflang` a `lang`.
+- [x] **Step 5:** Commit `feat: cs/en dictionaries and locale routing helpers`.
 
 ---
 
