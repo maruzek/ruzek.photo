@@ -13,12 +13,14 @@ const { locale } = Astro.props;
 const d = t(locale);
 const f = d.footer;
 const year = new Date().getFullYear();
+const home = localePath(locale, 'home');
+const onHome = Astro.url.pathname.replace(/\/?$/, '/') === home;
 ---
 
 <footer class="foot">
   <div class="lead">
     <p>{f.lead}</p>
-    <Button href={`#${d.anchors.inquiry}`} magnetic>
+    <Button href={`${onHome ? '' : home}#${d.anchors.inquiry}`} magnetic>
       {f.cta}
     </Button>
   </div>

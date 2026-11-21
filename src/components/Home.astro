@@ -6,6 +6,7 @@ import Base from '../layouts/Base.astro';
 import { t, type Locale } from '../i18n';
 import { PLACEMENT } from '../config/placement';
 import { getPhoto } from '../lib/photos/get';
+import { buildJsonLd } from '../lib/seo/jsonld';
 import About from './About.astro';
 import DitherWipe from './DitherWipe.astro';
 import Footer from './Footer.astro';
@@ -13,6 +14,7 @@ import Header from './Header.astro';
 import Hero from './Hero.astro';
 import HeroPreload from './HeroPreload.astro';
 import Inquiry from './Inquiry.astro';
+import JsonLd from './JsonLd.astro';
 import Lightbox from './Lightbox.astro';
 import Marquee from './Marquee.astro';
 import PhotoFold from './PhotoFold.astro';
@@ -38,6 +40,7 @@ const [hero, events, sport] = await Promise.all([
 <Base locale={locale} route="home" title={d.meta.title} description={d.meta.description}>
   <Fragment slot="head">
     {hero && <HeroPreload photo={hero} />}
+    <JsonLd data={buildJsonLd(locale)} />
   </Fragment>
   <Header locale={locale} route="home" />
   <main id="main" tabindex="-1">

@@ -1,0 +1,84 @@
+---
+// Privacy policy for one language (concept.md, kap. 11 and 15). The text sits in the dictionaries; the numbers come
+// from src/config/privacy.ts, so the page always states the retention the code applies. The whole text is a draft
+// for a lawyer (visible TODO), the version shown is the one stored with every inquiry.
+import '../styles/sections/page.css';
+import Base from '../layouts/Base.astro';
+import Footer from './Footer.astro';
+import Header from './Header.astro';
+import Todo from './Todo.astro';
+import { ANONYMIZE_AFTER_DAYS, NOTICE_GRACE_DAYS, PRIVACY_NOTICE_VERSION } from '../config/privacy';
+import { site } from '../config/site';
+import { fill, localePath, t, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const d = t(locale);
+const p = d.privacy;
+const values = {
+  name: site.name,
+  email: site.contact.email,
+  months: Math.round((ANONYMIZE_AFTER_DAYS * 12) / 365),
+  graceDays: NOTICE_GRACE_DAYS,
+};
+// `{email}` becomes a mailto link; everything else is plain text (Astro escapes it)
+const EMAIL = '\u0000email\u0000';
+const parts = (text: string): string[] => fill(text, { ...values, email: EMAIL }).split(EMAIL);
+const sections = Object.entries(p.sections).map(([id, s]) => ({
+  id,
+  title: s.title,
+  paragraphs: s.paragraphs,
+  items: 'items' in s ? s.items : [],
+  todo: 'todo' in s ? s.todo : undefined,
+}));
+---
+
+<Base locale={locale} route="privacy" title={p.meta.title} description={p.meta.description}>
+  <Header locale={locale} route="privacy" />
+  <main id="main" tabindex="-1" class="page">
+    <h1 class="h">{p.title}</h1>
+    <p class="lead">{p.lead}</p>
+    <p class="meta mono">
+      <span>
+        {p.version}: {PRIVACY_NOTICE_VERSION}
+      </span>
+      <Todo>{p.reviewTodo}</Todo>
+    </p>
+    <div class="prose">
+      {sections.map((s) => (
+        <section aria-labelledby={`privacy-${s.id}`}>
+          <h2 id={`privacy-${s.id}`}>{s.title}</h2>
+          {s.paragraphs.map((text) => (
+            <p>
+              {parts(text).map((chunk, i) => (
+                <>
+                  {i > 0 && <a href={`mailto:${site.contact.email}`}>{site.contact.email}</a>}
+                  {chunk}
+                </>
+              ))}
+            </p>
+          ))}
+          {s.items.length > 0 && (
+            <ul>
+              {s.items.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          )}
+          {s.todo && (
+            <p>
+              <Todo>{s.todo}</Todo>
+            </p>
+          )}
+        </section>
+      ))}
+    </div>
+    <p class="back">
+      <a href={localePath(locale, 'home')}>{p.back}</a>
+    </p>
+  </main>
+  <Footer locale={locale} />
+</Base>

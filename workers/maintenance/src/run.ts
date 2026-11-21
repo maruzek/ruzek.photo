@@ -1,3 +1,4 @@
+import { NOTICE_GRACE_DAYS } from '../../../src/config/privacy';
 import { anonymizationPreview } from '../../../src/server/inquiry/emails';
 import { confirmClient, notifyOwner } from '../../../src/server/inquiry/notify';
 import type { InquiryStore, Mailer } from '../../../src/server/inquiry/types';
@@ -16,11 +17,8 @@ export const RESEND_BATCH = 50;
 export const PREVIEW_DAYS = 35;
 /** A row is anonymized only once a preview listing it went out at least this many days ago. */
 export const MIN_NOTICE_DAYS = 3;
-/**
- * Hard limit: a row is anonymized this many days after the retention period even if no preview could be sent
- * (e.g. mail is misconfigured for weeks), so personal data never outlives the retention period without bound (FM-13).
- */
-export const NOTICE_GRACE_DAYS = 30;
+/** Hard limit after the retention period (FM-13); lives in src/config/privacy.ts because the privacy page states it. */
+export { NOTICE_GRACE_DAYS };
 /** A retention period this short is a configuration error: refuse instead of anonymizing (almost) everything. */
 export const MIN_ANONYMIZE_DAYS = 30;
 

@@ -3,15 +3,34 @@ import { Font } from 'astro:assets';
 import '../styles/tokens.css';
 import '../styles/fonts.css';
 import '../styles/base.css';
-import type { Locale, StaticRoute } from '../i18n';
+import SeoHead from '../components/SeoHead.astro';
+import type { PublishedPhoto } from '../lib/photos/get';
+import { alternates, type Locale, type StaticRoute } from '../i18n';
 
-// `route` (and `slug` for a case study) feed canonical and hreflang via alternates() in SeoHead (task 13)
-type Props = { locale: Locale; title: string; description: string } & (
+// `route` (and `slug` for a case study) feed canonical and hreflang via alternates() in SeoHead.
+// `route: null` is a page without a fixed address (404): no canonical, no hreflang, not indexed.
+type Props = {
+  locale: Locale;
+  title: string;
+  description: string;
+  noindex?: boolean;
+  /** Share image source; the hero photo when left out */
+  photo?: PublishedPhoto | undefined;
+} & (
   | { route: StaticRoute; slug?: never }
   | { route: 'caseStudy'; slug: string }
+  | { route: null; slug?: never }
 );
 
-const { locale, title, description } = Astro.props;
+const props = Astro.props;
+const { locale, title, description, photo } = props;
+const paths =
+  props.route === null
+    ? null
+    : props.route === 'caseStudy'
+      ? alternates('caseStudy', props.slug)
+      : alternates(props.route);
+const noindex = props.noindex ?? props.route === null;
 // Only the two faces above the fold are preloaded (Notch 700 for the name, Text 400 for body copy)
 const aboveTheFold = [{ weight: 700, style: 'normal' as const }];
 const bodyFace = [{ weight: 400, style: 'normal' as const }];
@@ -24,6 +43,14 @@ const bodyFace = [{ weight: 400, style: 'normal' as const }];
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <SeoHead
+      locale={locale}
+      title={title}
+      description={description}
+      paths={paths}
+      noindex={noindex}
+      photo={photo}
+    />
     <script is:inline>
       {
         const root = document.documentElement;

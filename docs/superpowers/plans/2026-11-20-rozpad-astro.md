@@ -844,10 +844,10 @@ it('same turnstile token twice stores one row', async () => { /* second verify r
 - Consumes: `services`, `addons`, `terms` (úkol 4), `site` (úkol 7), `alternates` (úkol 3).
 - Produces: `buildJsonLd(locale: Locale): object[]` (`Person`, `ProfessionalService` s `OfferCatalog`).
 
-- [ ] **Step 1:** Unit test: každá služba z `services` má v `OfferCatalog` jednu nabídku s `priceSpecification.minPrice` rovnou spodní ceně (akce 1 500, zápas 1 500) a `priceCurrency: 'CZK'`; `address` chybí, dokud `site.legal.seat` je `null`; `sameAs` obsahuje Instagram a žádné `null`.
-- [ ] **Step 2:** E2e: `/` i `/en/` mají `canonical`, `hreflang` cs/en/x-default, `og:image` (1200 × 630); `/sitemap-index.xml` obsahuje obě úvodní stránky s alternativami a neobsahuje drafty případových studií; `/neexistuje` vrací 404 se stránkou v češtině; zásady obsahují `TODO`, zmínku o Turnstile, Cloudflare a Umami, větu o anonymizaci po 12 měsících a verzi rovnou `PRIVACY_NOTICE_VERSION`.
-- [ ] **Step 3:** FAIL → implementovat. Zásady jako šablona s nadpisy (správce, účel, právní základ: jednání před uzavřením smlouvy, doba uchování a anonymizace, měření bez cookies: Umami a Cloudflare Web Analytics, příjemci: Cloudflare včetně Turnstile, poskytovatel e-mailu, Umami, práva, kontakt `foto@martinruzek.cz`) a obsahem `TODO` pro odborníka. Na stránce je vidět verze `PRIVACY_NOTICE_VERSION`. Případové studie se generují jen z `draft: false`. Šablona obsahuje hlavičku ve stylu „match report“ (skóre a místo jen pokud jsou vyplněné) a mozaiku fotek.
-- [ ] **Step 4:** PASS. Commit `feat: SEO, privacy page, 404 and case study model`.
+- [x] **Step 1:** Unit test: každá služba z `services` má v `OfferCatalog` jednu nabídku s `priceSpecification.minPrice` rovnou spodní ceně (akce 1 500, zápas 1 500) a `priceCurrency: 'CZK'`; `address` chybí, dokud `site.legal.seat` je `null`; `sameAs` obsahuje Instagram a žádné `null`.
+- [x] **Step 2:** E2e: `/` i `/en/` mají `canonical`, `hreflang` cs/en/x-default, `og:image` (1200 × 630); `/sitemap-index.xml` obsahuje obě úvodní stránky s alternativami a neobsahuje drafty případových studií; `/neexistuje` vrací 404 se stránkou v češtině; zásady obsahují `TODO`, zmínku o Turnstile, Cloudflare a Umami, větu o anonymizaci po 12 měsících a verzi rovnou `PRIVACY_NOTICE_VERSION`.
+- [x] **Step 3:** FAIL → implementovat. Zásady jako šablona s nadpisy (správce, účel, právní základ: jednání před uzavřením smlouvy, doba uchování a anonymizace, měření bez cookies: Umami a Cloudflare Web Analytics, příjemci: Cloudflare včetně Turnstile, poskytovatel e-mailu, Umami, práva, kontakt `foto@martinruzek.cz`) a obsahem `TODO` pro odborníka. Na stránce je vidět verze `PRIVACY_NOTICE_VERSION`. Případové studie se generují jen z `draft: false`. Šablona obsahuje hlavičku ve stylu „match report“ (skóre a místo jen pokud jsou vyplněné) a mozaiku fotek.
+- [x] **Step 4:** PASS. Commit `feat: SEO, privacy page, 404 and case study model`.
 
 ---
 

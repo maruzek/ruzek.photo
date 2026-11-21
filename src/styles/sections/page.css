@@ -1,0 +1,91 @@
+/* Text pages: privacy policy, 404 and case studies. Night surface like the hero and the footer; the reading column
+   keeps to ~68 characters. */
+.page {
+  padding: calc(var(--sec) * 0.8) var(--m) var(--sec);
+}
+.page .h {
+  max-width: 18ch;
+  margin-bottom: 32px;
+}
+.page .lead {
+  font-size: var(--t-m);
+  line-height: 1.5;
+  max-width: 34em;
+  color: var(--ink);
+}
+.page .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 24px;
+  color: var(--muted);
+}
+.page .prose {
+  max-width: 42em;
+  margin-top: clamp(48px, 6vw, 96px);
+}
+.page .prose section + section {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--rule-d);
+}
+.page .prose h2 {
+  font-size: clamp(22px, 2vw, 28px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.page .prose p + p,
+.page .prose p + ul,
+.page .prose ul + p,
+.page .prose ul + .todo,
+.page .prose p + .todo {
+  margin-top: 12px;
+}
+.page .prose ul {
+  list-style: disc;
+  padding-left: 1.25em;
+}
+.page .prose li + li {
+  margin-top: 6px;
+}
+.page .back {
+  margin-top: 64px;
+}
+.page a:not(.btn) {
+  text-underline-offset: 3px;
+}
+
+/* Case study: a "match report" header and a photo mosaic */
+.case .report {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, max-content));
+  gap: 16px 48px;
+  margin-top: 32px;
+}
+.case .report dt {
+  color: var(--muted);
+}
+.case .report dd {
+  font-size: var(--t-m);
+}
+.case .mosaic {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: var(--gap);
+  margin-top: clamp(48px, 6vw, 96px);
+}
+.case .mosaic figure:nth-child(3n + 1) {
+  grid-column: span 2;
+}
+.case .mosaic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-width: 700px) {
+  .case .mosaic figure:nth-child(3n + 1) {
+    grid-column: auto;
+  }
+}

@@ -1,0 +1,93 @@
+---
+// One case study (concept.md, kap. 1): a "match report" header (score and venue only when filled in) and a mosaic
+// of the event's photos. Title and summary are bilingual in the front matter; the Markdown body has one language
+// only, so it is not rendered (decision to confirm). A withdrawn photo drops out of the mosaic.
+import { Picture } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import '../styles/sections/page.css';
+import Base from '../layouts/Base.astro';
+import Button from './Button.astro';
+import Footer from './Footer.astro';
+import Header from './Header.astro';
+import PlaceholderTag from './PlaceholderTag.astro';
+import { getPhoto, type PublishedPhoto } from '../lib/photos/get';
+import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+import { localePath, t, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  entry: CollectionEntry<'caseStudies'>;
+}
+
+const { locale, entry } = Astro.props;
+const d = t(locale);
+const c = d.caseStudy;
+const { title, summary, date, matchReport } = entry.data;
+const photos = (await Promise.all(entry.data.photos.map((ref) => getPhoto(ref.id)))).filter(
+  (p): p is PublishedPhoto => p !== undefined,
+);
+const dateText = new Intl.DateTimeFormat(locale === 'cs' ? 'cs-CZ' : 'en-GB', {
+  dateStyle: 'long',
+}).format(date);
+const home = localePath(locale, 'home');
+---
+
+<Base
+  locale={locale}
+  route="caseStudy"
+  slug={entry.id}
+  title={`${title[locale]} · ${d.meta.title.split(' · ')[0]}`}
+  description={summary[locale]}
+  photo={photos[0]}
+>
+  <Header locale={locale} route="caseStudy" slug={entry.id} />
+  <main id="main" tabindex="-1" class="page case">
+    <p class="eyebrow mono">{c.eyebrow}</p>
+    <h1 class="h">{title[locale]}</h1>
+    <p class="lead">{summary[locale]}</p>
+    <dl class="report">
+      {matchReport?.score && (
+        <div>
+          <dt class="mono">{c.score}</dt>
+          <dd>{matchReport.score}</dd>
+        </div>
+      )}
+      {matchReport?.venue && (
+        <div>
+          <dt class="mono">{c.venue}</dt>
+          <dd>{matchReport.venue}</dd>
+        </div>
+      )}
+      <div>
+        <dt class="mono">{c.date}</dt>
+        <dd>
+          <time datetime={date.toISOString().slice(0, 10)}>{dateText}</time>
+        </dd>
+      </div>
+    </dl>
+    {photos.length > 0 && (
+      <section class="mosaic" aria-label={c.photos}>
+        {photos.map((photo, i) => (
+          <figure class="ph-wrap">
+            <Picture
+              src={photo.data.image}
+              alt={photo.data.alt[locale]}
+              widths={IMAGE_WIDTHS}
+              formats={IMAGE_FORMATS}
+              sizes="(max-width: 700px) 100vw, 50vw"
+              loading={i < 2 ? 'eager' : 'lazy'}
+            />
+            {photo.data.placeholder && <PlaceholderTag locale={locale} />}
+          </figure>
+        ))}
+      </section>
+    )}
+    <p class="back">
+      <Button href={`${home}#${d.anchors.inquiry}`}>{c.cta}</Button>
+    </p>
+    <p class="back">
+      <a href={home}>{c.back}</a>
+    </p>
+  </main>
+  <Footer locale={locale} />
+</Base>

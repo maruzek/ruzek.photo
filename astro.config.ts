@@ -4,6 +4,28 @@ import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { publishedPhotos } from './scripts/vite-published-photos';
+import { SITE_URL } from './src/config/site';
+import { alternates } from './src/i18n';
+
+// Sitemap alternates (concept.md, kap. 5): pages whose paths differ per language (the privacy page) are paired here,
+// case studies by their shared slug. The 404 page is left out; draft case studies have no page at all.
+const PAIRS = [alternates('home'), alternates('privacy')];
+// the two case-study path prefixes (`/pripadove-studie/`, `/en/case-studies/`), cut from a dummy slug `x`
+const CASE_PREFIXES = Object.values(alternates('caseStudy', 'x')).map((p) =>
+  p.slice(0, -'x/'.length),
+);
+function sitemapLinks(url: string): { lang: string; url: string }[] | undefined {
+  const path = new URL(url).pathname;
+  let pair = PAIRS.find((p) => p.cs === path || p.en === path);
+  const prefix = CASE_PREFIXES.find((p) => path.startsWith(p));
+  if (!pair && prefix) pair = alternates('caseStudy', path.slice(prefix.length).replace(/\/$/, ''));
+  if (!pair) return undefined;
+  return [
+    { lang: 'cs', url: new URL(pair.cs, SITE_URL).href },
+    { lang: 'en', url: new URL(pair.en, SITE_URL).href },
+    { lang: 'x-default', url: new URL(pair.cs, SITE_URL).href },
+  ];
+}
 
 const fontFile = (pkg: string, file: string): string => `./node_modules/@fontsource/${pkg}/files/${file}`;
 
@@ -39,10 +61,19 @@ const variants = (pkg: string, weights: readonly number[], style: Style = 'norma
   ) as [Variant, ...Variant[]];
 
 export default defineConfig({
-  site: 'https://martinruzek.eu',
+  site: SITE_URL,
   output: 'static',
   adapter: cloudflare({ imageService: 'compile' }), // images processed at build time only
-  integrations: [react({ include: ['**/islands/**'] }), sitemap()],
+  integrations: [
+    react({ include: ['**/islands/**'] }),
+    sitemap({
+      filter: (page) => !new URL(page).pathname.startsWith('/404'),
+      serialize: (item) => {
+        const links = sitemapLinks(item.url);
+        return links ? { ...item, links } : item;
+      },
+    }),
+  ],
   i18n: { defaultLocale: 'cs', locales: ['cs', 'en'], routing: { prefixDefaultLocale: false } },
   build: { inlineStylesheets: 'auto' },
   // no sessions: they would set cookies and make the adapter provision an unused KV binding

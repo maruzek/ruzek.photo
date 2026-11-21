@@ -1,7 +1,7 @@
 ---
 import '../styles/sections/header.css';
 import { site } from '../config/site';
-import { fill, t, type Locale, type StaticRoute } from '../i18n';
+import { fill, localePath, t, type Locale, type StaticRoute } from '../i18n';
 import LangSwitch from './LangSwitch.astro';
 import Logo from './Logo.astro';
 
@@ -13,13 +13,21 @@ type Props =
 const props = Astro.props;
 const { locale } = props;
 const d = t(locale);
+// Section anchors live on the home page; elsewhere (privacy, 404, case studies) the links lead there
+const home = localePath(locale, 'home');
+const onHome = Astro.url.pathname.replace(/\/?$/, '/') === home;
+const at = (anchor: string): string => `${onHome ? '' : home}#${anchor}`;
 ---
 
 <a class="skip" href="#main">
   {d.common.skip}
 </a>
 <header class="top">
-  <a class="mark" href="#top" aria-label={fill(d.nav.homeLabel, { name: site.name })}>
+  <a
+    class="mark"
+    href={onHome ? '#top' : home}
+    aria-label={fill(d.nav.homeLabel, { name: site.name })}
+  >
     <span class="logo">
       <Logo />
     </span>
@@ -31,13 +39,13 @@ const d = t(locale);
   <nav aria-label={d.nav.label}>
     <ul>
       <li>
-        <a href={`#${d.anchors.work}`}>{d.nav.work}</a>
+        <a href={at(d.anchors.work)}>{d.nav.work}</a>
       </li>
       <li>
-        <a href={`#${d.anchors.services}`}>{d.nav.services}</a>
+        <a href={at(d.anchors.services)}>{d.nav.services}</a>
       </li>
       <li>
-        <a href={`#${d.anchors.about}`}>{d.nav.about}</a>
+        <a href={at(d.anchors.about)}>{d.nav.about}</a>
       </li>
       <li class="lang">
         {props.route === 'caseStudy' ? (
@@ -47,7 +55,7 @@ const d = t(locale);
         )}
       </li>
       <li>
-        <a href={`#${d.anchors.inquiry}`}>{d.nav.inquiry}</a>
+        <a href={at(d.anchors.inquiry)}>{d.nav.inquiry}</a>
       </li>
     </ul>
   </nav>

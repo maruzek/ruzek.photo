@@ -1,0 +1,31 @@
+---
+// Not found (concept.md, kap. 1). Czech is the default language; the English line links to the English home page.
+import '../styles/sections/page.css';
+import Base from '../layouts/Base.astro';
+import Button from '../components/Button.astro';
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import Rich from '../components/Rich.astro';
+import { localePath, t } from '../i18n';
+
+const d = t('cs').notFound;
+const en = t('en').notFound;
+---
+
+<Base locale="cs" route={null} title={d.meta.title} description={d.meta.description}>
+  <Header locale="cs" route="home" />
+  <main id="main" tabindex="-1" class="page">
+    <p class="eyebrow mono">{d.code}</p>
+    <h1 class="h">
+      <Rich text={d.title} />
+    </h1>
+    <p class="lead">{d.text}</p>
+    <p class="back">
+      <Button href={localePath('cs', 'home')}>{d.home}</Button>
+    </p>
+    <p class="back" lang="en">
+      <a href={localePath('en', 'home')}>{en.home}</a>
+    </p>
+  </main>
+  <Footer locale="cs" />
+</Base>

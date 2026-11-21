@@ -1,0 +1,57 @@
+---
+// Meta for search and sharing (concept.md, kap. 5 and 12): canonical, hreflang cs/en/x-default, Open Graph and the
+// Twitter card. The 1200 × 630 share image is cut from a photo at build time (the hero photo unless a page passes
+// another); without a published photo there is no og:image rather than a made-up one.
+import { getImage } from 'astro:assets';
+import { SITE_URL, site } from '../config/site';
+import { PLACEMENT } from '../config/placement';
+import { getPhoto, type PublishedPhoto } from '../lib/photos/get';
+import type { Locale } from '../i18n';
+import { OG_LOCALE, ogSize } from '../lib/seo/og';
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  /** Paths of this page in both languages; `null` for a page without a fixed address (404). */
+  paths: { cs: string; en: string } | null;
+  noindex?: boolean;
+  photo?: PublishedPhoto | undefined;
+}
+
+const { locale, title, description, paths, noindex = false } = Astro.props;
+const abs = (path: string): string => new URL(path, SITE_URL).href;
+const photo = Astro.props.photo ?? (await getPhoto(PLACEMENT.hero));
+const size = photo ? ogSize(photo.data.image) : undefined;
+const og =
+  photo && size
+    ? await getImage({ src: photo.data.image, ...size, fit: 'cover', format: 'jpg', quality: 80 })
+    : undefined;
+const other: Locale = locale === 'cs' ? 'en' : 'cs';
+---
+
+{noindex && <meta name="robots" content="noindex" />}
+{paths && (
+  <>
+    <link rel="canonical" href={abs(paths[locale])} />
+    <link rel="alternate" hreflang="cs" href={abs(paths.cs)} />
+    <link rel="alternate" hreflang="en" href={abs(paths.en)} />
+    <link rel="alternate" hreflang="x-default" href={abs(paths.cs)} />
+    <meta property="og:url" content={abs(paths[locale])} />
+    <meta property="og:locale:alternate" content={OG_LOCALE[other]} />
+  </>
+)}
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={site.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:locale" content={OG_LOCALE[locale]} />
+{og && photo && size && (
+  <>
+    <meta property="og:image" content={abs(og.src)} />
+    <meta property="og:image:width" content={String(size.width)} />
+    <meta property="og:image:height" content={String(size.height)} />
+    <meta property="og:image:alt" content={photo.data.alt[locale]} />
+  </>
+)}
+<meta name="twitter:card" content={og ? 'summary_large_image' : 'summary'} />

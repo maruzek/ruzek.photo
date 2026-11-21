@@ -1,0 +1,15 @@
+---
+// Case study pages exist only for entries with `draft: false` (concept.md, kap. 1): a draft has no page, so it
+// is neither linked nor in the sitemap.
+import { getCollection } from 'astro:content';
+import CaseStudy from '../../components/CaseStudy.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('caseStudies', (e) => !e.data.draft);
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+---
+
+<CaseStudy locale="cs" entry={entry} />

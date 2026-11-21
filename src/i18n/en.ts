@@ -281,6 +281,107 @@ export const en = {
       privacy: 'Privacy policy',
     },
   },
+  privacy: {
+    meta: {
+      title: 'Privacy policy · Martin Růžek',
+      description: 'What personal data I process when you send me an inquiry or browse the website, why, and for how long.',
+    },
+    title: 'Privacy policy',
+    lead: 'What personal data I process when you send me an inquiry or browse the website, why I do it and how long I keep it.',
+    reviewTodo: 'text to be reviewed by a data protection expert',
+    version: 'Policy version',
+    sections: {
+      controller: {
+        title: 'Who processes your data',
+        paragraphs: ['The controller of your personal data is me, {name}, photographer. You can write to me at {email}.'],
+        todo: 'company ID (IČO) and registered office of the controller',
+      },
+      data: {
+        title: 'What I store when you send an inquiry',
+        paragraphs: ['From the form I store what you fill in:'],
+        items: [
+          'your name and e-mail,',
+          'your phone number, if you give it,',
+          'what and when we shoot: type of shoot, length of the event, date, time from–to, place, number of people and the outputs you want,',
+          'your note,',
+          'the indicative price estimate calculated from the price list.',
+        ],
+      },
+      source: {
+        title: 'Where you came from and your IP address',
+        paragraphs: [
+          'With the inquiry I store the language of the website, the version of this policy and where you came to the website from. That is only the domain of the page you came from, the page of this website where you started, and the campaign tags (UTM) if the link had them.',
+          'I use your IP address only to protect the form from bots and from flooding. I do not store it.',
+        ],
+      },
+      purpose: {
+        title: 'Why I process the data',
+        paragraphs: [
+          'I need the inquiry to send you an offer and arrange the shoot. The legal basis is steps taken at your request before entering into a contract (Art. 6(1)(b) GDPR). I do not need your consent for this, so there is no checkbox in the form.',
+          'The data about where you came from shows me where inquiries come from.',
+        ],
+        todo: 'legal basis for the statistics of inquiry sources',
+      },
+      retention: {
+        title: 'How long I keep the data',
+        paragraphs: [
+          'If an inquiry does not become an order, I anonymize it after {months} months from sending. I delete the name, e-mail, phone, place, time and note and shorten the event date to month and year. This happens at the latest {graceDays} days after that period.',
+          'Only data that cannot identify you remains: type of shoot, month of the event, length, number of people, outputs, price estimate, language and where you came from. I use it for statistics.',
+          'If an inquiry becomes an order, I keep the data for the duration of our cooperation. I keep invoices and receipts for as long as tax law requires.',
+          'A copy of the inquiry reaches me by e-mail in my mailbox.',
+        ],
+        todo: 'when to anonymize the data of former clients and how long to keep inquiry e-mails in the mailbox',
+      },
+      recipients: {
+        title: 'Who I share the data with',
+        paragraphs: ['I do not sell the data or give it to anyone for marketing. These processors help me:'],
+        items: [
+          'Cloudflare runs the website and the inquiry database. Its Turnstile service protects the form: it uses signals from your browser to check that a human is filling it in. It loads only with the form.',
+          'Resend sends the inquiry e-mail to me and the confirmation to you.',
+          'The provider of my mailbox, where inquiries arrive.',
+          'Umami and Cloudflare Web Analytics measure traffic (see below).',
+        ],
+        todo: 'full list of processors with their seats and transfers of data outside the EU',
+      },
+      analytics: {
+        title: 'Cookieless traffic measurement',
+        paragraphs: [
+          'The website sets no cookies and stores nothing in your browser for measurement. That is why there is no cookie banner.',
+          'I measure traffic with Umami: how many people visited, where they came from and what they did on the website, such as sending an inquiry or opening a photo. I measure page loading speed with Cloudflare Web Analytics. Neither tool uses cookies, and both load only after the page has loaded.',
+        ],
+      },
+      rights: {
+        title: 'Your rights',
+        paragraphs: [
+          'You have the right to know what data I hold about you, to have it corrected or deleted, to restrict its processing, to object and to receive it in a machine-readable form. Just write to {email}.',
+          'If you think I handle your data wrongly, you can complain to the Czech Office for Personal Data Protection (uoou.gov.cz).',
+        ],
+      },
+      changes: {
+        title: 'Changes to this policy',
+        paragraphs: [
+          'When I change this policy, the version at the top changes too. With each inquiry I store the version that applied when you sent it.',
+        ],
+      },
+    },
+    back: 'Back to the home page',
+  },
+  notFound: {
+    meta: { title: 'Page not found · Martin Růžek', description: 'This page does not exist.' },
+    code: '404',
+    title: 'This page *does not* exist.',
+    text: 'The address may have changed, or the link has a typo. Photos, prices and the inquiry form are on the home page.',
+    home: 'Go to the home page',
+  },
+  caseStudy: {
+    eyebrow: 'Case study',
+    score: 'Score',
+    venue: 'Venue',
+    date: 'Date',
+    photos: 'Photos from the event',
+    back: 'Back to the home page',
+    cta: 'Request a similar shoot',
+  },
   lightbox: {
     label: 'Photo preview',
     close: 'Close',

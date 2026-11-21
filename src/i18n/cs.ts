@@ -295,6 +295,110 @@ export const cs = {
       privacy: 'Zásady ochrany osobních údajů',
     },
   },
+  // Privacy page (task 13). Placeholders: {name}, {email}, {months}, {graceDays}. Facts follow what the code
+  // stores and sends (db/migrations, src/server/inquiry, workers/maintenance); a lawyer still reviews the text.
+  privacy: {
+    meta: {
+      title: 'Zásady ochrany osobních údajů · Martin Růžek',
+      description: 'Jaké osobní údaje zpracovávám, když mi pošlete poptávku nebo si prohlížíte web, proč a jak dlouho.',
+    },
+    title: 'Zásady ochrany osobních údajů',
+    lead: 'Jaké osobní údaje zpracovávám, když mi pošlete poptávku nebo si prohlížíte web, proč to dělám a jak dlouho je mám.',
+    reviewTodo: 'text zkontroluje odborník na ochranu osobních údajů',
+    version: 'Verze zásad',
+    sections: {
+      controller: {
+        title: 'Kdo vaše údaje zpracovává',
+        paragraphs: ['Správcem osobních údajů jsem já, {name}, fotograf. Napsat mi můžete na {email}.'],
+        todo: 'IČO a sídlo správce',
+      },
+      data: {
+        title: 'Co ukládám, když pošlete poptávku',
+        paragraphs: ['Z formuláře uložím to, co vyplníte:'],
+        items: [
+          'jméno a e-mail,',
+          'telefon, pokud ho uvedete,',
+          'co a kdy fotíme: typ focení, délku akce, datum, čas od–do, místo, počet lidí a požadované výstupy,',
+          'vaši poznámku,',
+          'orientační odhad ceny spočítaný z ceníku.',
+        ],
+      },
+      source: {
+        title: 'Odkud jste přišli a vaše IP adresa',
+        paragraphs: [
+          'K poptávce si uložím jazyk webu, verzi těchto zásad a odkud jste na web přišli. Je to jen doména stránky, ze které jste přišli, stránka webu, na které jste začali, a značky kampaně (UTM), pokud je odkaz měl.',
+          'Vaši IP adresu použiji jen k ochraně formuláře před roboty a před zahlcením. Neukládám ji.',
+        ],
+      },
+      purpose: {
+        title: 'Proč údaje zpracovávám',
+        paragraphs: [
+          'Poptávku potřebuji, abych vám mohl poslat nabídku a domluvit focení. Právním základem je jednání o smlouvě na vaši žádost (čl. 6 odst. 1 písm. b) GDPR). Souhlas k tomu nepotřebuji, proto ve formuláři není zaškrtávátko.',
+          'Údaje o tom, odkud jste přišli, mi ukazují, odkud poptávky přicházejí.',
+        ],
+        todo: 'právní základ pro statistiku zdrojů poptávek',
+      },
+      retention: {
+        title: 'Jak dlouho údaje uchovávám',
+        paragraphs: [
+          'Když z poptávky nebude zakázka, poptávku anonymizuji po {months} měsících od odeslání. Smažu jméno, e-mail, telefon, místo, čas a poznámku a datum akce zkrátím na měsíc a rok. Nejpozději se to stane {graceDays} dní po této lhůtě.',
+          'Zůstanou jen údaje, podle kterých vás nejde poznat: typ focení, měsíc akce, délka, počet lidí, výstupy, odhad ceny, jazyk a odkud jste přišli. Slouží mi ke statistice.',
+          'Když z poptávky bude zakázka, údaje si nechám po dobu spolupráce. Doklady uchovávám tak dlouho, jak ukládají daňové předpisy.',
+          'Kopie poptávky mi přijde e-mailem do mé schránky.',
+        ],
+        todo: 'kdy anonymizovat údaje bývalých klientů a jak dlouho držet e-maily s poptávkou ve schránce',
+      },
+      recipients: {
+        title: 'Komu údaje předávám',
+        paragraphs: ['Údaje neprodávám a nikomu je nedávám k marketingu. Pomáhají mi tito zpracovatelé:'],
+        items: [
+          'Cloudflare provozuje web a databázi poptávek. Jeho služba Turnstile chrání formulář: podle signálů z prohlížeče ověří, že ho vyplňuje člověk. Načte se jen u formuláře.',
+          'Resend odesílá e-mail s poptávkou mně a potvrzení vám.',
+          'Poskytovatel mé e-mailové schránky, kam poptávky chodí.',
+          'Umami a Cloudflare Web Analytics měří návštěvnost (viz níže).',
+        ],
+        todo: 'úplný seznam zpracovatelů s jejich sídly a předávání údajů mimo EU',
+      },
+      analytics: {
+        title: 'Měření návštěvnosti bez cookies',
+        paragraphs: [
+          'Web nenastavuje cookies a kvůli měření nic neukládá do vašeho prohlížeče. Proto tu není cookie lišta.',
+          'Návštěvnost měřím nástrojem Umami: kolik lidí web navštívilo, odkud přišli a co na webu udělali, třeba odeslali poptávku nebo otevřeli fotku. Rychlost načítání stránek měřím přes Cloudflare Web Analytics. Ani jeden nástroj nepoužívá cookies a oba se načtou až po načtení stránky.',
+        ],
+      },
+      rights: {
+        title: 'Vaše práva',
+        paragraphs: [
+          'Máte právo vědět, jaké údaje o vás mám, nechat je opravit nebo smazat, omezit jejich zpracování, vznést námitku a dostat je ve strojově čitelné podobě. Stačí napsat na {email}.',
+          'Když si myslíte, že s vašimi údaji nakládám špatně, můžete si stěžovat u Úřadu pro ochranu osobních údajů (uoou.gov.cz).',
+        ],
+      },
+      changes: {
+        title: 'Změny zásad',
+        paragraphs: [
+          'Když zásady změním, změní se i verze nahoře. K poptávce si ukládám verzi, která platila, když jste ji odeslali.',
+        ],
+      },
+    },
+    back: 'Zpět na úvod',
+  },
+  notFound: {
+    meta: { title: 'Stránka nenalezena · Martin Růžek', description: 'Tahle stránka neexistuje.' },
+    code: '404',
+    title: 'Tahle stránka *neexistuje.*',
+    text: 'Možná se změnila adresa, nebo je v odkazu překlep. Fotky, ceny i poptávku najdete na úvodní stránce.',
+    home: 'Na úvodní stránku',
+  },
+  // Case study template (task 13). Pages exist only for entries with `draft: false`.
+  caseStudy: {
+    eyebrow: 'Případová studie',
+    score: 'Skóre',
+    venue: 'Místo',
+    date: 'Datum',
+    photos: 'Fotky z akce',
+    back: 'Zpět na úvod',
+    cta: 'Poptat podobné focení',
+  },
   lightbox: {
     label: 'Náhled fotky',
     close: 'Zavřít',
