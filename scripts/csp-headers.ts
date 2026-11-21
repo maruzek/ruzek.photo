@@ -105,9 +105,10 @@ export function cspHeaders(): AstroIntegration {
         for (const file of await htmlFiles(dir)) {
           const html = await readFile(file, 'utf8');
           for (const h of inlineScriptHashes(html)) hashes.add(h);
-          configs.add(JSON.stringify(analyticsFromHtml(html)));
+          const cfg = analyticsFromHtml(html);
+          if (cfg) configs.add(JSON.stringify(cfg));
         }
-        // every page renders the same Base, so they all carry the same configuration
+        // every measured page renders the same Base, so they all carry the same configuration (404 carries none)
         if (configs.size > 1)
           throw new Error('csp-headers: pages disagree on the analytics configuration');
         const [config = 'null'] = configs;

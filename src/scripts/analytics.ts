@@ -3,6 +3,7 @@
 // photo. Without a configuration nothing is loaded, and `track` does nothing whenever Umami is missing (blocked, not
 // configured, development). Never pass personal data as event data.
 import type { AnalyticsConfig } from '../config/analytics';
+import { GENERIC_UTM_MEDIUMS, GENERIC_UTM_SOURCES } from '../config/utm';
 
 export type TrackEvent =
   | 'inquiry_sent'
@@ -24,17 +25,23 @@ export const CF_BEACON_SRC = 'https://static.cloudflareinsights.com/beacon.min.j
 
 /** Global the Umami tracker calls before every request (`data-before-send`), with (type, payload). */
 export const UMAMI_BEFORE_SEND = '__umamiBeforeSend';
-/** The only query parameters Umami may see; anything else (an e-mail in a link, a token) is dropped. */
-export const UMAMI_KEPT_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign'] as const;
+/**
+ * The only query parameters Umami may see, each only with a generic channel name (ST-10); utm_campaign is free
+ * text and never sent. Anything else (an e-mail in a link, a token) is dropped.
+ */
+export const UMAMI_KEPT_PARAMS: Readonly<Record<string, readonly string[]>> = {
+  utm_source: GENERIC_UTM_SOURCES,
+  utm_medium: GENERIC_UTM_MEDIUMS,
+};
 
-/** The page address for Umami: the path and the kept UTM tags only, never another parameter or the hash. */
+/** The page address for Umami: the path and the generic UTM tags only, never another parameter or the hash. */
 export function sanitizeUrl(url: string, base: string): string {
   try {
     const u = new URL(url, base);
     const kept = new URLSearchParams();
-    for (const k of UMAMI_KEPT_PARAMS) {
-      const v = u.searchParams.get(k);
-      if (v) kept.set(k, v);
+    for (const [k, allowed] of Object.entries(UMAMI_KEPT_PARAMS)) {
+      const v = u.searchParams.get(k)?.trim().toLowerCase();
+      if (v && allowed.includes(v)) kept.set(k, v);
     }
     const q = kept.toString();
     return q ? `${u.pathname}?${q}` : u.pathname;

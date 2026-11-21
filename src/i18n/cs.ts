@@ -326,7 +326,7 @@ export const cs = {
       source: {
         title: 'Co se k poptávce uloží navíc a vaše IP adresa',
         paragraphs: [
-          'K poptávce se uloží také čas přijetí, náhodné ID poptávky, jazyk webu, verze těchto zásad a stav poptávky (nová, zakázka, bez zakázky). Uloží se i to, kdy odešel e-mail s poptávkou mně, kdy potvrzení vám a kdy byla poptávka v měsíčním přehledu před anonymizací.',
+          'K poptávce se uloží také čas přijetí, náhodné ID poptávky, náhodné ID odeslání (podle něj databáze pozná poptávku, kterou prohlížeč po výpadku spojení odeslal znovu, a neuloží ji dvakrát), jazyk webu, verze těchto zásad a stav poptávky (nová, zakázka, bez zakázky). Uloží se i to, kdy odešel e-mail s poptávkou mně, kdy potvrzení vám a kdy byla poptávka v měsíčním přehledu před anonymizací.',
           'Kvůli statistice si uložím, odkud poptávka přišla: stránku tohoto webu, ze které jste formulář odeslali (třeba /en/), doménu jiného webu, ze kterého jste na ni přišli, a značky kampaně (UTM) zdroj, médium a název kampaně, pokud je odkaz měl. Když jste na stránku přišli odkazem z tohoto webu, doménu neukládám.',
           'Vaši IP adresu použiji jen k ochraně formuláře. Podle ní omezím počet poptávek z jedné sítě a předám ji službě Cloudflare Turnstile, která ověřuje, že formulář vyplňuje člověk. Do databáze ji neukládám.',
         ],
@@ -342,7 +342,7 @@ export const cs = {
       retention: {
         title: 'Jak dlouho údaje uchovávám',
         paragraphs: [
-          'Když z poptávky nebude zakázka, poptávku anonymizuji po {months} měsících od odeslání, nejpozději {graceDays} dní po této lhůtě. Smažu jméno, e-mail, telefon, místo, čas, poznámku a název kampaně. ID poptávky nahradím novým náhodným, datum akce zkrátím na měsíc a rok, čas přijetí na první den měsíce a smažu, kdy odešly e-maily a kdy byla poptávka v přehledu.',
+          'Když z poptávky nebude zakázka, poptávku anonymizuji po {months} měsících od odeslání, nejpozději {graceDays} dní po této lhůtě. Smažu jméno, e-mail, telefon, místo, čas, poznámku, ID odeslání a název kampaně. ID poptávky nahradím novým náhodným, datum akce zkrátím na měsíc a rok, čas přijetí na první den měsíce a smažu, kdy odešly e-maily a kdy byla poptávka v přehledu.',
           'Jednou měsíčně mi před anonymizací přijde e-mail s poptávkami, na které brzy dojde: jméno, datum přijetí, typ focení a ID poptávky. Podle něj označím ty, ze kterých byla zakázka.',
           'Po anonymizaci zůstane jen typ focení, měsíc akce, délka, počet lidí, požadované výstupy, odhad ceny, jazyk webu, verze zásad, stav poptávky, měsíc přijetí a den anonymizace. Dál stránka webu, ze které poptávka přišla, doména webu, ze kterého jste přišli, a zdroj a médium kampaně, ale jen když jde o obecný kanál, třeba instagram nebo email. Tyto údaje mi slouží ke statistice.',
           'Když z poptávky bude zakázka, údaje si nechám po dobu spolupráce. Doklady uchovávám tak dlouho, jak ukládají daňové předpisy.',
@@ -365,8 +365,9 @@ export const cs = {
         title: 'Měření návštěvnosti bez cookies',
         paragraphs: [
           'Web nenastavuje cookies a kvůli měření nic neukládá do vašeho prohlížeče. Proto tu není cookie lišta.',
-          'Návštěvnost měřím nástrojem Umami: kolik lidí web navštívilo, odkud přišli a co na webu udělali, třeba odeslali poptávku nebo otevřeli fotku. Při každém zobrazení stránky a u takové akce mu prohlížeč pošle adresu stránky bez parametrů a bez části za znakem #. Ponechá jen značky kampaně (zdroj, médium a název). Dál pošle doménu webu, ze kterého jste přišli (bez konkrétní stránky), název stránky, jazyk prohlížeče a velikost obrazovky, u akce i její název a upřesnění, třeba na jaký jazyk jste přepnuli.',
-          'Rychlost načítání stránek měřím přes Cloudflare Web Analytics. Ani jeden nástroj nepoužívá cookies a oba se načtou až po načtení stránky. Jako každý server, se kterým prohlížeč komunikuje, vidí i vaši IP adresu.',
+          'Návštěvnost měřím nástrojem Umami: kolik lidí web navštívilo, odkud přišli a co na webu udělali, třeba odeslali poptávku nebo otevřeli fotku. Při každém zobrazení stránky a u takové akce mu prohlížeč pošle adresu stránky bez parametrů a bez části za znakem #. Ze značek kampaně ponechá jen zdroj a médium, a to jen když jde o obecný kanál, třeba instagram nebo email. Název kampaně neposílá. Dál pošle doménu webu, ze kterého jste přišli (bez konkrétní stránky), název stránky, jazyk prohlížeče a velikost obrazovky, u akce i její název a upřesnění, třeba na jaký jazyk jste přepnuli.',
+          'Rychlost načítání stránek měřím přes Cloudflare Web Analytics. Kromě časů načítání mu prohlížeč pošle adresu navštívené stránky bez parametrů a bez části za znakem # a adresu, ze které jste na stránku přišli, pokud ji prohlížeč zná.',
+          'Ani jeden nástroj nepoužívá cookies a oba se načtou až po načtení stránky. Jako každý server, se kterým prohlížeč komunikuje, vidí i vaši IP adresu. Na stránce pro neexistující adresu (chyba 404) se měření nenačte vůbec.',
         ],
       },
       rights: {

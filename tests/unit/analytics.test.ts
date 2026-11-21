@@ -172,8 +172,13 @@ describe('Umami payload sanitizer', () => {
         'https://martinruzek.cz/en/?email=jana%40example.test&utm_source=ig&utm_medium=social&utm_campaign=jaro&utm_term=x#private',
         own,
       ),
-    ).toBe('/en/?utm_source=ig&utm_medium=social&utm_campaign=jaro');
+    ).toBe('/en/?utm_source=ig&utm_medium=social');
     expect(sanitizeUrl('/?token=abc#frag', own)).toBe('/');
+    // ST-10: UTM values only from the generic channel list, utm_campaign never
+    expect(sanitizeUrl('/?utm_campaign=jana%40example.test&utm_source=IG', own)).toBe(
+      '/?utm_source=ig',
+    );
+    expect(sanitizeUrl('/?utm_source=jana%40example.test&utm_medium=jana-novakova', own)).toBe('/');
     expect(sanitizeUrl('/zasady-ochrany-osobnich-udaju/', own)).toBe(
       '/zasady-ochrany-osobnich-udaju/',
     );

@@ -57,30 +57,9 @@ export function sanitizeSource(s: InquirySource): StoredSource {
 /**
  * UTM values that survive anonymization (ST-04): generic channel names only, never a free campaign name
  * (`jana-novakova`). Before anonymization the e-mail to Martin and the row carry the sanitized values above.
+ * The same list decides what Umami may see (src/scripts/analytics.ts, ST-10).
  */
-export const ANONYMOUS_UTM_SOURCES = [
-  'instagram',
-  'ig',
-  'facebook',
-  'fb',
-  'google',
-  'seznam',
-  'firmy',
-  'linkedin',
-  'tiktok',
-  'youtube',
-  'email',
-  'newsletter',
-  'qr',
-] as const;
-export const ANONYMOUS_UTM_MEDIUMS = [
-  'social',
-  'organic',
-  'cpc',
-  'paid',
-  'email',
-  'referral',
-  'qr',
-  'print',
-  'display',
-] as const;
+export {
+  GENERIC_UTM_MEDIUMS as ANONYMOUS_UTM_MEDIUMS,
+  GENERIC_UTM_SOURCES as ANONYMOUS_UTM_SOURCES,
+} from '../../config/utm';

@@ -310,7 +310,7 @@ export const en = {
       source: {
         title: 'What else is stored with the inquiry, and your IP address',
         paragraphs: [
-          'The inquiry is also stored with the time it arrived, a random inquiry ID, the language of the website, the version of this policy and the state of the inquiry (new, order, no order). It also records when the inquiry e-mail was sent to me, when the confirmation was sent to you and when the inquiry was listed in the monthly overview before anonymization.',
+          'The inquiry is also stored with the time it arrived, a random inquiry ID, a random submission ID (it lets the database recognise an inquiry your browser sent again after a lost connection, so it is not stored twice), the language of the website, the version of this policy and the state of the inquiry (new, order, no order). It also records when the inquiry e-mail was sent to me, when the confirmation was sent to you and when the inquiry was listed in the monthly overview before anonymization.',
           'For statistics I store where the inquiry came from: the page of this website you sent the form from (for example /en/), the domain of another website you came to that page from, and the campaign tags (UTM) source, medium and campaign name if the link had them. If you reached the page through a link on this website, I do not store the domain.',
           'I use your IP address only to protect the form. I use it to limit the number of inquiries from one network and pass it to Cloudflare Turnstile, which checks that a human is filling in the form. I do not store it in the database.',
         ],
@@ -326,7 +326,7 @@ export const en = {
       retention: {
         title: 'How long I keep the data',
         paragraphs: [
-          'If an inquiry does not become an order, I anonymize it after {months} months from sending, at the latest {graceDays} days after that period. I delete the name, e-mail, phone, place, time, note and campaign name. I replace the inquiry ID with a new random one, shorten the event date to month and year and the time it arrived to the first day of the month, and delete when the e-mails were sent and when the inquiry was listed in the overview.',
+          'If an inquiry does not become an order, I anonymize it after {months} months from sending, at the latest {graceDays} days after that period. I delete the name, e-mail, phone, place, time, note, submission ID and campaign name. I replace the inquiry ID with a new random one, shorten the event date to month and year and the time it arrived to the first day of the month, and delete when the e-mails were sent and when the inquiry was listed in the overview.',
           'Once a month, before anonymization, I receive an e-mail listing the inquiries that are about to be anonymized: name, date received, type of shoot and inquiry ID. I use it to mark the ones that became an order.',
           'After anonymization only this remains: type of shoot, month of the event, length, number of people, requested deliverables, price estimate, language of the website, policy version, state of the inquiry, month received and the day of anonymization. Also the page of this website the inquiry came from, the domain of the website you came from, and the campaign source and medium, but only when they name a general channel, such as instagram or email. I use this data for statistics.',
           'If an inquiry becomes an order, I keep the data for the duration of our cooperation. I keep invoices and receipts for as long as tax law requires.',
@@ -349,8 +349,9 @@ export const en = {
         title: 'Cookieless traffic measurement',
         paragraphs: [
           'The website sets no cookies and stores nothing in your browser for measurement. That is why there is no cookie banner.',
-          'I measure traffic with Umami: how many people visited, where they came from and what they did on the website, such as sending an inquiry or opening a photo. With every page view and such action your browser sends it the page address without parameters and without the part after the # sign. Only the campaign tags (source, medium and name) are kept. It also sends the domain of the website you came from (without the specific page), the page title, the browser language and the screen size, and for an action its name and a detail, such as the language you switched to.',
-          'I measure page loading speed with Cloudflare Web Analytics. Neither tool uses cookies, and both load only after the page has loaded. Like every server your browser talks to, they also see your IP address.',
+          'I measure traffic with Umami: how many people visited, where they came from and what they did on the website, such as sending an inquiry or opening a photo. With every page view and such action your browser sends it the page address without parameters and without the part after the # sign. Of the campaign tags it keeps only the source and medium, and only when they name a general channel, such as instagram or email. It never sends the campaign name. It also sends the domain of the website you came from (without the specific page), the page title, the browser language and the screen size, and for an action its name and a detail, such as the language you switched to.',
+          'I measure page loading speed with Cloudflare Web Analytics. Besides the loading times, your browser sends it the address of the visited page without parameters and without the part after the # sign, and the address you came to the page from, if the browser knows it.',
+          'Neither tool uses cookies, and both load only after the page has loaded. Like every server your browser talks to, they also see your IP address. On the page for an address that does not exist (error 404) no measurement loads at all.',
         ],
       },
       rights: {

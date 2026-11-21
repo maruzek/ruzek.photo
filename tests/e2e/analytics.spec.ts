@@ -67,7 +67,21 @@ test('the collect requests pass the CSP and carry no foreign query, hash or refe
     payload: { url: string; referrer: string };
   };
   expect(sent.type).toBe('event');
-  expect(sent.payload.url).toBe('/en/?utm_source=ig&utm_campaign=jaro');
+  expect(sent.payload.url).toBe('/en/?utm_source=ig');
   expect(sent.payload.referrer).toBe('https://www.instagram.com');
   expect(umami?.body).not.toMatch(/email|jana|example\.test|private-fragment|igsh|secret/);
+});
+
+test('the 404 page loads no analytics, so a mistyped path never reaches Umami or Cloudflare (ST-10)', async ({
+  page,
+}) => {
+  const stubs = await stubAnalytics(page);
+  const res = await page.goto('/jana%40example.test');
+  expect(res?.status()).toBe(404);
+  await page.waitForLoadState('load');
+  // the loader waits for load + idle; give it well over that before checking nothing was requested
+  await page.waitForTimeout(1500);
+  expect(stubs.hits).toEqual([]);
+  expect(stubs.collects).toEqual([]);
+  await expect(page.locator('#analytics-config')).toHaveCount(0);
 });
