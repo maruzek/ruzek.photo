@@ -41,13 +41,24 @@ async function fillRequired(page: Page): Promise<void> {
 
 const ok = (r: Route) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
 test.describe('inquiry form', () => {
+  test('the service is a group of four tiles, no dropdown', async ({ page }) => {
+    await open(page);
+    await toForm(page);
+    const group = page.getByRole('group', { name: 'Co fotíme' });
+    await expect(group.getByRole('radio')).toHaveCount(4);
+    await expect(page.locator('#inq select')).toHaveCount(0);
+    await expect(group.getByRole('radio', { name: 'Akce' })).toBeChecked();
+    await group.getByRole('radio', { name: 'Portrét' }).check();
+    await expect(page.getByLabel('Délka akce (hodiny)')).toBeHidden();
+  });
+
   test('estimate follows the type, hours and add-ons', async ({ page }) => {
     await open(page);
     await toForm(page);
     const est = page.locator('.est output');
     await page.getByLabel('Délka akce (hodiny)').fill('3');
     await expect.poll(async () => plain(await est.textContent())).toBe('4 200–5 070 Kč');
-    await page.getByLabel('Co fotíme').selectOption('match');
+    await page.getByRole('radio', { name: 'Zápas' }).check();
     await expect(page.getByLabel('Délka akce (hodiny)')).toBeHidden();
     await expect.poll(async () => plain(await est.textContent())).toBe('1 800–3 250 Kč');
     await page.getByLabel(/Výběr na sítě týž den/).uncheck();
@@ -202,7 +213,7 @@ test.describe('inquiry form', () => {
     await expect(card).toHaveCSS('opacity', '1');
     await expect(card).toHaveCSS('transform', /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/); // GSAP ends on identity
     await link.click();
-    await expect(page.getByLabel('Co fotíme')).toHaveValue('match');
+    await expect(page.getByRole('radio', { name: 'Zápas' })).toBeChecked();
   });
 
   test('Turnstile loads only near the form', async ({ page }) => {

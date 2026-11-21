@@ -126,7 +126,7 @@ const DOM_ID: Partial<Record<InquiryField, string>> = {
   name: 'inq-name',
   email: 'inq-mail',
   phone: 'inq-phone',
-  service: 'inq-type',
+  service: 'inq-type-event',
   hours: 'inq-hours',
   date: 'inq-date',
   timeFrom: 'inq-from',
@@ -385,7 +385,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
         {intro}
         <div className="est" aria-live="polite">
           <span className="mono">{text.estimate.label}</span>
-          <output htmlFor="inq-type inq-hours inq-same inq-video">
+          <output htmlFor="inq-type-event inq-type-short inq-type-match inq-type-portrait inq-hours inq-same inq-video">
             <Range text={formatRange(range, locale)} />
           </output>
           <small>{text.estimate.note}</small>
@@ -449,22 +449,32 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
           ),
           { optional: true },
         )}
-        {field('service', f.type.label, (aria) => (
-          <select
-            id="inq-type"
-            name="service"
-            value={values.service}
-            onChange={(e) => set('service', e.target.value as ServiceId)}
-            onBlur={blur('service')}
-            {...aria}
-          >
+        <fieldset
+          className={['field', 'full', 'choice', errors.service && 'bad'].filter(Boolean).join(' ')}
+          aria-describedby={errors.service ? 'inq-type-msg' : undefined}
+        >
+          <legend>{f.type.label}</legend>
+          <div className="choices">
             {services.map((s) => (
-              <option key={s.id} value={s.id}>
-                {f.type.options[s.id]}
-              </option>
+              <label className="tick" key={s.id}>
+                <input
+                  type="radio"
+                  id={`inq-type-${s.id}`}
+                  name="service"
+                  value={s.id}
+                  checked={values.service === s.id}
+                  onChange={() => set('service', s.id)}
+                />
+                <span>{f.type.options[s.id]}</span>
+              </label>
             ))}
-          </select>
-        ))}
+          </div>
+          {errors.service && (
+            <span className="msg" id="inq-type-msg">
+              {errors.service}
+            </span>
+          )}
+        </fieldset>
         {field(
           'hours',
           f.hours.label,
