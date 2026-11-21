@@ -295,7 +295,7 @@ Dva nástroje, každý na něco jiného. Oba jsou bez cookies, takže web **nem�
 |---|---|
 | HTML úvodní stránky | 30 kB |
 | CSS | 25 kB |
-| JS pro první vykreslení (inline boot, ascii) | 10 kB |
+| JS pro první vykreslení (inline boot, ascii, loader) | 12 kB |
 | Měření (Umami, Cloudflare beacon), po `load` | 10 kB |
 | JS pohybu (GSAP, ScrollTrigger, SplitText, Lenis, choreo, efekty), odložený | 75 kB |
 | React island a formulář, při `client:visible` | 55 kB |

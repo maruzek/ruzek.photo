@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test('lightbox keyboard and focus return', async ({ page }) => {
   await page.goto('/');

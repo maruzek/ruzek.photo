@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import AxeBuilder from '@axe-core/playwright';
 import sharp from 'sharp';
 import { ANONYMIZE_AFTER_DAYS, PRIVACY_NOTICE_VERSION } from '../../src/config/privacy';

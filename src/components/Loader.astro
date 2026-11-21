@@ -1,0 +1,21 @@
+---
+// Entry loader "Práh" (src/scripts/loader.ts). Hidden unless Base's head script sets html.ldr-on, so without JS it
+// never shows. Decorative only: hidden from assistive technology, the page underneath stays readable.
+import '../styles/sections/loader.css';
+import tiles from '../../design/logo/logo-tiles.json';
+import { loaderTiles, type LogoTiles } from '../lib/logo';
+
+const data = tiles as unknown as LogoTiles;
+const { packed, paths } = loaderTiles(data);
+---
+
+<div class="ldr" data-t={packed} aria-hidden="true">
+  <canvas aria-hidden="true"></canvas>
+  <span class="lab n">00/64</span>
+  <span class="lab">ruzek.jpg</span>
+</div>
+<svg class="ldr-fly" viewBox={data.viewBox.join(' ')} aria-hidden="true" focusable="false">
+  {paths.map((p) => (
+    <path transform={p.transform} d={p.d} fill={p.fill} />
+  ))}
+</svg>

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 import { ANALYTICS_TEST_ENV } from './analytics-env';
 import { BEACON_COLLECT, UMAMI_COLLECT, stubAnalytics } from './analytics-stubs';
 

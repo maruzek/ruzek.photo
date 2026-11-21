@@ -1,0 +1,69 @@
+/* Entry loader "Práh" (src/scripts/loader.ts, design/loader-concepts/concepts/b-1.html). Shown only while
+   html.ldr-on is set by Base's head script; the canvas tiles are drawn by the script. */
+.ldr,
+.ldr-fly {
+  display: none;
+}
+html.ldr-on .ldr {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--night);
+  transition: opacity 0.55s ease;
+}
+html.ldr-on .ldr.out {
+  opacity: 0;
+  pointer-events: none;
+}
+.ldr canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ldr .lab {
+  position: absolute;
+  left: var(--m);
+  bottom: 18px;
+  font: 400 11px / 1 var(--f-mono);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  transition: opacity 0.3s;
+}
+.ldr .lab.n {
+  top: 18px;
+  bottom: auto;
+  font-variant-numeric: tabular-nums;
+}
+.ldr.resolving .lab {
+  opacity: 0;
+}
+html.ldr-on .ldr-fly {
+  display: block;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 101;
+  opacity: 0;
+  transform-origin: 0 0;
+  pointer-events: none;
+  will-change: transform;
+}
+.ldr-fly.go {
+  transition:
+    transform 0.72s cubic-bezier(0.65, 0, 0.2, 1),
+    opacity 0.55s ease;
+}
+.ldr-fly.go path {
+  fill: var(--to, #fff);
+  transition: fill 0.72s ease;
+}
+html.ldr-on .ldr-fly.fade {
+  opacity: 0;
+}
+/* the header logo waits for the flying one */
+html.ldr-on .top .mark .roh {
+  opacity: 0;
+}

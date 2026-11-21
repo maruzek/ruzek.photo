@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 
 const ANIMATED = '[data-rise], [data-split], [data-stagger] > *';
 const LIMIT_MS = 3500; // the CSS safety net reveals at 3 s after parse; 0.5 s of slack for the server and one frame

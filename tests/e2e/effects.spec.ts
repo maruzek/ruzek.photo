@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 // State of the ASCII hero is on the hero element: data-ascii-intro (running | done | skipped | lite) and
 // data-ascii-lens (off | tracking | drift | idle). No global in the production build the suite tests.

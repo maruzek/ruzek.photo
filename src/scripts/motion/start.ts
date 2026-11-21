@@ -63,11 +63,24 @@ function canvasEffects(scope: ParentNode): () => void {
   };
 }
 
+/** Resolves when the entry loader hands over (`ldr:exit`), at once when there is none. */
+function loaderExit(): Promise<void> {
+  const root = document.documentElement;
+  // `data-ldr="exit"`: it has already handed over and only the logo is still on its way
+  if (!root.classList.contains('ldr-on') || root.dataset['ldr'] === 'exit') return Promise.resolve();
+  return new Promise((resolve) => {
+    document.addEventListener('ldr:exit', () => resolve(), { once: true });
+  });
+}
+
 export async function start(): Promise<() => void> {
   const root = document.documentElement;
   await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, FONT_WAIT_MS))]);
   // the preference may have changed during the font wait: nothing is set up yet, boot.ts settles (HM-04).
   // Plugins are registered only after this check, because registering ScrollTrigger starts its frame loop.
+  if (matchMedia(REDUCE).matches) return () => undefined;
+  // the entry loader covers the page: the hero entrance starts as its logo flies to the header (loader.ts)
+  await loaderExit();
   if (matchMedia(REDUCE).matches) return () => undefined;
   gsap.registerPlugin(ScrollTrigger, SplitText);
 

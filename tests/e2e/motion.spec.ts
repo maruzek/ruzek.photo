@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 // The motion layer reports its state on <html data-motion="on|off"> (no global in the production build, which
 // is what the e2e suite tests).

@@ -1,4 +1,4 @@
-import { test, expect, type Page, type Route } from '@playwright/test';
+import { test, expect, type Page, type Route } from './fixtures';
 
 // The inquiry form island (tasks 10 and 11). The endpoint is mocked with page.route where a failure has to be
 // forced (network down, server error, slow response); one test sends to the real endpoint, and the endpoint
@@ -108,7 +108,7 @@ test.describe('inquiry form', () => {
     await page.getByRole('radio', { name: 'Zápas' }).check();
     await expect(page.getByLabel('Délka akce (hodiny)')).toBeHidden();
     await expect.poll(async () => plain(await est.textContent())).toBe('1 800–3 250 Kč');
-    await page.getByLabel(/Výběr na sítě ještě ten den/).uncheck();
+    await page.getByRole('checkbox', { name: /Výběr na sítě ještě ten den/ }).uncheck();
     await expect.poll(async () => plain(await est.textContent())).toBe('1 500–2 500 Kč');
   });
 

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 for (const path of ['/', '/en/']) {
   test(`no horizontal scroll at 360px ${path}`, async ({ page }) => {

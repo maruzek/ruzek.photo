@@ -20,7 +20,8 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 - **„Ještě ten den“ všude** místo „týž den“: zní přirozeněji a méně knižně.
 - **Titulek:** „Fotograf akcí a sportu Praha · Martin Růžek“.
 - **Kontakt u formuláře:** tři řádky (Zavolat, WhatsApp, E-mail), bez dělicích čar, ikony Hugeicons.
-- **Načítací obrazovka:** koncept **b-1 „Práh“** podle prototypu, na konci logo odletí na své místo v hlavičce. Jen při příchodu z jiného webu nebo přímém zadání adresy (pozná se z odkazující stránky, nic se neukládá), bez cookies a bez lišty. Při omezeném pohybu a bez JavaScriptu se nezobrazí.
+- **Načítací obrazovka:** koncept **b-1 „Práh“** podle prototypu, na konci logo odletí na své místo v hlavičce. Jen při příchodu z jiného webu nebo přímém zadání adresy (pozná se z odkazující stránky, nic se neukládá), bez cookies a bez lišty. Při omezeném pohybu a bez JavaScriptu se nezobrazí. Neukáže se ani po obnovení stránky, při pohybu zpět/vpřed a při zapnutém Save-Data. Barvy prototypu jsou převedené na tmavé pozadí webu (dlaždice světlé, plná hustota je tlumené pole se zářícím rohem, ne bílé probliknutí). Načtení čeká na písma a hero fotku, nejdéle 2,5 s od začátku navigace. Při rychlém načtení je web vidět zhruba za 1,8 s, logo dosedne do hlavičky kolem 2,4 s. Vstupní animace hero začíná, až logo vyletí.
+- **Rozpočet JS pro první vykreslení zvýšen z 10 na 12 kB.** Loader má 2,1 kB a musí běžet hned (statický import, ne až s pohybovou vrstvou). Nově 11,9 kB. Pohybová vrstva (GSAP, Lenis, 56 kB) se dál stahuje odloženě a načte se během loaderu.
 
 ### 2026-11-21: úpravy po první prohlídce
 - **Telefon +420 731 808 342** je veřejný (poptávka, patička, JSON-LD), WhatsApp je na stejném čísle (odkaz `wa.me`, žádné vložení ani cookies).

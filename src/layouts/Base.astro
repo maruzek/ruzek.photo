@@ -4,6 +4,7 @@ import '../styles/tokens.css';
 import '../styles/fonts.css';
 import '../styles/base.css';
 import CopyToast from '../components/CopyToast.astro';
+import Loader from '../components/Loader.astro';
 import SeoHead from '../components/SeoHead.astro';
 import { analytics } from '../config/analytics';
 import type { PublishedPhoto } from '../lib/photos/get';
@@ -66,6 +67,25 @@ const bodyFace = [{ weight: 400, style: 'normal' as const }];
         // timer started here counts from navigation. A CSS animation would count from when the stylesheet is
         // applied, and a late stylesheet moved the reveal to 3.9 s.
         if (!reduced) setTimeout(() => root.classList.add('reveal-fallback'), 3000);
+        // Entry loader (Loader.astro): only when arriving from another site or with no referrer, never after an
+        // internal link, a reload or back/forward, never with reduced motion or Save-Data. Nothing is stored.
+        let external = true;
+        try {
+          external = !document.referrer || new URL(document.referrer).origin !== location.origin;
+        } catch {
+          // an unreadable referrer counts as an entry from outside
+        }
+        const nav = performance.getEntriesByType('navigation')[0];
+        const fresh = !nav || nav.type === 'navigate';
+        if (!reduced && external && fresh && navigator.connection?.saveData !== true) {
+          root.classList.add('ldr-on');
+          // safety net: should the loader script never finish, the curtain goes after 7 s
+          setTimeout(() => {
+            if (!root.classList.contains('ldr-on')) return;
+            root.classList.remove('ldr-on');
+            document.dispatchEvent(new Event('ldr:exit'));
+          }, 7000);
+        }
       }
     </script>
     <Font cssVariable="--font-notch" preload={aboveTheFold} />
@@ -75,13 +95,17 @@ const bodyFace = [{ weight: 400, style: 'normal' as const }];
     <slot name="head" />
   </head>
   <body>
+    <Loader />
     <slot />
-    {
-      measure && (
-        <script type="application/json" id="analytics-config" set:html={JSON.stringify(analytics).replace(/</g, '\\u003c')} />
-      )
-    }
+    {measure && (
+      <script
+        type="application/json"
+        id="analytics-config"
+        set:html={JSON.stringify(analytics).replace(/</g, '\\u003c')}
+      />
+    )}
     <script>
+      import '../scripts/loader';
       import '../scripts/motion/boot';
       import '../scripts/analytics-boot';
     </script>

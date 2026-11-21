@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, skipLoader, test, type Page } from './fixtures';
 
 // RZ2-11: when the WOFF2 files arrive late, the browser first shows the fallback faces (size-adjust and metric
 // overrides from the Fonts API) and swaps afterwards. The hero name and the paragraph below it must not move.
@@ -103,6 +103,7 @@ for (const reducedMotion of ['reduce', 'no-preference'] as const) {
           viewport: { width, height: 800 },
           reducedMotion,
         });
+        await skipLoader(context);
         const page = await context.newPage();
         const { release } = await openWithHeldFonts(page, path);
         // with motion the layer waits for the fonts for at most ~1.2 s before it starts; hold longer than that
@@ -138,6 +139,7 @@ test('hero shift with the production fallback faces untouched (360 px)', async (
     viewport: { width: 360, height: 800 },
     reducedMotion: 'reduce',
   });
+  await skipLoader(context);
   const page = await context.newPage();
   const { release } = await openWithHeldFonts(page, '/', false);
   await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => r())));
@@ -172,6 +174,7 @@ test('layout shift of the font swap stays within the CLS budget', async ({ brows
     viewport: { width: 360, height: 780 },
     reducedMotion: 'reduce',
   });
+  await skipLoader(context);
   const page = await context.newPage();
   await page.addInitScript(() => {
     const w = window as unknown as { __cls: number };
@@ -286,6 +289,7 @@ test('font files used above the fold on a phone fit the 70 kB budget', async ({ 
     viewport: { width: 360, height: 780 },
     reducedMotion: 'reduce',
   });
+  await skipLoader(context);
   const page = await context.newPage();
   await page.goto('/', { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);

@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 import sharp from 'sharp';
 
 // HM-06 / HM-16 / ST-02: contrast of the text over the photos as rendered, not as assumed by a fixed bottom strip.

@@ -16,8 +16,8 @@ import { gzipSync } from 'node:zlib';
 // Size is gzip level 9, each script on its own (so a little more than the HTML or the chunk costs on the wire in
 // brotli, which Cloudflare serves to browsers). A chunk shared by several parts is counted once, in the first one.
 
-/** Concept budget for first-render JS (compressed). One place to change it. */
-export const FIRST_RENDER_JS_BUDGET = 10 * 1024;
+/** Concept budget for first-render JS (compressed): 10 kB plus the entry loader (decisions.md, 2026-11-22). */
+export const FIRST_RENDER_JS_BUDGET = 12 * 1024;
 /** Concept budget for all JS of the home page: first render + motion + island + trackers (10 + 10 + 75 + 55 kB). */
 export const TOTAL_JS_BUDGET = 150 * 1024;
 

@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 // POST /api/inquiry against the preview (wrangler dev, local D1, Turnstile test secret, console mailer).
 // Desktop project only (mobile-360 sets isMobile): the endpoint is rate limited to 5 requests per IP and minute (wrangler.jsonc).

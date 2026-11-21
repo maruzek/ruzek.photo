@@ -1,4 +1,4 @@
-import { test, expect, type Route } from '@playwright/test';
+import { test, expect, type Route } from './fixtures';
 import { BEACON_COLLECT, UMAMI_COLLECT, stubAnalytics } from './analytics-stubs';
 
 // Task 14 / concept.md, kap. 15: with measurement on (the e2e build has it, tests/e2e/analytics-env.ts), loading,
