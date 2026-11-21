@@ -37,7 +37,7 @@ const [hero, events, sport] = await Promise.all([
     <Marquee locale={locale} />
     {
       locale === 'en' && (
-        <p class="translation-todo mono">
+        <p class="translation-todo mono" lang="cs">
           <Todo>{d.meta.translationTodo}</Todo>
         </p>
       )

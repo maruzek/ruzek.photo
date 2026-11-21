@@ -67,8 +67,11 @@ for (const path of ['/', '/en/']) {
   test(`/en/ shows the translation check marker only in English ${path}`, async ({ page }) => {
     await page.goto(path);
     const marker = page.locator('.translation-todo .todo');
-    if (path === '/en/') await expect(marker).toHaveText('TODO: kontrola překladu');
-    else await expect(marker).toHaveCount(0);
+    if (path === '/en/') {
+      await expect(marker).toHaveText('TODO: kontrola překladu');
+      // Czech text inside the English page is announced in Czech (WCAG 3.1.2)
+      await expect(page.locator('.translation-todo')).toHaveAttribute('lang', 'cs');
+    } else await expect(marker).toHaveCount(0);
   });
 }
 
