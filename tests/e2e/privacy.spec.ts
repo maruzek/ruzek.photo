@@ -1,4 +1,5 @@
 import { test, expect, type Route } from '@playwright/test';
+import { BEACON_COLLECT, UMAMI_COLLECT, stubAnalytics } from './analytics-stubs';
 
 // Task 14 / concept.md, kap. 15: with measurement on (the e2e build has it, tests/e2e/analytics-env.ts), loading,
 // scrolling to the end, opening the lightbox and sending the form leave no cookies and nothing in localStorage, and
@@ -12,7 +13,8 @@ test('no cookies, no storage, no banner after a full visit', async ({ page, cont
   await page.route('https://challenges.cloudflare.com/**', (r) =>
     r.fulfill({ contentType: 'text/javascript', body: FAKE_TURNSTILE }),
   );
-  // the Umami and beacon hosts resolve to 127.0.0.1 and fail; the loader still runs
+  // working tracker stand-ins that send their collect requests (ST-08): storage is checked after they ran
+  const stubs = await stubAnalytics(page);
   await page.route('**/api/inquiry', ok);
   await page.goto('/');
   await page.waitForLoadState('load');
@@ -31,8 +33,14 @@ test('no cookies, no storage, no banner after a full visit', async ({ page, cont
   await page.getByLabel('E-mail').fill('jana@example.com');
   await page.locator('#inq button[type="submit"]').click();
   await expect(page.locator('#inq')).toContainText('Díky');
-  // the analytics loader has run (its scripts were injected)
-  await expect(page.locator('script[src*="cloudflareinsights"]')).toHaveCount(1);
+  // both trackers loaded and reported (page view, the lightbox and form events)
+  await expect
+    .poll(() => new Set(stubs.collects.map((c) => c.url)))
+    .toEqual(new Set([UMAMI_COLLECT, BEACON_COLLECT]));
+  await expect
+    .poll(() => stubs.collects.filter((c) => c.url === UMAMI_COLLECT).length)
+    .toBeGreaterThanOrEqual(3);
+  expect(await stubs.violations()).toEqual([]);
 
   expect(await context.cookies()).toEqual([]);
   expect(await page.evaluate(() => localStorage.length)).toBe(0);

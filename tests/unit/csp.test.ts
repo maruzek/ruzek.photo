@@ -6,6 +6,7 @@ import {
   buildCsp,
   inlineScriptHashes,
 } from '../../scripts/csp-headers';
+import { analyticsFrom } from '../../src/config/analytics';
 
 const sha = (s: string): string => `'sha256-${createHash('sha256').update(s).digest('base64')}'`;
 const directive = (csp: string, name: string): string[] =>
@@ -41,10 +42,11 @@ describe('buildCsp', () => {
   it('adds the beacon and the Umami origin taken from its script URL', () => {
     const csp = buildCsp({
       scriptHashes: [],
-      analytics: {
-        umami: { src: 'https://stats.example.cz/u.js', websiteId: 'a' },
-        cfBeaconToken: 't',
-      },
+      analytics: analyticsFrom({
+        PUBLIC_UMAMI_SRC: 'https://stats.example.cz/u.js',
+        PUBLIC_UMAMI_WEBSITE_ID: 'a',
+        PUBLIC_CF_BEACON_TOKEN: 't',
+      }),
     });
     expect(directive(csp, 'script-src')).toEqual(
       expect.arrayContaining(['https://static.cloudflareinsights.com', 'https://stats.example.cz']),
@@ -55,19 +57,16 @@ describe('buildCsp', () => {
       'https://stats.example.cz',
     ]);
   });
-  it('allows the Umami Cloud collection endpoint only for Umami Cloud', () => {
+  it('Umami Cloud: script from cloud.umami.is, data to gateway.umami.is (ST-01)', () => {
     const csp = buildCsp({
       scriptHashes: [],
-      analytics: {
-        umami: { src: 'https://cloud.umami.is/script.js', websiteId: 'a' },
-        cfBeaconToken: null,
-      },
+      analytics: analyticsFrom({
+        PUBLIC_UMAMI_SRC: 'https://cloud.umami.is/script.js',
+        PUBLIC_UMAMI_WEBSITE_ID: 'a',
+      }),
     });
-    expect(directive(csp, 'connect-src')).toEqual([
-      "'self'",
-      'https://cloud.umami.is',
-      'https://api-gateway.umami.dev',
-    ]);
+    expect(directive(csp, 'script-src')).toContain('https://cloud.umami.is');
+    expect(directive(csp, 'connect-src')).toEqual(["'self'", 'https://gateway.umami.is']);
     expect(directive(csp, 'script-src')).not.toContain('https://static.cloudflareinsights.com');
   });
 });

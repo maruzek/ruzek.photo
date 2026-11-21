@@ -16,15 +16,6 @@ export const TURNSTILE_ORIGIN = 'https://challenges.cloudflare.com';
 /** Cloudflare Web Analytics: the beacon script and the endpoint it reports to. */
 export const CF_BEACON_SCRIPT_ORIGIN = 'https://static.cloudflareinsights.com';
 export const CF_BEACON_CONNECT_ORIGIN = 'https://cloudflareinsights.com';
-/**
- * Umami Cloud serves its tracker from cloud.umami.is; the plan lists api-gateway.umami.dev as its collection
- * endpoint as well. Allowed only while the script comes from Umami Cloud; a self-hosted Umami reports to its own
- * origin (the tracker sends to the script's host by default). Verify against the real requests at launch.
- */
-export const UMAMI_CLOUD = {
-  script: 'https://cloud.umami.is',
-  connect: ['https://api-gateway.umami.dev'],
-} as const;
 
 const SCRIPT = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 /** Data blocks are never executed, so script-src does not apply to them. */
@@ -52,7 +43,7 @@ export function buildCsp(opts: {
   scriptHashes: readonly string[];
   analytics: AnalyticsConfig | null;
 }): string {
-  const umami = opts.analytics?.umami ? new URL(opts.analytics.umami.src).origin : null;
+  const umami = opts.analytics?.umami;
   const beacon = Boolean(opts.analytics?.cfBeaconToken);
   const script = ["'self'", ...opts.scriptHashes, TURNSTILE_ORIGIN];
   const connect = ["'self'"];
@@ -61,8 +52,10 @@ export function buildCsp(opts: {
     connect.push(CF_BEACON_CONNECT_ORIGIN);
   }
   if (umami) {
-    script.push(umami);
-    connect.push(umami, ...(umami === UMAMI_CLOUD.script ? UMAMI_CLOUD.connect : []));
+    script.push(new URL(umami.src).origin);
+    // the collect endpoint the tracker is told to use (data-host-url): gateway.umami.is for Umami Cloud,
+    // the own origin for a self-hosted Umami (src/config/analytics.ts)
+    connect.push(new URL(umami.hostUrl).origin);
   }
   return [
     "default-src 'self'",

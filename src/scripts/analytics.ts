@@ -22,6 +22,47 @@ declare global {
 
 export const CF_BEACON_SRC = 'https://static.cloudflareinsights.com/beacon.min.js';
 
+/** Global the Umami tracker calls before every request (`data-before-send`), with (type, payload). */
+export const UMAMI_BEFORE_SEND = '__umamiBeforeSend';
+/** The only query parameters Umami may see; anything else (an e-mail in a link, a token) is dropped. */
+export const UMAMI_KEPT_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign'] as const;
+
+/** The page address for Umami: the path and the kept UTM tags only, never another parameter or the hash. */
+export function sanitizeUrl(url: string, base: string): string {
+  try {
+    const u = new URL(url, base);
+    const kept = new URLSearchParams();
+    for (const k of UMAMI_KEPT_PARAMS) {
+      const v = u.searchParams.get(k);
+      if (v) kept.set(k, v);
+    }
+    const q = kept.toString();
+    return q ? `${u.pathname}?${q}` : u.pathname;
+  } catch {
+    return '/';
+  }
+}
+
+/** The referrer for Umami: the origin of another site only; the own site and anything not http(s) give ''. */
+export function sanitizeReferrer(referrer: string, ownOrigin: string): string {
+  if (!referrer || referrer.startsWith('/')) return ''; // the tracker turns an own-site referrer into a path
+  try {
+    const u = new URL(referrer);
+    if ((u.protocol !== 'https:' && u.protocol !== 'http:') || u.origin === ownOrigin) return '';
+    return u.origin;
+  } catch {
+    return '';
+  }
+}
+
+/** Applied to every Umami payload (page views, events, performance) before it leaves the browser. */
+export function sanitizeUmamiPayload<T extends object>(payload: T, ownOrigin: string): T {
+  const p = { ...payload } as T & { url?: unknown; referrer?: unknown };
+  if (typeof p.url === 'string') p.url = sanitizeUrl(p.url, ownOrigin);
+  if (typeof p.referrer === 'string') p.referrer = sanitizeReferrer(p.referrer, ownOrigin);
+  return p;
+}
+
 export function track(event: TrackEvent, data?: EventData): void {
   try {
     window.umami?.track(event, data);
@@ -44,7 +85,19 @@ function inject(win: Window, src: string, attrs: Record<string, string>): void {
 export function loadAnalytics(cfg: AnalyticsConfig, win: Window = window): void {
   if (!cfg.umami && !cfg.cfBeaconToken) return;
   const run = (): void => {
-    if (cfg.umami) inject(win, cfg.umami.src, { 'data-website-id': cfg.umami.websiteId });
+    if (cfg.umami) {
+      const origin = win.location.origin;
+      (win as unknown as Record<string, unknown>)[UMAMI_BEFORE_SEND] = (
+        _type: string,
+        payload: object,
+      ) => sanitizeUmamiPayload(payload, origin);
+      inject(win, cfg.umami.src, {
+        'data-website-id': cfg.umami.websiteId,
+        'data-host-url': cfg.umami.hostUrl,
+        'data-before-send': UMAMI_BEFORE_SEND,
+        'data-exclude-hash': 'true',
+      });
+    }
     if (cfg.cfBeaconToken)
       inject(win, CF_BEACON_SRC, {
         'data-cf-beacon': JSON.stringify({ token: cfg.cfBeaconToken }),

@@ -1,6 +1,10 @@
 import { z } from 'astro/zod';
 import { ADDON_IDS, SERVICE_IDS } from '../../config/pricing';
 
+// Zod probes `Function('')` to decide whether it may compile validators; the CSP forbids eval, so in the browser the
+// probe only produced a securitypolicyviolation report. The interpreted validators are fast enough for one form.
+z.config({ jitless: true });
+
 /** Upper limit for every source value (referrer, landing path, UTM). */
 export const SOURCE_MAX = 200;
 

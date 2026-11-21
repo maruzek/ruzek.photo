@@ -1,48 +1,13 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { ANALYTICS_TEST_ENV } from './analytics-env';
+import { BEACON_COLLECT, UMAMI_COLLECT, stubAnalytics } from './analytics-stubs';
 
-// Task 14: the measurement scripts arrive only after `load`, and the attributes Umami reads produce the events.
-// The Umami stand-in records calls and handles `data-umami-event` clicks the way the real tracker does
-// (name from the attribute, properties from `data-umami-event-*`).
-const UMAMI_STUB = `(function () {
-  var calls = (window.__umami = []);
-  window.umami = { track: function (name, data) { calls.push({ name: name, data: data || null }); } };
-  document.addEventListener('click', function (e) {
-    var el = e.target.closest && e.target.closest('[data-umami-event]');
-    if (!el) return;
-    var data = {};
-    for (var a of el.attributes) if (a.name.indexOf('data-umami-event-') === 0) data[a.name.slice(17)] = a.value;
-    e.preventDefault();
-    window.umami.track(el.getAttribute('data-umami-event'), data);
-  }, true);
-})();`;
-
-interface Hit {
-  url: string;
-  at: number;
-}
-
-async function stubAnalytics(page: Page): Promise<Hit[]> {
-  const hits: Hit[] = [];
-  await page.route(ANALYTICS_TEST_ENV.PUBLIC_UMAMI_SRC, (r) => {
-    hits.push({ url: r.request().url(), at: Date.now() });
-    return r.fulfill({ contentType: 'text/javascript', body: UMAMI_STUB });
-  });
-  await page.route('https://static.cloudflareinsights.com/**', (r) => {
-    hits.push({ url: r.request().url(), at: Date.now() });
-    return r.fulfill({ contentType: 'text/javascript', body: '' });
-  });
-  await page.addInitScript(() => {
-    addEventListener(
-      'load',
-      () => ((window as unknown as { __loadAt: number }).__loadAt = Date.now()),
-    );
-  });
-  return hits;
-}
+// Task 14: the measurement scripts arrive only after `load`, the attributes Umami reads produce the events, and the
+// collect requests pass the CSP with nothing but the path and the UTM tags (ST-01, ST-03). The stand-ins are in
+// analytics-stubs.ts.
 
 test('Umami and the Cloudflare beacon load only after the load event', async ({ page }) => {
-  const hits = await stubAnalytics(page);
+  const { hits } = await stubAnalytics(page);
   await page.goto('/');
   await expect.poll(() => hits.length).toBe(2);
   const loadAt = await page.evaluate(() => (window as unknown as { __loadAt: number }).__loadAt);
@@ -80,4 +45,29 @@ test('a contact click sends contact_click, opening a photo sends lightbox_open',
   await page.locator('[data-lb]').first().click();
   await expect(page.locator('dialog[open]')).toBeVisible();
   await expect.poll(calls).toContainEqual({ name: 'lightbox_open', data: null });
+});
+
+test('the collect requests pass the CSP and carry no foreign query, hash or referrer path (ST-01, ST-03)', async ({
+  page,
+}) => {
+  const stubs = await stubAnalytics(page);
+  await page.goto(
+    '/en/?email=jana%40example.test&utm_source=ig&utm_campaign=jaro#private-fragment',
+    {
+      referer: 'https://www.instagram.com/jana.novakova/?igsh=secret',
+    },
+  );
+  await expect
+    .poll(() => stubs.collects.map((c) => c.url).sort())
+    .toEqual([BEACON_COLLECT, UMAMI_COLLECT].sort());
+  expect(await stubs.violations()).toEqual([]);
+  const umami = stubs.collects.find((c) => c.url === UMAMI_COLLECT);
+  const sent = JSON.parse(umami?.body ?? '') as {
+    type: string;
+    payload: { url: string; referrer: string };
+  };
+  expect(sent.type).toBe('event');
+  expect(sent.payload.url).toBe('/en/?utm_source=ig&utm_campaign=jaro');
+  expect(sent.payload.referrer).toBe('https://www.instagram.com');
+  expect(umami?.body).not.toMatch(/email|jana|example\.test|private-fragment|igsh|secret/);
 });
