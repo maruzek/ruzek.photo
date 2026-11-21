@@ -127,8 +127,8 @@ export const en = {
     },
   },
   day: {
-    eyebrow: 'Same day',
-    title: 'From arrival *to* your feeds.',
+    eyebrow: 'How it works',
+    title: 'Your social media picks *the same* day.',
     lead: 'While the guests are leaving, I am choosing photos. They are on your social media before the event cools down.',
     steps: [
       {

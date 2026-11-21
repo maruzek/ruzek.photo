@@ -141,8 +141,8 @@ export const cs = {
     },
   },
   day: {
-    eyebrow: 'Týž den',
-    title: 'Od příjezdu *po* vaše sítě.',
+    eyebrow: 'Postup',
+    title: 'Výběr na sítě *ještě* ten den.',
     lead: 'Zatímco hosté odcházejí, vybírám fotky. Na sítích jsou dřív, než akce vychladne.',
     steps: [
       {
