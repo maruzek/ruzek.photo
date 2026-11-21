@@ -257,12 +257,15 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
   };
 
   const set = <K extends keyof Values>(key: K, value: Values[K]): void => {
-    const next = withDerivedHours({ ...values, [key]: value });
+    let next = withDerivedHours({ ...values, [key]: value });
+    const timeKey = key === 'timeFrom' || key === 'timeTo';
+    // a length taken from the times that no longer applies falls back into the 1–12 range
+    if (timeKey && hoursLocked(values) && !hoursLocked(next) && Number(next.hours) > 12) next = { ...next, hours: '12' };
     setValues(next);
     // an error disappears as soon as the field is valid again
     if (key !== 'website' && errors[key as InquiryField]) validate(key as InquiryField, next);
-    // a length taken from the times is checked at once (more than 12 hours)
-    if ((key === 'timeFrom' || key === 'timeTo') && hoursLocked(next)) validate('hours', next);
+    // a length taken from the times is checked at once (more than 12 hours), and re-checked once it is released
+    if (timeKey && (hoursLocked(next) || errors.hours)) validate('hours', next);
   };
 
   const step = (delta: number): void => {

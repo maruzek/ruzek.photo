@@ -63,6 +63,10 @@ test.describe('inquiry form', () => {
     await page.getByLabel(/Začátek/).fill('08:00');
     await page.getByLabel(/Konec/).fill('22:00');
     await expect(page.getByText(/víc než 12 hodin/)).toBeVisible();
+    // releasing the times brings the length back into range and drops the message
+    await page.getByLabel(/Konec/).fill('');
+    await expect(page.getByLabel('Délka akce (hodiny)')).toHaveValue('12');
+    await expect(page.getByText(/víc než 12 hodin/)).toBeHidden();
   });
 
   test('the stepper changes the hours within 1–12', async ({ page }) => {
