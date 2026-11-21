@@ -10,7 +10,8 @@ import { gzipSync } from 'node:zlib';
 //   deferred      everything reachable only through a dynamic `import()` from the first-render files (the motion
 //                 layer: GSAP, Lenis, choreo, wipes) and its own static imports.
 //   island        the `client:visible` React island(s): component, renderer and their static imports.
-//   trackers      the real Umami and Cloudflare scripts, which are not in the build (fixed constant below).
+//   trackers      the real Umami, Cloudflare beacon and Turnstile scripts, which are not in the build (constants
+//                 below).
 //
 // Size is gzip level 9, each script on its own (so a little more than the HTML or the chunk costs on the wire in
 // brotli, which Cloudflare serves to browsers). A chunk shared by several parts is counted once, in the first one.
@@ -21,11 +22,17 @@ export const FIRST_RENDER_JS_BUDGET = 10 * 1024;
 export const TOTAL_JS_BUDGET = 150 * 1024;
 
 /**
- * Gzip transfer size of the real third-party trackers, measured once on 2026-11-21 with
- * `curl -H 'Accept-Encoding: gzip'` on https://cloud.umami.is/script.js and
- * https://static.cloudflareinsights.com/beacon.min.js. They change rarely; measure again when updating.
+ * Gzip transfer size of the real third-party scripts that are not in the build, measured once on 2026-11-21 with
+ * `curl -L -H 'Accept-Encoding: gzip'` on https://cloud.umami.is/script.js,
+ * https://static.cloudflareinsights.com/beacon.min.js and
+ * https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit (the form island loads it as soon as it
+ * hydrates, src/islands/useTurnstile.ts). They change rarely; measure again when updating.
  */
-export const TRACKER_GZIP_BYTES = { umami: 4173, cloudflareBeacon: 10264 } as const;
+export const TRACKER_GZIP_BYTES = {
+  umami: 4173,
+  cloudflareBeacon: 10264,
+  turnstile: 27594,
+} as const;
 
 export interface JsPart {
   label: string;
@@ -143,6 +150,10 @@ export async function pageJs(distDir: string, pagePath: string): Promise<PageJs>
         label: 'Cloudflare beacon (real script, gzip, measured 2026-11-21)',
         bytes: TRACKER_GZIP_BYTES.cloudflareBeacon,
       },
+      {
+        label: 'Turnstile api.js (real script, gzip, measured 2026-11-21, loads with the form)',
+        bytes: TRACKER_GZIP_BYTES.turnstile,
+      },
     ],
   };
 }
@@ -180,7 +191,7 @@ export function describeJs(js: PageJs, page: string): string {
     block('first render', js.firstRender),
     block('deferred (motion)', js.deferred),
     block('island (client:visible)', js.island),
-    block('trackers (real, constant)', js.trackers),
+    block('external scripts (real, constants)', js.trackers),
     `  TOTAL: ${kB(totalJsBytes(js))}`,
   ].join('\n');
 }

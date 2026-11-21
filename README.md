@@ -178,13 +178,13 @@ Všechny názvy s komentářem jsou v [`.env.example`](.env.example). Soubor `.e
 | CLS | 0,05 |
 | Výkon (Performance) | alespoň 0,95 |
 | Přístupnost (Accessibility) | 1 |
-| JS celkem (první vykreslení, pohyb, formulář a skutečné skripty měření) | 150 kB |
+| JS celkem (první vykreslení, pohyb, formulář a skutečné skripty měření a Turnstile) | 150 kB |
 | JS pro první vykreslení | 10 kB |
 | Písma nad ohybem (soubory, které první obrazovka na mobilu opravdu používá) | 70 kB |
 
 - Měření je při měření zapnuté, ale skripty Umami a Cloudflare se nestahují z internetu: Chrome je přesměruje na lokální náhradu (`scripts/lhci-server.ts`, `scripts/lhci-stub.ts`, stejné náhrady jako v e2e). Náhrady jsou mnohem menší než skutečné skripty, takže tyto bajty Lighthouse podhodnocuje a v rozpočtu JS jsou nahrazené pevnou konstantou skutečných velikostí (`TRACKER_GZIP_BYTES` v `scripts/lhci-budgets.ts`, změřeno 2026-11-21).
 - Lighthouse potřebuje Chrome. Použije se ten, který nainstaloval Playwright (`pnpm exec playwright install chromium`), nebo cesta v `CHROME_PATH`. Běží z dočasné složky, aby ve WSL nevznikaly adresáře se jmény z Windows v repozitáři. Když na portu 8787 (nebo `E2E_PORT`) už něco běží, například `pnpm preview`, odmítne se spustit, aby neměřil starý server.
-- Rozpočty na JS počítá `scripts/lhci-budgets.ts` z výstupu buildu (`dist/client`), ne z časování sítě. Velikost je gzip -9 každého skriptu zvlášť. „První vykreslení“ je inline spustitelné skripty plus moduly stránky a jejich statické importy. „Odložené“ je pohybová vrstva (dynamický `import()`), „island“ je formulář (`client:visible`) a k tomu skutečné skripty měření. Rozpis se vypíše při každém `pnpm lhci`.
+- Rozpočty na JS počítá `scripts/lhci-budgets.ts` z výstupu buildu (`dist/client`), ne z časování sítě. Velikost je gzip -9 každého skriptu zvlášť. „První vykreslení“ je inline spustitelné skripty plus moduly stránky a jejich statické importy. „Odložené“ je pohybová vrstva (dynamický `import()`), „island“ je formulář (`client:visible`) a k tomu skutečné skripty, které v buildu nejsou (Umami, Cloudflare beacon a Turnstile `api.js`, které formulář načte hned po hydrataci). Rozpis se vypíše při každém `pnpm lhci`.
 - Rozpočet „písma nad ohybem“ hlídá test `tests/e2e/font-swap.spec.ts`: spočítá soubory písem, které opravdu používá text v prvním viewportu 360 × 780 px, ať už byly předem načtené, nebo je našlo CSS.
 - Výsledky se ukládají do `.lighthouseci/` (je v `.gitignore`).
 - První měření (2026-11-21) a to, co zatím rozpočet nesplňuje, je v [docs/decisions.md](docs/decisions.md).
@@ -201,11 +201,12 @@ Automaticky hlídá snímkovou frekvenci jen `pnpm test:perf` (zpomalený proces
 ### Kontrola před spuštěním
 `pnpm check:launch` vypíše, co brání spuštění:
 - zveřejněná zástupná fotka (`placeholder: true`);
-- chybějící `TURNSTILE_SECRET` nebo `PUBLIC_TURNSTILE_SITE_KEY`, nebo testovací klíče Cloudflare místo skutečných;
+- chybějící `TURNSTILE_SECRET`, nebo testovací tajný klíč Cloudflare místo skutečného;
 - žádný poskytovatel e-mailu (`RESEND_API_KEY`), nebo `MAILER=console`;
-- chybějící nebo neplatné `PUBLIC_UMAMI_SRC`, `PUBLIC_UMAMI_WEBSITE_ID`, `PUBLIC_CF_BEACON_TOKEN`.
+- chybí `dist/client`, nebo je starší než `.env*`, `wrangler.jsonc`, `astro.config.ts` či `src/` (spusťte znovu `pnpm build` se skutečnými hodnotami);
+- veřejné hodnoty vložené do postavených stránek: chybějící nebo testovací klíč Turnstile (`PUBLIC_TURNSTILE_SITE_KEY`), vypnuté nebo testovací Umami (`PUBLIC_UMAMI_SRC`, `PUBLIC_UMAMI_WEBSITE_ID`), chybějící nebo testovací `PUBLIC_CF_BEACON_TOKEN`.
 
-Jako varování vypíše viditelná `TODO` ve stránkách v `dist/client` (podle pravidel smí na webu být, ale před spuštěním je vyplňte). Hodnoty čte stejně jako produkční build, tedy ze souborů `.env`, `.env.local`, `.env.production` a `.env.production.local` (pozdější vyhrává) a z prostředí procesu, které má přednost (nikdy se nevypisují). Zná všechny testovací klíče Turnstile, které Cloudflare zveřejňuje. Tajné klíče jsou v produkci jen v Cloudflare, takže je pro kontrolu dočasně vložte do `.env`. Kontrola není součástí `pnpm check`, protože zástupné fotky jsou zatím zveřejněné schválně.
+Jako varování vypíše viditelná `TODO` ve stránkách v `dist/client` (podle pravidel smí na webu být, ale před spuštěním je vyplňte). Veřejné hodnoty (`PUBLIC_*`) čte z postavených stránek v `dist/client`, tedy přesně to, co by se nasadilo. Adaptér Cloudflare totiž před buildem kopíruje `.env` a `.dev.vars` do prostředí procesu, takže build nemusí vidět stejné hodnoty jako samotné čtení souborů. Pozor: `pnpm test:e2e` a `pnpm lhci` staví web s testovacími hodnotami, takže před `check:launch` je nutné znovu spustit `pnpm build` se skutečnými. Tajné klíče pro Worker čte z prostředí procesu a ze souborů `.env`, `.env.local`, `.env.production` a `.env.production.local` (pozdější vyhrává, proces má přednost, nic se nevypisuje). Zná všechny testovací klíče Turnstile, které Cloudflare zveřejňuje. Tajné klíče jsou v produkci jen v Cloudflare, takže je pro kontrolu dočasně vložte do `.env`. Kontrola není součástí `pnpm check`, protože zástupné fotky jsou zatím zveřejněné schválně.
 
 ## Nasazení
 Nasazení dělá Martin sám, nebo agent s jeho výslovným souhlasem u každého kroku, protože kroky na Cloudflare jsou nevratné nebo veřejné. Postup je v plánu, [úkol 16](docs/superpowers/plans/2026-11-20-rozpad-astro.md): D1 databáze a migrace, widget Turnstile, odesílání e-mailů (DNS záznamy SPF, DKIM, DMARC), údržbový worker, Umami a Cloudflare Web Analytics, Search Console, `pnpm check && pnpm test:e2e && pnpm check:launch`, pak `pnpm build && wrangler deploy` a kontrola na produkci.

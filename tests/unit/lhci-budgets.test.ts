@@ -80,11 +80,12 @@ describe('pageJs (from the build output)', () => {
     expect(all).not.toContain('unreferenced.js');
   });
 
-  it('adds the real tracker sizes to the total', async () => {
+  it('adds the real sizes of Umami, the beacon and Turnstile api.js to the total', async () => {
     const js = await pageJs(dist, 'index.html');
     expect(sumBytes(js.trackers)).toBe(
-      TRACKER_GZIP_BYTES.umami + TRACKER_GZIP_BYTES.cloudflareBeacon,
+      TRACKER_GZIP_BYTES.umami + TRACKER_GZIP_BYTES.cloudflareBeacon + TRACKER_GZIP_BYTES.turnstile,
     );
+    expect(js.trackers.map((p) => p.label.split(' ')[0])).toContain('Turnstile');
     expect(totalJsBytes(js)).toBe(
       sumBytes(js.firstRender) +
         sumBytes(js.deferred) +
