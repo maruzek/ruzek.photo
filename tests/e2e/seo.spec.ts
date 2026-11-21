@@ -15,7 +15,7 @@ test.describe('head and sitemap', () => {
     ['/', 'cs'],
     ['/en/', 'en'],
   ] as const) {
-    test(`${path} has canonical, hreflang and a 1200 × 630 og:image`, async ({ page, request }) => {
+    test(`${path} has canonical, hreflang and an og:image of the size its meta tags state`, async ({ page, request }) => {
       await page.goto(path);
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
         'href',

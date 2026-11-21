@@ -1,12 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 import sharp from 'sharp';
 
-// HM-06 / HM-16: contrast of the text over the photos as rendered, not as assumed by a fixed bottom strip.
-// The text is made transparent and the area under each line of text (the client rects of its text nodes, not the
-// element box with its padding) is captured. Every pixel becomes a relative luminance (the same model as
-// scripts/check-contrast.ts) and the WORST pixel counts: the lightest one behind light text, the darkest one
-// behind dark text. An average hid light spots under single glyphs (7.46:1 average vs 3.58:1 under the hero
-// label). A 1 px blur first removes single-pixel JPEG noise; a glyph stroke is wider than that.
+// HM-06 / HM-16 / ST-02: contrast of the text over the photos as rendered, not as assumed by a fixed bottom strip.
+// The same region is captured twice, with the text and with the text made transparent (nothing else changes, motion
+// is reduced and settled). The pixels that differ are the glyph pixels, antialiased edges included; at each of them
+// the background pixel of the second capture becomes a relative luminance (the same model as
+// scripts/check-contrast.ts), not blurred, and the WORST one counts: the lightest behind light text, the darkest
+// behind dark text. The region is the text's client rects grown by half a line, so accents above a tight line box
+// are inside it.
 // Headings are large text (WCAG 1.4.3: 3:1), the rest 4.5:1. Both projects (360 × 780 and 1440 × 900), cs and en.
 
 const lin = (c: number): number => {
@@ -24,60 +25,83 @@ interface Rect {
   height: number;
 }
 
-/** Client rects of all visible text in the element, clipped to the viewport (page coordinates for screenshot). */
-async function textRects(page: Page, selector: string): Promise<Rect[]> {
+/** The text's client rects grown by half a font size and clipped to the viewport, as one region. */
+async function textRegion(page: Page, selector: string): Promise<Rect> {
   return page
     .locator(selector)
     .first()
     .evaluate((root) => {
-      const out: { x: number; y: number; width: number; height: number }[] = [];
+      const pad = parseFloat(getComputedStyle(root).fontSize) / 2;
+      let [l, t, r, b] = [Infinity, Infinity, -Infinity, -Infinity];
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
       for (let n = walker.nextNode(); n; n = walker.nextNode()) {
         if (!n.textContent?.trim()) continue;
         const range = document.createRange();
         range.selectNodeContents(n);
-        for (const r of range.getClientRects()) {
-          const x = Math.max(0, Math.floor(r.left));
-          const y = Math.max(0, Math.floor(r.top));
-          const right = Math.min(vw, Math.ceil(r.right));
-          const bottom = Math.min(vh, Math.ceil(r.bottom));
-          if (right - x >= 2 && bottom - y >= 2)
-            out.push({ x, y, width: right - x, height: bottom - y });
+        for (const q of range.getClientRects()) {
+          if (q.width < 1 || q.height < 1) continue;
+          l = Math.min(l, q.left);
+          t = Math.min(t, q.top);
+          r = Math.max(r, q.right);
+          b = Math.max(b, q.bottom);
         }
       }
-      return out;
+      const x = Math.max(0, Math.floor(l - pad));
+      const y = Math.max(0, Math.floor(t - pad));
+      const right = Math.min(window.innerWidth, Math.ceil(r + pad));
+      const bottom = Math.min(window.innerHeight, Math.ceil(b + pad));
+      return { x, y, width: right - x, height: bottom - y };
     });
 }
 
-async function worstContrast(page: Page, selector: string): Promise<number> {
+const settle = (page: Page): Promise<void> =>
+  page.evaluate(
+    () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))),
+  );
+
+async function raw(
+  page: Page,
+  clip: Rect,
+): Promise<{ data: Buffer; channels: number; pixels: number }> {
+  const png = await page.screenshot({ clip, animations: 'disabled' });
+  const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  return { data, channels: info.channels, pixels: info.width * info.height };
+}
+
+async function worstContrast(
+  page: Page,
+  selector: string,
+): Promise<{ ratio: number; glyphPixels: number }> {
   const el = page.locator(selector).first();
   const ink = await el.evaluate((node) => getComputedStyle(node).color);
   const [r = 0, g = 0, b = 0] = (ink.match(/[\d.]+/g) ?? []).map(Number);
   const inkLum = lum(r, g, b);
-  const rects = await textRects(page, selector);
-  if (rects.length === 0) throw new Error(`${selector} has no visible text`);
+  const clip = await textRegion(page, selector);
+  if (clip.width < 2 || clip.height < 2) throw new Error(`${selector} has no visible text`);
+  await settle(page);
+  const shown = await raw(page, clip);
   await page.addStyleTag({
     content: `${selector}, ${selector} * { color: transparent !important; text-decoration-color: transparent !important; }`,
   });
-  // light text: the lightest background pixel is the worst; dark text: the darkest
+  await settle(page);
+  const bg = await raw(page, clip);
+  // light text: the lightest background pixel under a glyph is the worst; dark text: the darkest
   const lightInk = inkLum > 0.18;
   let worst = lightInk ? 0 : 1;
-  for (const clip of rects) {
-    const png = await page.screenshot({ clip, animations: 'disabled' });
-    const { data, info } = await sharp(png)
-      .removeAlpha()
-      .blur(1)
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-    for (let i = 0; i < info.width * info.height; i++) {
-      const o = i * info.channels;
-      const l = lum(data[o] ?? 0, data[o + 1] ?? 0, data[o + 2] ?? 0);
-      worst = lightInk ? Math.max(worst, l) : Math.min(worst, l);
-    }
+  let glyphPixels = 0;
+  for (let i = 0; i < bg.pixels; i++) {
+    const o = i * bg.channels;
+    const differs =
+      shown.data[o] !== bg.data[o] ||
+      shown.data[o + 1] !== bg.data[o + 1] ||
+      shown.data[o + 2] !== bg.data[o + 2];
+    if (!differs) continue;
+    glyphPixels++;
+    const l = lum(bg.data[o] ?? 0, bg.data[o + 1] ?? 0, bg.data[o + 2] ?? 0);
+    worst = lightInk ? Math.max(worst, l) : Math.min(worst, l);
   }
-  return ratio(inkLum, worst);
+  if (glyphPixels === 0) throw new Error(`${selector}: no glyph pixels found`);
+  return { ratio: ratio(inkLum, worst), glyphPixels };
 }
 
 // `fold-N` is the N-th photographic fold (numbered by the test)
@@ -117,8 +141,8 @@ for (const path of ['/', '/en/']) {
           );
         // a fold taller than the viewport: bring the text itself into view as well
         await page.locator(text).first().scrollIntoViewIfNeeded();
-        const value = await worstContrast(page, text);
-        console.log(`${path} ${c.name}: ${value.toFixed(2)}:1`);
+        const { ratio: value, glyphPixels } = await worstContrast(page, text);
+        console.log(`${path} ${c.name}: ${value.toFixed(2)}:1 over ${glyphPixels} glyph pixels`);
         expect(value).toBeGreaterThanOrEqual(c.min);
       });
     }
