@@ -197,6 +197,59 @@
 .inq-form .tick input[type='radio'] {
   accent-color: var(--light-ink);
 }
+/* Group headings inside the form (Kontakt / Akce / Výstupy) */
+.inq-form .grp {
+  grid-column: 1 / -1;
+  color: var(--light-muted);
+  border-top: 1px solid var(--rule-l);
+  padding-top: 20px;
+  margin-top: 8px;
+}
+.inq-form .grp:first-child {
+  border-top: 0;
+  padding-top: 0;
+  margin-top: 0;
+}
+/* Hours: − [n] + instead of the native spinner */
+.inq-form .stepper {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 52px;
+  align-items: stretch;
+}
+.inq-form .stepper input {
+  text-align: center;
+  appearance: textfield;
+}
+.inq-form .stepper input::-webkit-inner-spin-button,
+.inq-form .stepper input::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+.inq-form .stepper input[readonly] {
+  color: var(--light-muted);
+}
+.inq-form .stepper button {
+  margin: 0;
+  border: 1px solid var(--rule-l);
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+}
+.inq-form .stepper button:hover:not(:disabled) {
+  border-color: var(--light-ink);
+}
+.inq-form .stepper button:focus-visible {
+  outline: 2px solid var(--light-ink);
+  outline-offset: 2px;
+}
+.inq-form .stepper button:disabled {
+  color: var(--control);
+  cursor: default;
+}
+.inq-form .note {
+  color: var(--light-muted);
+  font-size: 15px;
+}
 @media (max-width: 900px) {
   .inq-form,
   .inq-form .ticks {
@@ -204,5 +257,9 @@
   }
   .inq-form .choices {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .inq-form .actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 }

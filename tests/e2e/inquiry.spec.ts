@@ -41,6 +41,47 @@ async function fillRequired(page: Page): Promise<void> {
 
 const ok = (r: Route) => r.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
 test.describe('inquiry form', () => {
+  test('the hours follow the start and end time, also past midnight', async ({ page }) => {
+    await open(page);
+    await toForm(page);
+    const hours = page.getByLabel('Délka akce (hodiny)');
+    await page.getByLabel(/Začátek/).fill('18:00');
+    await page.getByLabel(/Konec/).fill('23:30');
+    await expect(hours).toHaveValue('6');
+    await expect(hours).toHaveAttribute('readonly', '');
+    await expect(page.getByText('Spočítáno ze začátku a konce.')).toBeVisible();
+    await page.getByLabel(/Začátek/).fill('22:00');
+    await page.getByLabel(/Konec/).fill('02:00');
+    await expect(hours).toHaveValue('4');
+    await page.getByLabel(/Konec/).fill('');
+    await expect(hours).not.toHaveAttribute('readonly', '');
+  });
+
+  test('more than 12 hours between the times shows a clear error', async ({ page }) => {
+    await open(page);
+    await toForm(page);
+    await page.getByLabel(/Začátek/).fill('08:00');
+    await page.getByLabel(/Konec/).fill('22:00');
+    await expect(page.getByText(/víc než 12 hodin/)).toBeVisible();
+  });
+
+  test('the stepper changes the hours within 1–12', async ({ page }) => {
+    await open(page);
+    await toForm(page);
+    const hours = page.getByLabel('Délka akce (hodiny)');
+    await page.getByRole('button', { name: 'Přidat hodinu' }).click();
+    await expect(hours).toHaveValue('4');
+    await hours.fill('1');
+    await expect(page.getByRole('button', { name: 'Ubrat hodinu' })).toBeDisabled();
+  });
+
+  test('fields are grouped under Kontakt, Akce and Výstupy', async ({ page }) => {
+    await open(page);
+    await toForm(page);
+    for (const name of ['Kontakt', 'Akce', 'Výstupy a poznámka'])
+      await expect(page.locator('#inq').getByRole('heading', { name, level: 3 })).toBeVisible();
+  });
+
   test('the service is a group of four tiles, no dropdown', async ({ page }) => {
     await open(page);
     await toForm(page);

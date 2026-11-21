@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode, type SubmitEvent } from 'r
 import { addons as addonConfig, services, type AddonId, type ServiceId } from '../config/pricing';
 import { site } from '../config/site';
 import type { Dictionary, Locale } from '../i18n';
+import { hoursBetween } from '../lib/inquiry/duration';
 import { inquirySchema, type InquiryField } from '../lib/inquiry/schema';
 import { readSource } from '../lib/inquiry/source';
 import { estimate } from '../lib/pricing/estimate';
@@ -67,17 +68,23 @@ const ORDER: readonly InquiryField[] = [
   'email',
   'phone',
   'service',
-  'hours',
   'date',
+  'place',
   'timeFrom',
   'timeTo',
-  'place',
+  'hours',
   'guests',
   'addons',
   'note',
 ];
 
 const isHourly = (id: ServiceId): boolean => services.find((s) => s.id === id)?.pricing.kind === 'hourly';
+/** With both times filled in, the hours are taken from them (the client does not enter the length twice). */
+const withDerivedHours = (v: Values): Values => {
+  const h = hoursBetween(v.timeFrom, v.timeTo);
+  return h === undefined ? v : { ...v, hours: String(h) };
+};
+const hoursLocked = (v: Values): boolean => isHourly(v.service) && hoursBetween(v.timeFrom, v.timeTo) !== undefined;
 
 const str = (v: string): string | undefined => (v.trim() === '' ? undefined : v);
 const num = (v: string): number | undefined => (v.trim() === '' ? undefined : Number(v));
@@ -166,7 +173,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
   const focusNext = useRef<InquiryField | null>(null);
   const turnstile = useTurnstile(siteKey, locale, formRef, widgetRef);
 
-  const message = (field: InquiryField): string => {
+  const message = (field: InquiryField, v: Values = values): string => {
     const e = text.errors;
     switch (field) {
       case 'name':
@@ -176,7 +183,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
       case 'service':
         return e.service;
       case 'hours':
-        return e.hours;
+        return hoursLocked(v) ? e.hoursFromTimes : e.hours;
       case 'date':
         return e.date;
       case 'timeFrom':
@@ -208,12 +215,15 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     const apply = (): void => {
       const p = readPrefill(location.hash);
       if (!p.service && !p.hours && !p.addons) return;
-      setValues((v) => ({
-        ...v,
-        ...(p.service ? { service: p.service } : {}),
-        ...(p.hours ? { hours: String(p.hours) } : {}),
-        ...(p.addons ? { addons: p.addons } : {}),
-      }));
+      setValues((v) =>
+        // times already filled in keep deciding the hours
+        withDerivedHours({
+          ...v,
+          ...(p.service ? { service: p.service } : {}),
+          ...(p.hours ? { hours: String(p.hours) } : {}),
+          ...(p.addons ? { addons: p.addons } : {}),
+        }),
+      );
     };
     apply();
     addEventListener('hashchange', apply);
@@ -240,16 +250,24 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     setErrors((e) => {
       const next = { ...e };
       if (ok) delete next[field];
-      else next[field] = message(field);
+      else next[field] = message(field, v);
       return next;
     });
     return ok;
   };
 
   const set = <K extends keyof Values>(key: K, value: Values[K]): void => {
-    setValues((v) => ({ ...v, [key]: value }));
+    const next = withDerivedHours({ ...values, [key]: value });
+    setValues(next);
     // an error disappears as soon as the field is valid again
-    if (key !== 'website' && errors[key as InquiryField]) validate(key as InquiryField, { ...values, [key]: value });
+    if (key !== 'website' && errors[key as InquiryField]) validate(key as InquiryField, next);
+    // a length taken from the times is checked at once (more than 12 hours)
+    if ((key === 'timeFrom' || key === 'timeTo') && hoursLocked(next)) validate('hours', next);
+  };
+
+  const step = (delta: number): void => {
+    const cur = Number.parseInt(values.hours, 10);
+    set('hours', String(Math.min(12, Math.max(1, (Number.isFinite(cur) ? cur : 1) + delta))));
   };
 
   const toggleAddon = (id: AddonId, on: boolean): void => {
@@ -349,10 +367,11 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     name: InquiryField,
     label: string,
     input: (aria: { 'aria-invalid'?: true; 'aria-describedby'?: string }) => ReactNode,
-    opts: { optional?: boolean; full?: boolean; hidden?: boolean } = {},
+    opts: { optional?: boolean; full?: boolean; hidden?: boolean; note?: string } = {},
   ): ReactNode => {
     const id = DOM_ID[name] ?? name;
     const err = errors[name];
+    const describedBy = [err && `${id}-msg`, opts.note && `${id}-note`].filter(Boolean).join(' ');
     return (
       <div className={['field', opts.full && 'full', err && 'bad'].filter(Boolean).join(' ')} hidden={opts.hidden}>
         <label htmlFor={id}>
@@ -364,7 +383,15 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
             </>
           )}
         </label>
-        {input(err ? { 'aria-invalid': true, 'aria-describedby': `${id}-msg` } : {})}
+        {input({
+          ...(err ? { 'aria-invalid': true as const } : {}),
+          ...(describedBy ? { 'aria-describedby': describedBy } : {}),
+        })}
+        {opts.note && (
+          <span className="note" id={`${id}-note`}>
+            {opts.note}
+          </span>
+        )}
         {err && (
           <span className="msg" id={`${id}-msg`}>
             {err}
@@ -378,6 +405,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     if (status !== 'sending') validate(name, values);
   };
   const hourly = isHourly(values.service);
+  const locked = hoursLocked(values);
 
   return (
     <>
@@ -402,6 +430,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
         onSubmit={(e) => void onSubmit(e)}
         aria-busy={status === 'sending'}
       >
+        <h3 className="grp mono">{f.groups.contact}</h3>
         {field('name', f.name.label, (aria) => (
           <input
             id="inq-name"
@@ -449,6 +478,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
           ),
           { optional: true },
         )}
+        <h3 className="grp mono">{f.groups.event}</h3>
         <fieldset
           className={['field', 'full', 'choice', errors.service && 'bad'].filter(Boolean).join(' ')}
           aria-describedby={errors.service ? 'inq-type-msg' : undefined}
@@ -476,26 +506,6 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
           )}
         </fieldset>
         {field(
-          'hours',
-          f.hours.label,
-          (aria) => (
-            <input
-              id="inq-hours"
-              name="hours"
-              type="number"
-              min={1}
-              max={12}
-              step={1}
-              inputMode="numeric"
-              value={values.hours}
-              onChange={(e) => set('hours', e.target.value)}
-              onBlur={blur('hours')}
-              {...aria}
-            />
-          ),
-          { hidden: !hourly },
-        )}
-        {field(
           'date',
           f.date.label,
           (aria) => (
@@ -506,6 +516,23 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
               value={values.date}
               onChange={(e) => set('date', e.target.value)}
               onBlur={blur('date')}
+              {...aria}
+            />
+          ),
+          { optional: true },
+        )}
+        {field(
+          'place',
+          f.place.label,
+          (aria) => (
+            <input
+              id="inq-place"
+              name="place"
+              maxLength={200}
+              placeholder={f.place.placeholder}
+              value={values.place}
+              onChange={(e) => set('place', e.target.value)}
+              onBlur={blur('place')}
               {...aria}
             />
           ),
@@ -544,21 +571,45 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
           { optional: true },
         )}
         {field(
-          'place',
-          f.place.label,
+          'hours',
+          f.hours.label,
           (aria) => (
-            <input
-              id="inq-place"
-              name="place"
-              maxLength={200}
-              placeholder={f.place.placeholder}
-              value={values.place}
-              onChange={(e) => set('place', e.target.value)}
-              onBlur={blur('place')}
-              {...aria}
-            />
+            <div className="stepper">
+              <button
+                type="button"
+                aria-label={f.hoursLess}
+                aria-controls="inq-hours"
+                disabled={locked || Number(values.hours) <= 1}
+                onClick={() => step(-1)}
+              >
+                −
+              </button>
+              <input
+                id="inq-hours"
+                name="hours"
+                type="number"
+                min={1}
+                max={12}
+                step={1}
+                inputMode="numeric"
+                readOnly={locked}
+                value={values.hours}
+                onChange={(e) => set('hours', e.target.value)}
+                onBlur={blur('hours')}
+                {...aria}
+              />
+              <button
+                type="button"
+                aria-label={f.hoursMore}
+                aria-controls="inq-hours"
+                disabled={locked || Number(values.hours) >= 12}
+                onClick={() => step(1)}
+              >
+                +
+              </button>
+            </div>
           ),
-          { optional: true },
+          { hidden: !hourly, ...(locked ? { note: f.hoursFromTimes } : {}) },
         )}
         {field(
           'guests',
@@ -580,7 +631,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
           ),
           { optional: true },
         )}
-
+        <h3 className="grp mono">{f.groups.extras}</h3>
         <fieldset className="ticks">
           <legend className="vh">{text.fields.addons.legend}</legend>
           {addonConfig.map((a) => (

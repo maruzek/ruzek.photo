@@ -200,6 +200,10 @@ export const en = {
         },
       },
       hours: { label: 'Event length (hours)' },
+      hoursFromTimes: 'Calculated from the start and end.',
+      hoursLess: 'One hour less',
+      hoursMore: 'One hour more',
+      groups: { contact: 'Contact', event: 'Event', extras: 'Extras and notes' },
       optional: '(optional)',
       date: { label: 'Date' },
       place: { label: 'Place', placeholder: 'Prague, Karlovy Vary…' },
@@ -228,6 +232,7 @@ export const en = {
     errors: {
       service: 'Choose what we are shooting.',
       hours: 'Enter the event length in whole hours, from 1 to 12.',
+      hoursFromTimes: 'There are more than 12 hours between the start and end. Describe a longer event in the note.',
       date: 'The date could not be read. Pick it in the calendar.',
       time: 'The time could not be read. Enter it like 18:30.',
       guests: 'Enter the number of people as a whole number.',
