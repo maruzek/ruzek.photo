@@ -224,7 +224,7 @@ Písma se hostují lokálně z balíčků `@fontsource/*` (pnpm). U každého ba
 |---|---|---|---|
 | Stack Sans Notch (jen display, od 64 px) | `@fontsource/stack-sans-notch` | 700 | OFL 1.1 |
 | Stack Sans Text | `@fontsource/stack-sans-text` | 400, 500, 600 | OFL 1.1 |
-| Crimson Pro (kurzíva, akcent) | `@fontsource/crimson-pro` | 400 italic | OFL 1.1 |
+| Instrument Serif (kurzíva, akcent) | `@fontsource/instrument-serif` | 400 italic | OFL 1.1 |
 | Geist Mono | `@fontsource/geist-mono` | 400, 500 | OFL 1.1 |
 
 Sady `latin` a `latin-ext` (čeština), WOFF2. Písma načítá Fonts API Astra (`fonts` v `astro.config.ts`, lokální provider nad soubory z balíčků): generuje `@font-face`, záložní písma s upravenými metrikami a `preload` pro Notch 700 a Text 400. Žádný požadavek na Google Fonts ani jiné CDN.

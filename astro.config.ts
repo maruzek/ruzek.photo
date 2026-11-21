@@ -103,10 +103,10 @@ export default defineConfig({
     },
     {
       provider: fontProviders.local(),
-      name: 'Crimson Pro',
+      name: 'Instrument Serif',
       cssVariable: '--font-accent',
       fallbacks: ['Georgia', 'serif'],
-      options: { variants: variants('crimson-pro', [400], 'italic') },
+      options: { variants: variants('instrument-serif', [400], 'italic') },
     },
     {
       provider: fontProviders.local(),
