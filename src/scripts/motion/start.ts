@@ -3,6 +3,9 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
+import { ditherEffect } from '../effects/dither';
+import { createScheduler, viewportObserver } from '../effects/scheduler';
+import { paintStaticWipes, wipeEffect } from '../effects/wipe';
 import { initCursor } from '../cursor';
 import { initLightbox } from '../lightbox';
 import {
@@ -24,6 +27,40 @@ const FONT_WAIT_MS = 1200;
 const MOTION = '(prefers-reduced-motion: no-preference)';
 const DESKTOP = '(min-width: 901px)';
 const FINE = '(hover: hover) and (pointer: fine)';
+
+/** Dither reveals and wipes on one scheduler driven by the GSAP ticker (concept.md §7). */
+function canvasEffects(scope: ParentNode): () => void {
+  const scheduler = createScheduler({
+    ticker: (cb) => {
+      const fn = (t: number): void => cb(t * 1000);
+      gsap.ticker.add(fn);
+      return () => gsap.ticker.remove(fn);
+    },
+    observe: viewportObserver('10% 0px'),
+  });
+  const removers: Array<() => void> = [];
+  for (const el of scope.querySelectorAll<HTMLElement>('[data-dz]')) {
+    const fx = ditherEffect(el);
+    const remove = scheduler.add(fx);
+    removers.push(() => {
+      remove();
+      fx.destroy();
+    });
+  }
+  for (const cv of scope.querySelectorAll<HTMLCanvasElement>('canvas.dwipe')) {
+    // prototype: edge position = (vh - top) / (0.75 vh), i.e. from entering the viewport until its top hits 25 %
+    const st = ScrollTrigger.create({ trigger: cv, start: 'top bottom', end: 'top 25%' });
+    const remove = scheduler.add(wipeEffect(cv, () => st.progress));
+    removers.push(() => {
+      remove();
+      st.kill();
+    });
+  }
+  return () => {
+    removers.forEach((fn) => fn());
+    paintStaticWipes(scope);
+  };
+}
 
 export async function start(): Promise<() => void> {
   gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -47,6 +84,7 @@ export async function start(): Promise<() => void> {
       marquee(libs, document),
       headerHide(libs, document),
       headerBlend(document),
+      canvasEffects(document),
     ];
     return () => cleanups.forEach((fn) => fn());
   });

@@ -1,5 +1,27 @@
 ---
-// Canvas the ASCII effect draws on (effects/ascii.ts, task 8). Decorative, so hidden from assistive technology.
+// Canvas the ASCII effect draws on (effects/ascii.ts). Decorative, so hidden from assistive technology.
 ---
 
 <canvas class="ascii" aria-hidden="true"></canvas>
+
+<script>
+  import { initAsciiHero } from '../scripts/effects/ascii';
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const saveData =
+    (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData ===
+    true;
+  const hero = document.querySelector<HTMLElement>('canvas.ascii')?.closest<HTMLElement>('.hero');
+
+  if (hero && !reduce.matches && !saveData) {
+    const stop = initAsciiHero(hero, { reduce: false, fine });
+    // switching to reduced motion while the page is open stops the effect for the rest of the visit
+    const onChange = (): void => {
+      if (!reduce.matches) return;
+      reduce.removeEventListener('change', onChange);
+      stop();
+    };
+    reduce.addEventListener('change', onChange);
+  }
+</script>

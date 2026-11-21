@@ -14,6 +14,7 @@
     "check": "astro check && eslint . && vitest run && pnpm check:exif",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:perf": "playwright test --config playwright.perf.config.ts",
     "check:exif": "tsx scripts/check-exif.ts",
     "check:contrast": "tsx scripts/check-contrast.ts",
     "photos:import": "tsx scripts/photos-import.ts"

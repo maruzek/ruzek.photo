@@ -79,3 +79,12 @@ export function viewportObserver(
     };
   };
 }
+
+/** Ticker on requestAnimationFrame for effects that run without GSAP (the ASCII hero). */
+export function rafTicker(cb: (t: number) => void): () => void {
+  let id = requestAnimationFrame(function frame(t) {
+    cb(t);
+    id = requestAnimationFrame(frame);
+  });
+  return () => cancelAnimationFrame(id);
+}

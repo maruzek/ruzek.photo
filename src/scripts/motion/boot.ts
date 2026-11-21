@@ -14,6 +14,8 @@ function settle(): void {
   root.classList.remove('motion', 'motion-ready');
   root.classList.add('rm');
   root.dataset['motion'] = 'off';
+  // the wipes still show the zone edge, as a still pattern; this chunk has no GSAP
+  void import('../effects/wipe').then(({ paintStaticWipes }) => paintStaticWipes());
 }
 
 if (reduce.matches || saveData) {

@@ -574,7 +574,7 @@ export function ditherEffect(el: HTMLElement): Effect;
 export function wipeEffect(cv: HTMLCanvasElement): Effect;
 ```
 
-- [ ] **Step 1:** Napsat unit testy:
+- [x] **Step 1:** Napsat unit testy:
 
 ```ts
 import { B8, b8 } from '@/scripts/effects/bayer';
@@ -602,17 +602,17 @@ it('low memory or save-data starts lite', () => {
 });
 ```
 
-- [ ] **Step 2:** Napsat e2e `effects.spec.ts`: (a) LCP prvkem je hero `<img>` (`PerformanceObserver` na `largest-contentful-paint`, `entry.element.tagName === 'IMG'`); (b) při `reduce` jsou všechny `canvas.dz` a `canvas.ascii` skryté a `canvas.dwipe` vykreslený staticky; (c) při opakované návštěvě s fotkou v cache se úvodní rozpouštění přeskočí (`window.__ascii.intro === 'skipped'` v neprodukčním buildu); (d) na `mobile-360` lupa po 5 s zastaví (`window.__ascii.lens === 'idle'`).
-- [ ] **Step 3:** Spustit, FAIL. Implementovat podle `rozpad.js`, sekce 1–3, s těmito rozdíly proti prototypu:
+- [x] **Step 2:** Napsat e2e `effects.spec.ts`: (a) LCP prvkem je hero `<img>` (`PerformanceObserver` na `largest-contentful-paint`, `entry.element.tagName === 'IMG'`); (b) při `reduce` jsou všechny `canvas.dz` a `canvas.ascii` skryté a `canvas.dwipe` vykreslený staticky; (c) při opakované návštěvě s fotkou v cache se úvodní rozpouštění přeskočí (`window.__ascii.intro === 'skipped'` v neprodukčním buildu); (d) na `mobile-360` lupa po 5 s zastaví (`window.__ascii.lens === 'idle'`).
+- [x] **Step 3:** Spustit, FAIL. Implementovat podle `rozpad.js`, sekce 1–3, s těmito rozdíly proti prototypu:
   - Žádné vlastní smyčky `requestAnimationFrame`, vše přes plánovač. Průběh z ScrollTriggeru (fold, wipe), ne z `getBoundingClientRect` v každém snímku.
   - ASCII: buňka 10 px desktop i mobil (prototyp: 8 px na mobilu), strop 6 000 buněk (při překročení se buňka zvětší), glyfy z atlasu (`glyph-atlas.ts` předkreslí 12 znaků rampy ve 3 jasových úrovních a korálové variantě do offscreen canvasu; `paint` volá `drawImage`). Náhodné blikání znaků jen při `pointer: fine`. Překreslení jen při změně `A` nebo pohybu lupy, ne každý 8. snímek.
   - `createQualityProbe` během úvodu, verdikt `lite` → úvod se zkrátí na prolnutí a lupa se vypne.
   - Když `img.complete` při inicializaci, `heroState.load = 0` (bez úvodu, riziko R4).
   - Lupa na dotyku bloudí 5 s a pak zastaví.
   - DPR max. 1,5, `willReadFrequently` jen na vzorkovacím canvasu.
-- [ ] **Step 4:** Výkonový test `tests/perf/ascii.perf.ts` (Playwright, Chromium, CDP `Emulation.setCPUThrottlingRate { rate: 4 }`, 390 × 844): z `requestAnimationFrame` změřit časy snímků během úvodu a 3 s lupy. Očekávání: medián ≤ 16,7 ms, 95. percentil ≤ 50 ms. Spouští se `pnpm test:perf`, ne v každém `pnpm check`.
-- [ ] **Step 5:** Testy PASS.
-- [ ] **Step 6:** Commit `feat: dither, wipe and ASCII hero effects with adaptive quality`.
+- [x] **Step 4:** Výkonový test `tests/perf/ascii.perf.ts` (Playwright, Chromium, CDP `Emulation.setCPUThrottlingRate { rate: 4 }`, 390 × 844): z `requestAnimationFrame` změřit časy snímků během úvodu a 3 s lupy. Očekávání: medián ≤ 16,7 ms, 95. percentil ≤ 50 ms. Spouští se `pnpm test:perf`, ne v každém `pnpm check`.
+- [x] **Step 5:** Testy PASS.
+- [x] **Step 6:** Commit `feat: dither, wipe and ASCII hero effects with adaptive quality`.
 
 ---
 

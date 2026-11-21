@@ -66,6 +66,15 @@ test('open lightbox blocks page scroll (wheel, space, arrows)', async ({ page })
   await page.goto('/#prace');
   await page.waitForFunction(motionIs('on'));
   await page.locator('[data-lb]').first().click();
+  await expect(page.locator('dialog.lb')).toHaveAttribute('open', '');
+  // measure only once the page has stopped moving (the hash jump and Lenis may still be settling)
+  await page.waitForFunction(
+    () =>
+      new Promise<boolean>((resolve) => {
+        const a = scrollY;
+        setTimeout(() => resolve(scrollY === a), 250);
+      }),
+  );
   const y = await page.evaluate(() => scrollY);
   await page.mouse.wheel(0, 800);
   await page.keyboard.press('Space');
