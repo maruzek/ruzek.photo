@@ -21,16 +21,26 @@ export function t(locale: Locale): Dictionary {
   return dictionaries[locale];
 }
 
-/** `slug` is required for `caseStudy` (there is no index page) and ignored for the other routes. */
-export function localePath(locale: Locale, route: RouteKey, slug?: string): string {
+/** Routes with one fixed path per locale. `caseStudy` has no index page, so it always needs a slug. */
+export type StaticRoute = Exclude<RouteKey, 'caseStudy'>;
+
+function pathFor(locale: Locale, route: RouteKey, slug?: string): string {
   const base = routes[route][locale];
   if (route !== 'caseStudy') return base;
   if (!slug) throw new Error('Route caseStudy needs a slug');
   return `${base}${slug}/`;
 }
 
+export function localePath(locale: Locale, route: StaticRoute): string;
+export function localePath(locale: Locale, route: 'caseStudy', slug: string): string;
+export function localePath(locale: Locale, route: RouteKey, slug?: string): string {
+  return pathFor(locale, route, slug);
+}
+
+export function alternates(route: StaticRoute): { cs: string; en: string };
+export function alternates(route: 'caseStudy', slug: string): { cs: string; en: string };
 export function alternates(route: RouteKey, slug?: string): { cs: string; en: string } {
-  return { cs: localePath('cs', route, slug), en: localePath('en', route, slug) };
+  return { cs: pathFor('cs', route, slug), en: pathFor('en', route, slug) };
 }
 
 /** Replaces `{name}` placeholders in a dictionary string. A missing value is a bug, so it throws. */

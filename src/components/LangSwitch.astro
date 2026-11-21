@@ -1,17 +1,16 @@
 ---
 // Link to the same page in the other language (concept.md, kap. 5).
-import { alternates, t, type Locale, type RouteKey } from '../i18n';
+import { alternates, t, type Locale, type StaticRoute } from '../i18n';
 
-interface Props {
-  locale: Locale;
-  route: RouteKey;
-  /** Case-study slug, kept in both languages. */
-  slug?: string;
-}
+/** A case-study page must pass its slug (kept in both languages); other routes take none. */
+type Props =
+  | { locale: Locale; route: StaticRoute; slug?: never }
+  | { locale: Locale; route: 'caseStudy'; slug: string };
 
-const { locale, route, slug } = Astro.props;
+const props = Astro.props;
+const { locale } = props;
 const other: Locale = locale === 'cs' ? 'en' : 'cs';
-const href = alternates(route, slug)[other];
+const href = (props.route === 'caseStudy' ? alternates('caseStudy', props.slug) : alternates(props.route))[other];
 const d = t(locale).lang;
 ---
 

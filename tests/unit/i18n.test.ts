@@ -34,6 +34,7 @@ describe('i18n', () => {
     expect(localePath('en', 'caseStudy', 'turnaj')).toBe('/en/case-studies/turnaj/');
   });
   it('has no case-study index page, so a slug is required', () => {
+    // @ts-expect-error caseStudy without a slug must not type-check
     expect(() => alternates('caseStudy')).toThrow(/slug/);
   });
   it('every pricing service resolves to a card in both languages', () => {
