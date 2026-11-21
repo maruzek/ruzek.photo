@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 8787;
+// E2E_PORT lets a second checkout (worktree) run its own preview next to the main one
+const PORT = Number(process.env['E2E_PORT'] ?? 8787);
 
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -13,7 +14,7 @@ export default defineConfig({
   },
   webServer: {
     // wrangler dev serves dist/ the way Workers with static assets will on Cloudflare
-    command: 'pnpm build && pnpm preview',
+    command: `pnpm build && pnpm exec wrangler dev --port ${PORT}`,
     url: `http://localhost:${PORT}`,
     // always build the current source; an already running preview would serve stale HTML
     reuseExistingServer: false,
