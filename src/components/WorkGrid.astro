@@ -25,9 +25,10 @@ const SLOTS = [
   { slot: 'w8', sizes: '(max-width: 900px) 100vw, 50vw' },
 ] as const;
 
-// A withdrawn photo leaves the grid; the others keep the prototype's order and slots
-const photos = (await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)))).filter(
-  (p) => p !== undefined,
+// The slot belongs to the photo, not to its index after filtering: a withdrawn photo leaves the grid and
+// the others keep their slots (and with them their size and parallax)
+const shots = (await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)))).flatMap((photo, i) =>
+  photo ? [{ photo, slot: SLOTS[i % SLOTS.length] ?? SLOTS[0] }] : [],
 );
 ---
 
@@ -41,18 +42,15 @@ const photos = (await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)))).fil
     </div>
   </div>
   <div class="work">
-    {photos.map((photo, i) => {
-      const s = SLOTS[i % SLOTS.length] ?? SLOTS[0];
-      return (
-        <Shot
-          photo={photo}
-          locale={locale}
-          slot={s.slot}
-          sizes={s.sizes}
-          par={'par' in s ? s.par : undefined}
-        />
-      );
-    })}
+    {shots.map(({ photo, slot: s }) => (
+      <Shot
+        photo={photo}
+        locale={locale}
+        slot={s.slot}
+        sizes={s.sizes}
+        par={'par' in s ? s.par : undefined}
+      />
+    ))}
   </div>
   <div class="work-foot">
     <p>{d.work.foot}</p>

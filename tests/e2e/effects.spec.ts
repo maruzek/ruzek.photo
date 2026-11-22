@@ -1,4 +1,5 @@
 import { test, expect } from './fixtures';
+import { PLACEMENT } from '../../src/config/placement';
 
 // State of the ASCII hero is on the hero element: data-ascii-intro (running | done | skipped | lite) and
 // data-ascii-lens (off | tracking | drift | idle). No global in the production build the suite tests.
@@ -59,7 +60,7 @@ test('on touch the lens drifts for 5 s and then stops', async ({ page }, testInf
 
 // HM-03: a page the 3 s fallback already revealed never gets the photo covered again
 test('the intro is skipped once the fallback has revealed the page', async ({ page }) => {
-  await page.route(/smoke\.[^/]*\.(avif|webp|jpg)$/, async (route) => {
+  await page.route(new RegExp(`${PLACEMENT.hero}\\.[^/]*\\.(avif|webp|jpg)$`), async (route) => {
     await new Promise((r) => setTimeout(r, 3600));
     await route.continue();
   });

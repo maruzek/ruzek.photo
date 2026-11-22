@@ -7,8 +7,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const run = promisify(execFile);
 const ROOT = resolve(import.meta.dirname, '../..');
-// `ball` is on the home page (photo fold), `athlete` is on no page: neither may leave any file in `dist`
-const WITHDRAWN = ['ball', 'athlete'];
+// `conference-speaker` is on the home page (photo fold), `party-beer-glance` in the work grid: neither may leave any file in `dist`
+const WITHDRAWN = ['conference-speaker', 'party-beer-glance'];
 
 async function listFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true, recursive: true });
@@ -59,7 +59,7 @@ describe('build with withdrawn photos', () => {
   });
 
   it('still emits the published hero photo', () => {
-    expect(files.some((f) => /\/smoke\.[^/]+\.avif$/.test(f))).toBe(true);
+    expect(files.some((f) => /\/ball-dance-red\.[^/]+\.avif$/.test(f))).toBe(true);
   });
 
   it('mentions no withdrawn photo in the HTML', async () => {

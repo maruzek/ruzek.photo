@@ -18,7 +18,6 @@ const photo = (over: Partial<Photo<unknown>> = {}): Photo<unknown> => ({
   category: 'event',
   published: true,
   placeholder: false,
-  consentRef: 'C-2026-001',
   minors: false,
   parentalConsent: false,
   shade: 'normal',

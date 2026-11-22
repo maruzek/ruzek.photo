@@ -37,11 +37,12 @@ test.describe('without JavaScript', () => {
   });
 });
 
-// HM-12: a placeholder photo is marked in the grid and in the dialog
+// HM-12: a placeholder photo is marked in the grid and in the dialog, a real photo never is
 test('placeholder photos are marked in the work grid and the lightbox', async ({ page }) => {
   await page.goto('/');
+  await expect(page.locator('.shot:not([data-placeholder]) .ph-tag')).toHaveCount(0);
   const shots = page.locator('.shot[data-placeholder]');
-  expect(await shots.count()).toBeGreaterThan(0);
+  test.skip((await shots.count()) === 0, 'the work grid has no placeholder photo');
   expect(await page.locator('.shot[data-placeholder] .frame .ph-tag').count()).toBe(
     await shots.count(),
   );

@@ -100,6 +100,7 @@ README.md                 přehled projektu
 docs/
   brief.md                zadání: služby, ceny, klienti, požadavky
   decisions.md            log rozhodnutí a otevřené otázky
+  photos.md               které vlastní fotky jsou na kterém místě, náhradníci
   research.md             shrnutí rozboru konkurence a inspirací
 design/
   opendesign-brief.md     zadání pro varianty v OpenDesignu (3 linie)

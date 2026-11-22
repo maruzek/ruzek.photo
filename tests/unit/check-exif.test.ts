@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { findMetadataViolations, hasJpegComment, hasPngText } from '../../scripts/check-exif';
-import { importPhoto } from '../../scripts/photos-import';
+import { MAX_EDGE, importPhoto, parseArgs, parseCrop } from '../../scripts/photos-import';
 
 // Obviously fake coordinates (0° N, 0° E, "Null Island"), written to the GPS IFD (IFD3 in sharp).
 // Fixtures are generated here in a temp dir, never committed.
@@ -187,7 +187,7 @@ describe('importPhoto', () => {
     expect(meta.iptc).toBeUndefined();
   });
 
-  it('applies the orientation and caps the size at 3000 px', async () => {
+  it('applies the orientation and caps the size at MAX_EDGE', async () => {
     const big = join(root, 'big.jpg');
     await sharp({ create: { width: 4000, height: 2000, channels: 3, background: '#333333' } })
       .withMetadata({ orientation: 6 })
@@ -198,9 +198,36 @@ describe('importPhoto', () => {
       yamlDir: yamlDir(),
     });
     const meta = await sharp(imagePath).metadata();
-    // orientation 6 turns the long edge vertical; then it is scaled so that the long edge is 3000
-    expect([meta.width, meta.height]).toEqual([1500, 3000]);
+    // orientation 6 turns the long edge vertical; then it is scaled so that the long edge is MAX_EDGE
+    expect([meta.width, meta.height]).toEqual([MAX_EDGE / 2, MAX_EDGE]);
     expect(meta.orientation).toBeUndefined();
+  });
+
+  it('trims the edges given in crop after applying the orientation', async () => {
+    const wide = join(root, 'wide.jpg');
+    await sharp({ create: { width: 1000, height: 500, channels: 3, background: '#333333' } })
+      .jpeg()
+      .toFile(wide);
+    const { imagePath } = await importPhoto(wide, {
+      outDir: join(root, 'crop-out'),
+      yamlDir: yamlDir(),
+      crop: { left: 0.1, bottom: 0.2 },
+    });
+    const meta = await sharp(imagePath).metadata();
+    expect([meta.width, meta.height]).toEqual([900, 400]);
+  });
+
+  it('parses the CLI options', () => {
+    expect(parseArgs(['a.jpg', '--slug', 'goal', '--crop=left=0.06'])).toEqual({
+      files: ['a.jpg'],
+      slug: 'goal',
+      crop: { left: 0.06 },
+    });
+    expect(parseArgs(['a.jpg', 'b.jpg'])).toEqual({ files: ['a.jpg', 'b.jpg'] });
+    expect(() => parseArgs(['a.jpg', 'b.jpg', '--slug', 'x'])).toThrow(/exactly one photo/);
+    expect(() => parseArgs(['a.jpg', '--size', '3'])).toThrow(/Unknown option/);
+    expect(() => parseCrop('left=1.2')).toThrow(/Bad --crop/);
+    expect(() => parseCrop('left=0.6,right=0.5')).toThrow(/leaves nothing/);
   });
 
   it('never enlarges a small photo', async () => {
@@ -222,11 +249,10 @@ describe('importPhoto', () => {
     expect(text).toContain('image: ../../assets/photos/ples-01.jpg');
     expect(text).toContain('alt: { cs: "TODO", en: "TODO" }');
     expect(text).toContain('published: true');
-    expect(text).not.toMatch(/^consentRef:/m);
     expect(text).not.toMatch(/^minors:/m); // must be decided per photo, never pre-filled
   });
 
-  it('refuses to overwrite an existing photo or YAML, so a second DSC_001.jpg cannot inherit consent', async () => {
+  it('refuses to overwrite an existing photo or YAML, so a second DSC_001.jpg cannot inherit the metadata of another photo', async () => {
     const dir = join(root, 'collision-out');
     const yamlOut = join(root, 'collision-yaml');
     const other = join(root, 'other-event', 'plain.jpg');
@@ -236,7 +262,7 @@ describe('importPhoto', () => {
       .toFile(other);
     const first = await importPhoto(plain, { outDir: dir, yamlDir: yamlOut });
     // the first photo has been approved by hand in the meantime
-    writeFileSync(first.yamlPath, 'consentRef: C-2026-001\npublished: true\n');
+    writeFileSync(first.yamlPath, 'minors: false\npublished: true\n');
     const imageBefore = readFileSync(first.imagePath);
     const yamlBefore = readFileSync(first.yamlPath);
     await expect(importPhoto(other, { outDir: dir, yamlDir: yamlOut })).rejects.toThrow(
@@ -250,7 +276,7 @@ describe('importPhoto', () => {
     const dir = join(root, 'yaml-only-out');
     const yamlOut = join(root, 'yaml-only-yaml');
     mkdirSync(yamlOut);
-    writeFileSync(join(yamlOut, 'plain.yaml'), 'consentRef: C-2026-002\n');
+    writeFileSync(join(yamlOut, 'plain.yaml'), 'minors: false\n');
     await expect(importPhoto(plain, { outDir: dir, yamlDir: yamlOut })).rejects.toThrow(
       /already exists/,
     );

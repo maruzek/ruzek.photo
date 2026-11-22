@@ -1,8 +1,0 @@
-image: ../../assets/photos/portrait.jpg
-alt: { cs: "Černobílý portrét muže", en: "A black-and-white portrait of a man" }
-category: portrait
-published: true
-placeholder: true
-credit: "George Desipris, CC0 (StockSnap)"
-minors: false
-shade: normal

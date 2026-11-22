@@ -13,27 +13,20 @@ const base = {
 };
 
 describe('photoSchema', () => {
-  it('rejects published real photo without consentRef', () =>
-    expect(S.safeParse({ ...base, published: true }).success).toBe(false));
-  it('accepts published real photo with consentRef', () =>
-    expect(
-      S.safeParse({ ...base, published: true, consentRef: 'C-2026-001', minors: false }).success,
-    ).toBe(true));
+  it('accepts a published real photo that states minors', () =>
+    expect(S.safeParse({ ...base, published: true, minors: false }).success).toBe(true));
   it('rejects a published real photo that does not state minors', () => {
-    const published = { ...base, published: true, consentRef: 'C-2026-001' };
+    const published = { ...base, published: true };
     expect(S.safeParse(published).success).toBe(false);
     expect(S.safeParse({ ...published, minors: false }).success).toBe(true);
   });
-  it('rejects published minors without parental consent even with a valid consentRef', () =>
-    expect(
-      S.safeParse({ ...base, published: true, consentRef: 'C-2026-001', minors: true }).success,
-    ).toBe(false));
+  it('rejects published minors without parental consent', () =>
+    expect(S.safeParse({ ...base, published: true, minors: true }).success).toBe(false));
   it('accepts published minors with parental consent', () =>
     expect(
       S.safeParse({
         ...base,
         published: true,
-        consentRef: 'C-2026-001',
         minors: true,
         parentalConsent: true,
       }).success,
@@ -47,13 +40,6 @@ describe('photoSchema', () => {
       S.safeParse({ ...base, placeholder: true, published: true, credit: 'StockSnap, CC0' })
         .success,
     ).toBe(true);
-  });
-  it('rejects consentRef that looks like an e-mail or name', () => {
-    expect(S.safeParse({ ...base, consentRef: 'jana@firma.cz' }).success).toBe(false);
-    expect(S.safeParse({ ...base, consentRef: 'Jana Nováková' }).success).toBe(false);
-    expect(
-      S.safeParse({ ...base, published: true, consentRef: 'C-2026-01', minors: false }).success,
-    ).toBe(false);
   });
   it('unpublished photo needs nothing', () =>
     expect(S.safeParse({ ...base, published: false }).success).toBe(true));
@@ -75,8 +61,7 @@ describe('photoSchema', () => {
   it('rejects a published photo whose alt text is still a TODO', () => {
     const alt = { cs: 'TODO', en: 'TODO' };
     expect(
-      S.safeParse({ ...base, alt, published: true, consentRef: 'C-2026-001', minors: false })
-        .success,
+      S.safeParse({ ...base, alt, published: true, minors: false }).success,
     ).toBe(false);
     expect(S.safeParse({ ...base, alt, published: false }).success).toBe(true);
   });

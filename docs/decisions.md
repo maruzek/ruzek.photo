@@ -16,6 +16,14 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 
 ## Rozhodnuto
 
+### 2026-11-22: vlastní fotky místo zástupných
+- **Výběr:** 16 vlastních fotek nahradilo všech 14 zástupných, přehled a náhradníci jsou v [`photos.md`](photos.md). Rezerva do 30 fotek je připravená pro galerii „kontaktní arch“.
+- **Nezletilí:** na vybraných fotkách nejsou (Martin), všechny mají `minors: false`. Děti se objevují jen v hledišti na fotbale; takové fotky (`IMG_4505-2`, `IMG_4510`) jsou jen v rezervě a před zveřejněním je Martin ručně rozmaže.
+- **Loga sponzorů a bannery** na fotkách nevadí. Kontext akce (noviny, banner pořadatele) se neřeší.
+- **Fotka přes obrazovku „akce“** je `IMG_7167` s vymazaným textem na plátně (retuš dodal Martin).
+- **`consentRef` zrušen.** Souhlasy klientů a pořadatelů se v repozitáři neevidují a build je nevyžaduje. Pravidlo, že se zveřejňují jen fotky se souhlasem, platí dál. Kontrola `minors` a `parentalConsent` zůstává.
+- **Import:** delší strana 2400 px (dříve 3000), `--slug` a `--crop` v `pnpm photos:import`. Originály jsou v `private/photos-inbox/`, `public/` se pro fotky nepoužívá.
+
 ### 2026-11-22: texty, kontakt, načítání
 - **Texty** podle revize (`private/copy-review-2026-11-21.md`): bary pryč (akce v tmavých podnicích nejsou Martinův obor), DPH jen u ceníku, méně výčtů a popisků, „Doplňky“ místo „Výstupy“. Zástupné fotky zůstávají, vymění se celé.
 - **„Ještě ten den“ všude** místo „týž den“: zní přirozeněji a méně knižně.

@@ -186,13 +186,12 @@ alt: { cs: "Pár tančí na plese pod lustrem", en: "A couple dancing at a ball 
 caption: { cs: "Ples", en: "Ball" }
 category: event
 published: true
-consentRef: C-2026-014        # odkaz na záznam v private/, ne jméno klienta
 minors: false
 shade: normal                 # normal | strong (ztmavení pod textem)
 ```
 
-- Build **selže**, pokud je publikovaná skutečná fotka bez `consentRef`, nebo fotka s dětmi (`minors: true`) bez `parentalConsent: true`.
-- `consentRef` je jen identifikátor. Kdo a kdy souhlas dal, je v `private/` (gitignore), protože jméno klienta do veřejného repa nepatří.
+- Build **selže**, pokud publikovaná skutečná fotka neuvádí `minors`, nebo je to fotka s dětmi (`minors: true`) bez `parentalConsent: true`.
+- Souhlasy klientů a pořadatelů se v repu neevidují (pole `consentRef` bylo zrušeno 22. 11. 2026, viz `decisions.md`).
 - **Stažení fotky** = `published: false` (nebo smazání YAML a souboru) a nové nasazení. Postup bude v README.
 - **Zástupné fotky** (CC0 z prototypu) mají `placeholder: true` a kredit. Vykreslí štítek „Zástupná fotka“. `pnpm check:launch` selže, pokud nějaká zůstane publikovaná v produkčním buildu.
 
@@ -348,7 +347,7 @@ Dva nástroje, každý na něco jiného. Oba jsou bez cookies, takže web **nem�
 |---|---|---|
 | R4 | **Bliknutí hero:** fotka se ukáže dřív, než ASCII skript naběhne, a pak skočí do znaků | ASCII skript je malý a načte se hned v hero, ne s GSAP. Když je fotka už dekódovaná (opakovaná návštěva z cache), úvodní rozpouštění se přeskočí a zůstane jen lupa a odjezd |
 | R5 | **GPS ve zdrojových fotkách ve veřejném repu** | `photos:import` a `check:exif` (kap. 9) |
-| R6 | **Jména klientů v záznamech o souhlasu** ve veřejném repu | v repu jen `consentRef`, údaje v `private/` |
+| R6 | **Jména klientů v záznamech o souhlasu** ve veřejném repu | souhlasy se v repu neevidují |
 | R7 | **Formulář jako rozesílač spamu** přes potvrzovací e-mail | Turnstile, rate limit, potvrzení bez volného textu, stejný `Origin` |
 | R8 | **Pohybující se obsah déle než 5 s** (pás typů akcí, lupa) | tlačítko Pozastavit, lupa po 5 s zastaví |
 | R9 | **Nečitelný header** přes `mix-blend-mode` | plné pozadí po odjezdu z hero, kontrola na skutečných fotkách |

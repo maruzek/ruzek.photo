@@ -1,8 +1,0 @@
-image: ../../assets/photos/soccer-goal.jpg
-alt: { cs: "Míč v síti branky", en: "A ball in the goal net" }
-category: sport
-published: true
-placeholder: true
-credit: "Fancy Crave, CC0 (StockSnap)"
-minors: false
-shade: normal
