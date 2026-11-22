@@ -3,12 +3,13 @@ import { test, expect } from './fixtures';
 test('lightbox keyboard and focus return', async ({ page }) => {
   await page.goto('/');
   const shot = page.locator('[data-lb]').nth(1);
+  const total = String(await page.locator('[data-lb]').count()).padStart(2, '0');
   await shot.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('dialog.lb')).toHaveAttribute('open', '');
-  await expect(page.locator('.lb-no')).toHaveText('02 / 08');
+  await expect(page.locator('.lb-no')).toHaveText(`02 / ${total}`);
   await page.keyboard.press('ArrowRight');
-  await expect(page.locator('.lb-no')).toHaveText('03 / 08');
+  await expect(page.locator('.lb-no')).toHaveText(`03 / ${total}`);
   await page.keyboard.press('Escape');
   await expect(shot).toBeFocused();
 });
@@ -22,6 +23,10 @@ test('lightbox shows the large file and the caption', async ({ page }) => {
   await expect(img).not.toHaveAttribute('alt', '');
   await expect(page.locator('dialog.lb .lb-cap')).toHaveText(
     (await shot.getAttribute('data-lb')) ?? 'missing',
+  );
+  // the tile shows only its frame number; the category and the place are in the lightbox caption
+  await expect(page.locator('dialog.lb .lb-cap')).toHaveText(
+    /^\d{2} · (Event|Sport|Portrait) · (TODO: place and date|.+)$/,
   );
   await page.getByRole('button', { name: 'Close' }).click();
   await expect(page.locator('dialog.lb')).not.toHaveAttribute('open', '');
@@ -40,10 +45,10 @@ test.describe('without JavaScript', () => {
 // HM-12: a placeholder photo is marked in the grid and in the dialog, a real photo never is
 test('placeholder photos are marked in the work grid and the lightbox', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.shot:not([data-placeholder]) .ph-tag')).toHaveCount(0);
-  const shots = page.locator('.shot[data-placeholder]');
+  await expect(page.locator('.cs-print:not([data-placeholder]) .ph-tag')).toHaveCount(0);
+  const shots = page.locator('.cs-print[data-placeholder]');
   test.skip((await shots.count()) === 0, 'the work grid has no placeholder photo');
-  expect(await page.locator('.shot[data-placeholder] .frame .ph-tag').count()).toBe(
+  expect(await page.locator('.cs-print[data-placeholder] .cs-box .ph-tag').count()).toBe(
     await shots.count(),
   );
   await expect(shots.first().locator('.ph-tag')).toHaveText('Zástupná fotka');

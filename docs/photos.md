@@ -11,39 +11,41 @@ Postup přidání fotky je v [README](../README.md#jak-přidat-fotku), umístěn
 | Úvod (`hero`) | `ball-dance-red` | `IMG_5436` | | `IMG_6410`, `IMG_5925` |
 | Fotka přes obrazovku: akce | `conference-speaker` | `text-remove.jpg` (`IMG_7167`, Martinova retuš bez textu na plátně) | | `IMG_5925`, `IMG_5952` |
 | Fotka přes obrazovku: sport | `football-slide-tackle` | `IMG_4428` | `left=0.06,top=0.2` | `IMG_2211`, `IMG_1068` |
-| Galerie w1 | `football-goalkeeper-dive` | `IMG_4386` | | `IMG_1814`, `IMG_4505-2` |
-| Galerie w2 | `gathering-table-smile` | `IMG_3724` | | `IMG_7350`, `IMG_6410` |
-| Galerie w3 | `floorball-faceoff` | `IMG_9964` | | `IMG_8731`, `IMG_0421` |
-| Galerie w4 | `party-table-laugh` | `IMG_5952` | | `IMG_4197`, `IMG_5429` |
-| Galerie w5 | `football-team-huddle` | `IMG_2211` | | `IMG_2195`, `IMG_1068` |
-| Galerie w6 | `talk-speaker-microphone` | `IMG_1202` | | `IMG_8513`, `IMG_4124` |
-| Galerie w7 | `football-assistant-referee` | `IMG_1978` | | `IMG_4830`, `IMG_4510` |
-| Galerie w8 | `party-beer-glance` | `IMG_5966` | | `IMG_6410`, `IMG_5429` |
+| Galerie: kontaktní arch | 18 fotek níže, pořadí a výběr v `PLACEMENT.work` | | | |
 | Karta služby: akce | `conference-audience` | `IMG_6139` | | `IMG_8513`, `IMG_5925` |
 | Karta služby: sport | `football-duel` | `IMG_0948` | | `IMG_1548`, `IMG_1973` |
 | Karta služby: portrét | `portrait-street-peace` | `IMG_4124` | | `IMG_3828`, `IMG_4028` |
 | Ještě ten den, krok 2 | `football-shoulder-run` | `IMG_4591` | | `IMG_4510`, `IMG_8731` |
 | O mně | `martin-ruzek-portrait` | `profile/IMG_9844-Edit-2` | | `profile/IMG_3866-2`, `profile/IMG_4151` |
 
-Pořadí v galerii odpovídá slotům w1–w8. Slot patří fotce: když se fotka stáhne (`published: false`), její místo zůstane prázdné a ostatní fotky si drží svou velikost.
+Galerie je kontaktní arch (prototyp 3, větev `proto/gallery-contact-sheet-v2`). `PLACEMENT.work.sheet` určuje pořadí políček v archu, čísla snímků 01, 02, … z něj berou pořadí (počítají se jen zveřejněné fotky). `PLACEMENT.work.picks` vybírá 8 fotek, které se zvětší do rozvržení pod archem, každou do vlastního slotu `s1`–`s8`. Slot patří fotce: když se fotka stáhne (`published: false`), její slot zůstane prázdný a ostatní si drží svůj.
 
-## Rezerva pro větší galerii
+| Políčko | Slug | Zdroj | Zvětšená (slot) |
+|---|---|---|---|
+| 01 | `conference-group-photo` | `IMG_8513` | |
+| 02 | `talk-speaker-microphone` | `IMG_1202` | s2 |
+| 03 | `football-team-huddle` | `IMG_2211` | |
+| 04 | `football-goalkeeper-dive` | `IMG_4386` | s1 |
+| 05 | `football-smile-touchline` | `IMG_4830` | |
+| 06 | `ball-smile-through-crowd` | `IMG_6410` | |
+| 07 | `ball-tiara-portrait` | `IMG_5429` | s4 |
+| 08 | `football-header-jump` | `IMG_1548` | |
+| 09 | `football-arms-raised` | `IMG_1068` | |
+| 10 | `gathering-table-smile` | `IMG_3724` | |
+| 11 | `party-table-laugh` | `IMG_5952` | s5 |
+| 12 | `party-beer-glance` | `IMG_5966` | s7 |
+| 13 | `floorball-faceoff` | `IMG_9964` | s3 |
+| 14 | `floorball-goalkeeper-kneel` | `IMG_8731` | |
+| 15 | `floorball-shot-goalkeeper` | `IMG_0421` | s8 |
+| 16 | `street-newspapers` | `IMG_4197` | |
+| 17 | `street-hat-flower` | `IMG_4028` | s6 |
+| 18 | `football-corner-crowd` | `IMG_1814` | |
 
-11 fotek z rezervy je naimportovaných (22. 11. 2026) a v `placement.ts` jsou jako `reserve`. Žádné rozvržení je zatím neukazuje, slouží prototypům galerie (kontaktní arch, sloupce). S galerií je to 19 fotek, z toho 1 na výšku (`floorball-goalkeeper-kneel`).
+Pořadí jde po focení jako na skutečném filmu: diskuse, zápas, ples, zápas, večírek, florbal, ulice, zápas. Vybrané snímky tak v archu leží nepravidelně. Rozvržení začíná zápasem vedle diskuse (nadpis slibuje „akce a zápasy“) a dál se střídá. 18 políček vyplní celé řady při 9, 6 i 3 sloupcích. Snímky na výšku stojí v archu rovně, oříznuté na políčko 3:2 (výřez sedí na 40 % výšky, u jednotlivé fotky jde posunout přes `--cs-focus`). Když vybraný snímek odlétá, výřez se rozbalí na celou fotku.
 
-| Slug | Zdroj | Kategorie |
-|---|---|---|
-| `ball-smile-through-crowd` | `IMG_6410` | akce |
-| `ball-tiara-portrait` | `IMG_5429` | akce |
-| `street-newspapers` | `IMG_4197` | akce |
-| `street-hat-flower` | `IMG_4028` | akce |
-| `conference-group-photo` | `IMG_8513` | akce |
-| `football-corner-crowd` | `IMG_1814` | sport |
-| `football-header-jump` | `IMG_1548` | sport |
-| `football-smile-touchline` | `IMG_4830` | sport |
-| `football-arms-raised` | `IMG_1068` | sport |
-| `floorball-shot-goalkeeper` | `IMG_0421` | sport |
-| `floorball-goalkeeper-kneel` | `IMG_8731` | sport |
+## Rezerva
+
+`football-assistant-referee` (`IMG_1978`) je zveřejněná, ale arch ji teď vynechává (`PLACEMENT.work.reserve`), aby řady vyšly celé. Vrátí se, až budou hotové `IMG_4505-2` a `IMG_4510` (20 políček vyplní 10, 5 i 4 sloupce, jen se upraví počty sloupců ve `work.css`). Na výšku jsou 3 z 18: `talk-speaker-microphone`, `floorball-faceoff`, `floorball-goalkeeper-kneel`.
 
 Zbývají `IMG_4505-2` a `IMG_4510`: v hledišti jsou poznatelné děti. Před zveřejněním je Martin rozmaže ručně, teprve pak se importují.
 
@@ -51,7 +53,7 @@ Zbývají `IMG_4505-2` a `IMG_4510`: v hledišti jsou poznatelné děti. Před z
 
 - **`conference-speaker` na mobilu:** fotka přes obrazovku se ořezává na střed, přednášející stojí vlevo, a tak mu na 360 px uřízne půlku obličeje. Ořez souboru to nespraví (na desktopu by se uřízla hlava). Řešením je ohnisko ořezu (`object-position`) u fotky v komponentě `PhotoFold`.
 - **`IMG_3724`** čeká na Martinovo ověření. Kdyby nešla použít, v galerii ji nahradí `IMG_7350`.
-- **Popisky:** místo a datum zatím ukazuje mřížka jako `TODO`. Pole `caption` se doplní, až je Martin dodá.
+- **Popisky:** políčko ukazuje jen číslo snímku. Kategorii a místo ukazuje lightbox, místo a datum zatím jako `TODO`. Pole `caption` se doplní, až je Martin dodá.
 
 ## Jak vyměnit fotku na místě
 

@@ -105,6 +105,10 @@ export const cs = {
     footLink: 'Chci podobné fotky',
     // A photo caption names the event; the place and date are not known yet
     captionTodo: 'místo a\u00A0datum',
+    // The category of a photo, shown with its caption in the lightbox (the sheet itself shows only the number)
+    categories: { event: 'Akce', sport: 'Sport', portrait: 'Portrét' },
+    /** Accessible name of the sheet of all frames, before the enlarged picks */
+    sheetLabel: 'Kontaktní arch',
   },
   services: {
     eyebrow: 'Služby a\u00A0ceny',

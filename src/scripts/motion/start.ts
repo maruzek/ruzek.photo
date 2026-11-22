@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import { ditherEffect } from '../effects/dither';
-import { createScheduler, viewportObserver } from '../effects/scheduler';
+import { createScheduler, viewportObserver, type Scheduler } from '../effects/scheduler';
 import { paintStaticWipes, wipeEffect } from '../effects/wipe';
 import { initCursor } from '../cursor';
 import { initLightbox } from '../lightbox';
@@ -15,11 +15,11 @@ import {
   headerHide,
   heroLeave,
   marquee,
-  parallax,
   sameDay,
   type Libs,
 } from './choreo';
 import { startLenis } from './lenis';
+import { contactSheet } from './sheet';
 
 /** Longest wait for the web fonts before SplitText measures lines (ms); autoSplit re-splits after a late font */
 const FONT_WAIT_MS = 1200;
@@ -29,10 +29,12 @@ const REDUCE = '(prefers-reduced-motion: reduce)';
 /** Room for the whole pinned "Same day" section content; the same query as day.css, which reserves the pin run */
 const DAY_PIN = '(min-width: 901px) and (min-height: 840px)';
 const FINE = '(hover: hover) and (pointer: fine)';
+/** The contact sheet changes from 4 to 7–10 columns here (work.css): its fit is built again */
+const WIDE = '(min-width: 901px)';
 
-/** Dither reveals and wipes on one scheduler driven by the GSAP ticker (concept.md §7). */
-function canvasEffects(scope: ParentNode): () => void {
-  const scheduler = createScheduler({
+/** One frame loop for every canvas effect, driven by the GSAP ticker (concept.md §7). */
+function gsapScheduler(): Scheduler {
+  return createScheduler({
     ticker: (cb) => {
       const fn = (t: number): void => cb(t * 1000);
       gsap.ticker.add(fn);
@@ -40,6 +42,10 @@ function canvasEffects(scope: ParentNode): () => void {
     },
     observe: viewportObserver('10% 0px'),
   });
+}
+
+/** Dither reveals and wipes on the shared scheduler. */
+function canvasEffects(scope: ParentNode, scheduler: Scheduler): () => void {
   const removers: Array<() => void> = [];
   for (const el of scope.querySelectorAll<HTMLElement>('[data-dz]')) {
     const fx = ditherEffect(el);
@@ -115,6 +121,7 @@ export async function start(): Promise<() => void> {
       undo.push(() => initLightbox(dialog, {}));
     }
 
+    const scheduler = gsapScheduler();
     const mm = gsap.matchMedia();
     undo.push(() => mm.revert());
     mm.add(MOTION, () => {
@@ -128,11 +135,10 @@ export async function start(): Promise<() => void> {
         cleanups.push(heroLeave(libs, document));
         if (withEntrances) cleanups.push(entrances(libs, document));
         cleanups.push(folds(libs, document));
-        cleanups.push(parallax(libs, document));
         cleanups.push(marquee(libs, document));
         cleanups.push(headerHide(libs, document));
         cleanups.push(headerBlend(document));
-        cleanups.push(canvasEffects(document));
+        cleanups.push(canvasEffects(document, scheduler));
       } catch (error) {
         run();
         throw error;
@@ -143,6 +149,10 @@ export async function start(): Promise<() => void> {
       if (!ctx.conditions?.['motion']) return;
       // a late start keeps the static layout the safety net showed: no pin, so no run to reserve (day.css)
       return sameDay(libs, document, withEntrances && ctx.conditions['pin'] === true);
+    });
+    mm.add({ motion: MOTION, wide: WIDE }, (ctx) => {
+      if (!ctx.conditions?.['motion']) return;
+      return contactSheet(libs, document, scheduler, ctx.conditions['wide'] === true);
     });
     mm.add({ motion: MOTION, fine: FINE }, (ctx) => {
       if (!ctx.conditions?.['motion'] || !ctx.conditions['fine']) return;
