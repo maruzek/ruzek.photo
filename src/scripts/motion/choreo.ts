@@ -273,6 +273,9 @@ export function sameDay({ gsap }: Libs, root: ParentNode, pin: boolean): Cleanup
   const stage = day?.querySelector<HTMLElement>('.steps');
   if (!day || !line || !stage) return noop;
   const steps = [...day.querySelectorAll('.step')];
+  // holds the reserved run (day.css) for as long as the pin exists, also after the 3 s safety net
+  const html = document.documentElement;
+  html.classList.toggle('day-pin', pin);
   // in the middle of the screen while the section fits; when it is taller, the bottom of the steps stops just
   // above the bottom of the screen; should the content still not fit (a large text size), the heading stays
   // at the top of the screen
@@ -307,7 +310,10 @@ export function sameDay({ gsap }: Libs, root: ParentNode, pin: boolean): Cleanup
       },
     },
   );
-  return () => steps.forEach((el) => el.classList.add('is-on'));
+  return () => {
+    html.classList.remove('day-pin');
+    steps.forEach((el) => el.classList.add('is-on'));
+  };
 }
 
 /** The header hides while scrolling down (never while it holds keyboard focus). */

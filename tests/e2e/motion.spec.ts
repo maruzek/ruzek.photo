@@ -420,6 +420,16 @@ test('"same day" pins only where it fits, with its heading and photo in view', a
   }
 });
 
+test('the "same day" run stays reserved after the safety net when the motion layer was on time', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'the "same day" pin is desktop only');
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  await expect(page.locator('html')).toHaveClass(/\breveal-fallback\b/, { timeout: 5000 });
+  await expect(page.locator('.light:has(.day)')).toHaveCSS('padding-bottom', '990px');
+});
+
 // Under 900 px the footer name is two lines, first and last name, never broken inside a word ("Rů / žek")
 test('the footer name keeps its words whole', async ({ page, viewport }) => {
   test.skip((viewport?.width ?? 0) > 900, 'one line on desktop');
