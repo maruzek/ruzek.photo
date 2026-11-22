@@ -211,7 +211,7 @@ function run(root: HTMLElement, box: HTMLElement): void {
       // swap the canvas for the vector logo (same pixels), then hand off to the header
       fly!.style.opacity = '1';
       canvas!.style.opacity = '0';
-      swapT = setTimeout(exit, SWAP_MS);
+      swapT = window.setTimeout(exit, SWAP_MS);
       return;
     }
     draw(Math.max(now, phaseT));
