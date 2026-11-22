@@ -1,6 +1,12 @@
 ---
+// Selected work, "three speeds": three lanes of photos that scroll at different rates (motion/work.ts), the
+// middle one against the outer two. The layout is plain CSS and complete without the motion layer: the lanes
+// stack their photos without gaps, the middle lane starts lower. Below 1100 px the same photos flow into two
+// columns, below 641 px into one, in lane order (left, middle, right), which is also the reading, focus and
+// lightbox order.
+import '../styles/dither.css';
 import '../styles/sections/work.css';
-import { PLACEMENT } from '../config/placement';
+import { PLACEMENT, type WorkLane, type WorkShot } from '../config/placement';
 import { t, type Locale } from '../i18n';
 import { getPhoto } from '../lib/photos/get';
 import Rich from './Rich.astro';
@@ -13,23 +19,29 @@ interface Props {
 const { locale } = Astro.props;
 const d = t(locale);
 
-// The prototype's asymmetric grid: slot class, parallax offset and the rendered width (≤ 900 px: 6 columns)
-const SLOTS = [
-  { slot: 'w1', sizes: '(max-width: 900px) 100vw, 58vw' },
-  { slot: 'w2', sizes: '(max-width: 900px) 50vw, 33vw', par: 40 },
-  { slot: 'w3', sizes: '(max-width: 900px) 50vw, 33vw', par: 24 },
-  { slot: 'w4', sizes: '(max-width: 900px) 100vw, 50vw' },
-  { slot: 'w5', sizes: '(max-width: 900px) 50vw, 33vw', par: 56 },
-  { slot: 'w6', sizes: '(max-width: 900px) 50vw, 33vw' },
-  { slot: 'w7', sizes: '(max-width: 900px) 50vw, 25vw', par: 32 },
-  { slot: 'w8', sizes: '(max-width: 900px) 100vw, 50vw' },
+/** Rendered frame width per layout (work.css): three lanes, two columns, one column */
+const WIDTHS = [
+  ['(min-width: 1100px)', 31],
+  ['(min-width: 641px)', 47, true],
+  [null, 100],
 ] as const;
 
-// The slot belongs to the photo, not to its index after filtering: a withdrawn photo leaves the grid and
-// the others keep their slots (and with them their size and parallax)
-const shots = (await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)))).flatMap((photo, i) =>
-  photo ? [{ photo, slot: SLOTS[i % SLOTS.length] ?? SLOTS[0] }] : [],
+const LANES: Record<WorkLane, readonly WorkShot[]> = PLACEMENT.work;
+const ORDER: readonly WorkLane[] = ['left', 'middle', 'right'];
+
+// The slot belongs to the photo: a withdrawn photo leaves its lane, the others keep their lane and crop
+const lanes = await Promise.all(
+  ORDER.map(async (lane) => ({
+    lane,
+    shots: (
+      await Promise.all(
+        LANES[lane].map(async (shot) => ({ shot, photo: await getPhoto(shot.id) })),
+      )
+    ).flatMap(({ shot, photo }) => (photo ? [{ ...shot, photo }] : [])),
+  })),
 );
+// the single dither beat: the first photo of the gallery develops as the section comes in
+const lead = lanes.find((l) => l.shots.length > 0)?.shots[0]?.id;
 ---
 
 <section class="sec" id={d.anchors.work} tabindex="-1" aria-labelledby="work-h">
@@ -41,16 +53,22 @@ const shots = (await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)))).flat
       </h2>
     </div>
   </div>
-  <div class="work">
-    {shots.map(({ photo, slot: s }) => (
-      <Shot
-        photo={photo}
-        locale={locale}
-        slot={s.slot}
-        sizes={s.sizes}
-        par={'par' in s ? s.par : undefined}
-      />
-    ))}
+  <div class="work" data-work>
+    {
+      lanes.map(({ lane, shots }) => (
+        <div class:list={['lane', `lane-${lane}`]} data-lane={lane}>
+          {shots.map((s) => (
+            <Shot
+              photo={s.photo}
+              locale={locale}
+              shot={s}
+              widths={WIDTHS}
+              dither={s.id === lead}
+            />
+          ))}
+        </div>
+      ))
+    }
   </div>
   <div class="work-foot">
     <p>{d.work.foot}</p>

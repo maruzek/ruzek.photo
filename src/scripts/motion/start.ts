@@ -15,11 +15,11 @@ import {
   headerHide,
   heroLeave,
   marquee,
-  parallax,
   sameDay,
   type Libs,
 } from './choreo';
 import { startLenis } from './lenis';
+import { workColumns, workDrift, workLanes } from './work';
 
 /** Longest wait for the web fonts before SplitText measures lines (ms); autoSplit re-splits after a late font */
 const FONT_WAIT_MS = 1200;
@@ -29,6 +29,12 @@ const REDUCE = '(prefers-reduced-motion: reduce)';
 /** Room for the whole pinned "Same day" section content; the same query as day.css, which reserves the pin run */
 const DAY_PIN = '(min-width: 901px) and (min-height: 840px)';
 const FINE = '(hover: hover) and (pointer: fine)';
+/** Layouts of the work gallery (work.css): three lanes, two columns, one column */
+const WORK = {
+  lanes: '(min-width: 1100px)',
+  columns: '(min-width: 641px) and (max-width: 1099px)',
+  drift: '(max-width: 640px)',
+} as const;
 
 /** Dither reveals and wipes on one scheduler driven by the GSAP ticker (concept.md §7). */
 function canvasEffects(scope: ParentNode): () => void {
@@ -128,7 +134,6 @@ export async function start(): Promise<() => void> {
         cleanups.push(heroLeave(libs, document));
         if (withEntrances) cleanups.push(entrances(libs, document));
         cleanups.push(folds(libs, document));
-        cleanups.push(parallax(libs, document));
         cleanups.push(marquee(libs, document));
         cleanups.push(headerHide(libs, document));
         cleanups.push(headerBlend(document));
@@ -139,6 +144,10 @@ export async function start(): Promise<() => void> {
       }
       return run;
     });
+    // the gallery comes before "same day" on the page, so its triggers are created (and refreshed) first
+    mm.add(`${MOTION} and ${WORK.lanes}`, () => workLanes(libs, document));
+    mm.add(`${MOTION} and ${WORK.columns}`, () => workColumns(libs, document));
+    mm.add(`${MOTION} and ${WORK.drift}`, () => workDrift(libs, document));
     mm.add({ motion: MOTION, pin: DAY_PIN }, (ctx) => {
       if (!ctx.conditions?.['motion']) return;
       // a late start keeps the static layout the safety net showed: no pin, so no run to reserve (day.css)

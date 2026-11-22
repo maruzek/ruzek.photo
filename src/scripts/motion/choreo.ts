@@ -180,29 +180,6 @@ export function folds({ gsap }: Libs, root: ParentNode): Cleanup {
   return noop;
 }
 
-/** Work grid parallax (`data-par` = offset in px). */
-export function parallax({ gsap }: Libs, root: ParentNode): Cleanup {
-  for (const el of root.querySelectorAll<HTMLElement>('[data-par]')) {
-    const par = Number(el.dataset['par']);
-    if (!Number.isFinite(par)) continue;
-    gsap.fromTo(
-      el,
-      { y: par },
-      {
-        y: -par,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: el.parentElement,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
-        },
-      },
-    );
-  }
-  return noop;
-}
-
 /** The band of event types loops, speeds up with the scroll and can be paused (WCAG 2.2.2). */
 export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanup {
   const band = root.querySelector<HTMLElement>('.marquee');
