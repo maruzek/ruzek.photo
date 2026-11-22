@@ -212,7 +212,13 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
   // before the loop the line scrolled natively (marquee.css); the loop starts from its first item
   track.parentElement?.scrollTo(0, 0);
   // it runs only while the band is on screen and not paused; off screen it keeps its phase
-  const loop = gsap.to(track, { xPercent: -50, duration: 38, ease: 'none', repeat: -1, paused: true });
+  const loop = gsap.to(track, {
+    xPercent: -50,
+    duration: 38,
+    ease: 'none',
+    repeat: -1,
+    paused: true,
+  });
   let paused = false;
   const st = ScrollTrigger.create({
     trigger: band,

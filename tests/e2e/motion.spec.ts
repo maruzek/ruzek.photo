@@ -347,7 +347,9 @@ test('after a jump from the menu, the About section is fully shown (desktop pin)
 // day.css reserves the pin's scroll run from the first paint: a deep link below the pin lands on its section and
 // nothing shifts when the motion layer pins "same day"
 for (const hash of ['#o-mne', '#poptavka']) {
-  test(`a deep link to ${hash} lands on it, with no layout shift from the pin`, async ({ page }) => {
+  test(`a deep link to ${hash} lands on it, with no layout shift from the pin`, async ({
+    page,
+  }) => {
     await page.addInitScript(() => {
       const w = window as unknown as { __shift: number };
       w.__shift = 0;
@@ -373,7 +375,9 @@ test('"same day" pins only where its steps fit, with the photo in view', async (
     await page.setViewportSize({ width: 1440, height });
     await page.goto('/');
     await page.waitForFunction(motionIs, 'on' as const);
-    const pinned = await page.evaluate(() => document.querySelector('.day')?.parentElement?.classList.contains('pin-spacer'));
+    const pinned = await page.evaluate(() =>
+      document.querySelector('.day')?.parentElement?.classList.contains('pin-spacer'),
+    );
     expect(pinned).toBe(height === 900);
     if (!pinned) continue;
     // half-way through the pin

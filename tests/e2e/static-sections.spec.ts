@@ -275,7 +275,10 @@ test('marquee keeps its height when the loop starts, and the band never runs und
     const tick = (): void => {
       const band = document.querySelector<HTMLElement>('.marquee');
       if (band && document.fonts.status === 'loaded') w.__bandHeights.push(band.offsetHeight);
-      if (!document.documentElement.classList.contains('motion-ready') || w.__bandHeights.length < 5)
+      if (
+        !document.documentElement.classList.contains('motion-ready') ||
+        w.__bandHeights.length < 5
+      )
         requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
