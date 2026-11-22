@@ -26,6 +26,7 @@ interface WipeState {
   band: number;
   last: number;
   width: number;
+  height: number;
 }
 
 const states = new WeakMap<HTMLCanvasElement, WipeState>();
@@ -34,7 +35,8 @@ function layout(cv: HTMLCanvasElement): WipeState | null {
   const w = cv.clientWidth;
   const h = cv.clientHeight;
   const known = states.get(cv);
-  if (known && known.width === w) return known;
+  // both sides: a window resized only in height changes the canvas height (wipe.css uses vh)
+  if (known && known.width === w && known.height === h) return known;
   const ctx = cv.getContext('2d');
   if (!ctx || !w || !h) return null;
   const cell = w < 700 ? 6 : 8;
@@ -54,6 +56,7 @@ function layout(cv: HTMLCanvasElement): WipeState | null {
     band: pack(CORAL),
     last: -1,
     width: w,
+    height: h,
   };
   states.set(cv, state);
   return state;
@@ -66,7 +69,9 @@ export function paintWipe(cv: HTMLCanvasElement, q: number, band = true): void {
   s.last = q;
   const edge = q * 1.1 - 0.05;
   for (let y = 0; y < s.rows; y++) {
-    const g = y / Math.max(1, s.rows - 1);
+    // the `to` colour grows up from the bottom edge, where the canvas meets the `to` zone, so neither edge of the
+    // band is a hard line between the two colours
+    const g = 1 - y / Math.max(1, s.rows - 1);
     for (let x = 0; x < s.cols; x++) {
       const t = b8(x, y) * 0.55 + g * 0.45;
       s.buf[y * s.cols + x] = t < edge - 0.03 ? s.to : t < edge ? (band ? s.band : s.to) : s.from;
