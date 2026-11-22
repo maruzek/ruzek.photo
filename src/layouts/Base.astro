@@ -75,12 +75,17 @@ const bodyFace = [{ weight: 400, style: 'normal' as const }];
         const fresh = !nav || nav.type === 'navigate';
         if (!reduced && external && fresh && navigator.connection?.saveData !== true) {
           root.classList.add('ldr-on');
-          // safety net: should the loader script never finish, the curtain goes after 7 s
-          setTimeout(() => {
+          // The curtain goes at once on a key press (Tab must not reach links under it, PageDown must not scroll
+          // under it; the key keeps its default action), on a switch to reduced motion, and after 7 s should the
+          // loader script never finish. Set up here, so it holds from the first frame until the curtain is gone.
+          const end = () => {
             if (!root.classList.contains('ldr-on')) return;
             root.classList.remove('ldr-on');
             document.dispatchEvent(new Event('ldr:exit'));
-          }, 7000);
+          };
+          setTimeout(end, 7000);
+          addEventListener('keydown', end, true);
+          matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', end);
         }
         // Safety net (base.css): if the motion layer has not set `motion-ready` after 3 s, show everything. A
         // timer started here counts from navigation. A CSS animation would count from when the stylesheet is

@@ -88,6 +88,14 @@ test('a key press ends the loader at once, so Tab never reaches a link under the
   await expect(page.locator(':focus')).toBeVisible();
 });
 
+test('a key press while the logo flies also removes the curtain at once', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('.ldr-fly.go').waitFor({ state: 'attached' });
+  await page.keyboard.press('Tab');
+  await expect(page.locator('html')).not.toHaveClass(/\bldr-on\b/);
+  await expect(page.locator(':focus')).toBeVisible();
+});
+
 test('a slow hero photo still gets the hero entrance after the loader', async ({ page }) => {
   // the loader stops waiting at 2.5 s and hands over later than the 3 s reveal safety net would fire
   await page.route(/\/_astro\/.*\.(avif|webp|jpe?g)$/, async (route) => {

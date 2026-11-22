@@ -236,7 +236,6 @@ function run(root: HTMLElement, box: HTMLElement): void {
   }
 
   let swapT = 0;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   /** Stops the animation and every listener; the flight to the header, once started, finishes on its own. */
   function stop(): void {
     cancelAnimationFrame(raf);
@@ -244,21 +243,11 @@ function run(root: HTMLElement, box: HTMLElement): void {
     removeEventListener('wheel', block, opts);
     removeEventListener('touchmove', block, opts);
     removeEventListener('resize', layout);
-    removeEventListener('keydown', abort, true);
-    reduce.removeEventListener('change', abort);
-  }
-  // a key press (Tab must not reach links under the curtain, PageDown must not scroll under it) or a switch to
-  // reduced motion ends the loader at once; the key keeps its default action
-  function abort(): void {
-    stop();
-    finish(root);
   }
 
   layout();
   addEventListener('resize', layout);
-  addEventListener('keydown', abort, true);
-  reduce.addEventListener('change', abort);
-  // the head script's safety net may end it first
+  // the head script ends it early on a key press, reduced motion or its 7 s safety net
   document.addEventListener('ldr:exit', stop, { once: true });
   raf = requestAnimationFrame(tick);
 }
