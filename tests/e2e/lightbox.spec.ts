@@ -6,9 +6,10 @@ test('lightbox keyboard and focus return', async ({ page }) => {
   await shot.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('dialog.lb')).toHaveAttribute('open', '');
-  await expect(page.locator('.lb-no')).toHaveText('02 / 08');
+  const total = String(await page.locator('[data-lb]').count()).padStart(2, '0');
+  await expect(page.locator('.lb-no')).toHaveText(`02 / ${total}`);
   await page.keyboard.press('ArrowRight');
-  await expect(page.locator('.lb-no')).toHaveText('03 / 08');
+  await expect(page.locator('.lb-no')).toHaveText(`03 / ${total}`);
   await page.keyboard.press('Escape');
   await expect(shot).toBeFocused();
 });
