@@ -20,6 +20,12 @@ export const PLACEMENT = {
     'football-assistant-referee',
     'party-beer-glance',
   ],
+  /** Imported spares for a bigger gallery (contact sheet, columns); no layout shows them yet */
+  reserve: [
+    'ball-smile-through-crowd', 'ball-tiara-portrait', 'street-newspapers', 'street-hat-flower', 'conference-group-photo',
+    'football-corner-crowd', 'football-header-jump', 'football-smile-touchline', 'football-arms-raised',
+    'floorball-shot-goalkeeper', 'floorball-goalkeeper-kneel',
+  ],
   /** Photo of each service card (the `short` card is shared with the portrait) */
   services: {
     event: 'conference-audience',

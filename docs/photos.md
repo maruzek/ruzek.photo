@@ -27,13 +27,25 @@ Postup přidání fotky je v [README](../README.md#jak-přidat-fotku), umístěn
 
 Pořadí v galerii odpovídá slotům w1–w8. Slot patří fotce: když se fotka stáhne (`published: false`), její místo zůstane prázdné a ostatní fotky si drží svou velikost.
 
-## Rezerva pro kontaktní arch
+## Rezerva pro větší galerii
 
-Pro budoucí galerii „kontaktní arch“ (16–24 políček) je s výběrem připraveno 29 fotek. Rezerva zatím není v repozitáři, importuje se, až bude galerie potřeba:
+11 fotek z rezervy je naimportovaných (22. 11. 2026) a v `placement.ts` jsou jako `reserve`. Žádné rozvržení je zatím neukazuje, slouží prototypům galerie (kontaktní arch, sloupce). S galerií je to 19 fotek, z toho 1 na výšku (`floorball-goalkeeper-kneel`).
 
-`IMG_6410`, `IMG_5429`, `IMG_1814`, `IMG_1548`, `IMG_4505-2`, `IMG_4830`, `IMG_4197`, `IMG_4028`, `IMG_8513`, `IMG_1068`, `IMG_0421`, `IMG_8731`, `IMG_4510`
+| Slug | Zdroj | Kategorie |
+|---|---|---|
+| `ball-smile-through-crowd` | `IMG_6410` | akce |
+| `ball-tiara-portrait` | `IMG_5429` | akce |
+| `street-newspapers` | `IMG_4197` | akce |
+| `street-hat-flower` | `IMG_4028` | akce |
+| `conference-group-photo` | `IMG_8513` | akce |
+| `football-corner-crowd` | `IMG_1814` | sport |
+| `football-header-jump` | `IMG_1548` | sport |
+| `football-smile-touchline` | `IMG_4830` | sport |
+| `football-arms-raised` | `IMG_1068` | sport |
+| `floorball-shot-goalkeeper` | `IMG_0421` | sport |
+| `floorball-goalkeeper-kneel` | `IMG_8731` | sport |
 
-U `IMG_4505-2` a `IMG_4510` jsou v hledišti poznatelné děti. Před zveřejněním je Martin rozmaže ručně, teprve pak se importují.
+Zbývají `IMG_4505-2` a `IMG_4510`: v hledišti jsou poznatelné děti. Před zveřejněním je Martin rozmaže ručně, teprve pak se importují.
 
 ## Otevřené body
 

@@ -1,0 +1,7 @@
+image: ../../assets/photos/conference-group-photo.jpg
+alt: { cs: "Společná fotka účastníků firemní akce v zasedací místnosti", en: "A group photo of a company event's attendees in a meeting room" }
+category: event
+published: true
+placeholder: false
+minors: false
+shade: normal
