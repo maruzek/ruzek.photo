@@ -16,7 +16,7 @@ type Cleanup = () => void;
 const noop: Cleanup = () => undefined;
 
 /** Relative speed of each lane: positive rises faster than the page, negative lags behind it. */
-export const LANE_SPEED = { left: 0.06, middle: -0.06, right: 0.14 } as const;
+export const LANE_SPEED = { left: 0.06, middle: -0.06, right: 0.12 } as const;
 /** Two columns: the left one rises, the right one lags */
 const COLUMN_SPEED = [0.06, -0.04] as const;
 /** Viewport fraction (from the top) where the bottom of the gallery is when the lanes line up */
