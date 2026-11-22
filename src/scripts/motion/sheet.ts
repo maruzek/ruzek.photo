@@ -1,7 +1,8 @@
 // The contact sheet opens (ContactSheet.astro, prototype 3). The page is rendered open; here every pick is folded
 // back into its seat on the sheet with a transform, and one scrubbed ScrollTrigger over the sheet's pass through the
-// viewport opens it again: first a Bayer front develops the bare sheet, then the picks leave their seats (the
-// circled, empty seats stay) and grow into the spread below. No pin, no layout change: only transform, opacity
+// viewport opens it again: first a Bayer front develops the bare sheet, then the picks leave their seats one after
+// another, in reading order of the spread (the marked seats with their dimmed copies stay), straighten when they
+// lay turned on the sheet, and grow into the spread below. No pin, no layout change: only transform, opacity
 // and the canvas, so the stage keeps its height from the first paint and CLS stays 0.
 //
 // The fit is computed from offsets (layout boxes ignore transforms), so it is re-measured on every
@@ -13,19 +14,19 @@ import type { Libs } from './choreo';
 
 type Cleanup = () => void;
 const noop: Cleanup = () => undefined;
-const clamp = (v: number, a: number, b: number): number => (v < a ? a : v > b ? b : v);
 
 /**
  * The sheet's run through the viewport, as lines for the sheet's top (share of the viewport height), and where the
- * front and the picks sit in it (shares of the run; lower picks leave up to `spread` later). On a phone the sheet
- * is about half a screen tall, so its run is longer and the picks leave only once the whole sheet is in view.
+ * front and the picks sit in it (shares of the run). From `open` to the end the picks leave one after another;
+ * `flight` is how many of them are on their way at the same time, so the spread never turns into a pile. On a
+ * phone the sheet is most of a screen tall, so the picks leave only once the whole sheet is in view.
  */
 const RUN = {
-  wide: { start: 0.92, end: 0.12, front: 0.36, open: 0.42, spread: 0.12 },
-  narrow: { start: 1, end: -0.2, front: 0.3, open: 0.45, spread: 0.12 },
+  wide: { start: 0.92, end: -0.1, front: 0.25, open: 0.3, flight: 3 },
+  narrow: { start: 1, end: -0.6, front: 0.22, open: 0.45, flight: 3 },
 } as const;
-/** The frame number under a pick fades in at the end, once the print is nearly its final size */
-const NUMBER_AT = 0.86;
+/** The frame number under a pick fades in over the last part of its own flight */
+const NUMBER_AT = 0.8;
 
 interface Box {
   x: number;
@@ -65,14 +66,33 @@ export function contactSheet(
     const slot = [...pick.classList].find((c) => /^s\d$/.test(c));
     return slot ? sheet.querySelector<HTMLElement>(`[data-seat="${slot}"] .cs-box`) : null;
   };
-  /** The transform that puts the pick's picture exactly over its seat */
-  const fit = (pick: HTMLElement): { x: number; y: number; scale: number } => {
+  /**
+   * The transform that puts the pick's picture exactly over its seat, turned like the seat when the frame lies
+   * turned on the sheet (work.css .cs-turn: the seat box keeps the photo's proportions and only `rotate` turns it
+   * about its centre). The pick's origin is its top-left corner: x, y place the centre of the scaled and turned
+   * picture on the centre of the seat.
+   */
+  const fit = (pick: HTMLElement): { x: number; y: number; scale: number; rotation: number } => {
     const seat = seatOf(pick);
     const box = pick.querySelector<HTMLElement>('.cs-box');
-    if (!seat || !box) return { x: 0, y: 0, scale: 1 };
+    if (!seat || !box) return { x: 0, y: 0, scale: 1, rotation: 0 };
+    const at = boxIn(pick, cs);
     const from = boxIn(box, cs);
     const to = boxIn(seat, cs);
-    return { x: to.x - from.x, y: to.y - from.y, scale: from.w > 0 ? to.w / from.w : 1 };
+    const scale = from.w > 0 ? to.w / from.w : 1;
+    const rotation = seat.closest('.cs-turn') ? -90 : 0;
+    // the picture's centre in the pick's own coordinates, scaled and turned about the origin
+    const cx = (from.x - at.x + from.w / 2) * scale;
+    const cy = (from.y - at.y + from.h / 2) * scale;
+    const rad = (rotation * Math.PI) / 180;
+    const cos = Math.round(Math.cos(rad) * 1e6) / 1e6;
+    const sin = Math.round(Math.sin(rad) * 1e6) / 1e6;
+    return {
+      x: to.x + to.w / 2 - at.x - (cx * cos - cy * sin),
+      y: to.y + to.h / 2 - at.y - (cx * sin + cy * cos),
+      scale,
+      rotation,
+    };
   };
 
   const tl = gsap.timeline({
@@ -87,22 +107,33 @@ export function contactSheet(
   });
   tl.to({}, { duration: 1 }, 0); // the run is 1 long: positions below are shares of it
 
-  // lower picks leave a little later, so the spread opens from the top down
-  const spread = cs.querySelector<HTMLElement>('.cs-spread');
-  const depth = spread ? Math.max(1, spread.offsetHeight) : 1;
-  const top = spread?.offsetTop ?? 0;
+  // the picks leave in slot order (= reading order of the spread, so it opens from the top down), each on its own
+  // stretch of the run; about `flight` of them are on their way at once
+  const step = (1 - run.open) / Math.max(1, picks.length - 1 + run.flight);
+  const duration = Math.min(1 - run.open, step * run.flight);
   picks.forEach((pick, i) => {
-    const at = run.open + run.spread * clamp((pick.offsetTop - top) / depth, 0, 1);
+    const at = run.open + i * step;
     // the first picks lie on top: later ones slide underneath them on their way down
     gsap.set(pick, { zIndex: picks.length - i, transformOrigin: '0 0' });
     tl.fromTo(
       pick,
-      { x: () => fit(pick).x, y: () => fit(pick).y, scale: () => fit(pick).scale },
-      { x: 0, y: 0, scale: 1, ease: 'power2.inOut', duration: 1 - at },
+      {
+        x: () => fit(pick).x,
+        y: () => fit(pick).y,
+        scale: () => fit(pick).scale,
+        rotation: () => fit(pick).rotation,
+      },
+      { x: 0, y: 0, scale: 1, rotation: 0, ease: 'power2.inOut', duration },
       at,
     );
     const no = pick.querySelector('.cs-no');
-    if (no) tl.fromTo(no, { opacity: 0 }, { opacity: 1, duration: 1 - NUMBER_AT }, NUMBER_AT);
+    if (no)
+      tl.fromTo(
+        no,
+        { opacity: 0 },
+        { opacity: 1, duration: duration * (1 - NUMBER_AT) },
+        at + duration * NUMBER_AT,
+      );
   });
   cs.classList.add('cs-live');
 

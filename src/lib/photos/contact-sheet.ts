@@ -42,3 +42,19 @@ export function buildContactSheet<P>(
   );
   return { frames, spread };
 }
+
+/** Pixel size of a photo, as the image metadata gives it */
+interface Size {
+  width: number;
+  height: number;
+}
+
+/**
+ * How a frame sits in its box: `vertical` frames lie turned by 90° on the sheet (work.css `.cs-turn`), as on a
+ * strip of film. `style` gives the box the photo's proportions, as a ratio for `aspect-ratio` (`--ar`) and as a
+ * number for the turned box's size (`--r`).
+ */
+export function frameBox({ width, height }: Size): { vertical: boolean; style: string } {
+  const r = width / height;
+  return { vertical: r < 1, style: `--ar: ${width} / ${height}; --r: ${r.toFixed(4)}` };
+}

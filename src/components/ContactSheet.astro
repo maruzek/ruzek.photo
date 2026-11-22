@@ -1,14 +1,16 @@
 ---
 // "Selected work" as a contact sheet that opens (prototype 3). Every published frame sits on a dense, numbered
-// sheet; the picks (PLACEMENT.work.picks) are enlarged in the spread below, and their seats on the sheet stay
-// marked. This server render is the open sheet, which is also the page without JavaScript and with reduced
+// sheet; the picks (PLACEMENT.work.picks) are enlarged in the spread below, and their seats on the sheet keep a
+// dimmed copy of the frame with a grease-pencil mark. A vertical frame lies turned on the sheet, as on film. This server render is the open sheet, which is also the page without JavaScript and with reduced
 // motion. The motion layer (scripts/motion/sheet.ts) only adds transforms: it folds each pick back into its seat
 // and lets the scroll open the sheet, while a Bayer front develops it (effects/front.ts).
 import '../styles/sections/work.css';
+import { Picture } from 'astro:assets';
 import { PLACEMENT } from '../config/placement';
 import { t, type Locale } from '../i18n';
-import { buildContactSheet, type SpreadSlot } from '../lib/photos/contact-sheet';
+import { buildContactSheet, frameBox, type SpreadSlot } from '../lib/photos/contact-sheet';
 import { getPhoto, type PublishedPhoto } from '../lib/photos/get';
+import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
 import Print from './Print.astro';
 import Rich from './Rich.astro';
 
@@ -30,8 +32,8 @@ const SPREAD_SIZES: Record<SpreadSlot, string> = {
   s7: '(max-width: 900px) 50vw, 31vw',
   s8: '(max-width: 900px) 100vw, 64vw',
 };
-/** A thumbnail on the sheet: 4 columns below 901 px, 10 on desktop (work.css) */
-const THUMB_SIZES = '(max-width: 900px) 25vw, 11vw';
+/** A thumbnail on the sheet: 3 columns below 901 px, 6–9 on desktop (work.css) */
+const THUMB_SIZES = '(max-width: 900px) 33vw, (max-width: 1100px) 16vw, 11vw';
 
 const ids = PLACEMENT.work.sheet;
 const photos = new Map<string, PublishedPhoto | undefined>(
@@ -55,13 +57,24 @@ const { frames, spread } = buildContactSheet(ids, PLACEMENT.work.picks, (id) => 
         <div class="cs-sheet" role="group" aria-label={d.work.sheetLabel}>
           {frames.map((frame) =>
             frame.slot ? (
-              // the pick's seat: decorative, the photo itself is the link in the spread
-              <span class="cs-seat" data-seat={frame.slot} aria-hidden="true">
+              // the pick's seat: decorative, the photo itself is the link in the spread. The dimmed copy shows
+              // which frame was taken out once the pick has left.
+              <span
+                class:list={['cs-seat', { 'cs-turn': frameBox(frame.photo.data.image).vertical }]}
+                data-seat={frame.slot}
+                aria-hidden="true"
+              >
                 <span class="cs-cell">
-                  <span
-                    class="cs-box"
-                    style={`--ar: ${frame.photo.data.image.width} / ${frame.photo.data.image.height}`}
-                  />
+                  <span class="cs-box" style={frameBox(frame.photo.data.image).style}>
+                    <Picture
+                      src={frame.photo.data.image}
+                      alt=""
+                      widths={IMAGE_WIDTHS}
+                      formats={IMAGE_FORMATS}
+                      sizes={THUMB_SIZES}
+                      loading="lazy"
+                    />
+                  </span>
                 </span>
                 <span class="cs-no mono">{frame.no}</span>
               </span>

@@ -11,40 +11,41 @@ Postup přidání fotky je v [README](../README.md#jak-přidat-fotku), umístěn
 | Úvod (`hero`) | `ball-dance-red` | `IMG_5436` | | `IMG_6410`, `IMG_5925` |
 | Fotka přes obrazovku: akce | `conference-speaker` | `text-remove.jpg` (`IMG_7167`, Martinova retuš bez textu na plátně) | | `IMG_5925`, `IMG_5952` |
 | Fotka přes obrazovku: sport | `football-slide-tackle` | `IMG_4428` | `left=0.06,top=0.2` | `IMG_2211`, `IMG_1068` |
-| Galerie: kontaktní arch | všech 19 fotek níže, pořadí a výběr v `PLACEMENT.work` | | | |
+| Galerie: kontaktní arch | 18 fotek níže, pořadí a výběr v `PLACEMENT.work` | | | |
 | Karta služby: akce | `conference-audience` | `IMG_6139` | | `IMG_8513`, `IMG_5925` |
 | Karta služby: sport | `football-duel` | `IMG_0948` | | `IMG_1548`, `IMG_1973` |
 | Karta služby: portrét | `portrait-street-peace` | `IMG_4124` | | `IMG_3828`, `IMG_4028` |
 | Ještě ten den, krok 2 | `football-shoulder-run` | `IMG_4591` | | `IMG_4510`, `IMG_8731` |
 | O mně | `martin-ruzek-portrait` | `profile/IMG_9844-Edit-2` | | `profile/IMG_3866-2`, `profile/IMG_4151` |
 
-Galerie je kontaktní arch (prototyp 3, větev `proto/gallery-contact-sheet`). `PLACEMENT.work.sheet` určuje pořadí políček v archu, čísla snímků 01, 02, … z něj berou pořadí (počítají se jen zveřejněné fotky). `PLACEMENT.work.picks` vybírá 8 fotek, které se zvětší do rozvržení pod archem, každou do vlastního slotu `s1`–`s8`. Slot patří fotce: když se fotka stáhne (`published: false`), její slot zůstane prázdný a ostatní si drží svůj.
+Galerie je kontaktní arch (prototyp 3, větev `proto/gallery-contact-sheet-v2`). `PLACEMENT.work.sheet` určuje pořadí políček v archu, čísla snímků 01, 02, … z něj berou pořadí (počítají se jen zveřejněné fotky). `PLACEMENT.work.picks` vybírá 8 fotek, které se zvětší do rozvržení pod archem, každou do vlastního slotu `s1`–`s8`. Slot patří fotce: když se fotka stáhne (`published: false`), její slot zůstane prázdný a ostatní si drží svůj.
 
 | Políčko | Slug | Zdroj | Zvětšená (slot) |
 |---|---|---|---|
-| 01 | `football-goalkeeper-dive` | `IMG_4386` | s1 |
-| 02 | `gathering-table-smile` | `IMG_3724` | |
-| 03 | `floorball-faceoff` | `IMG_9964` | s2 |
-| 04 | `conference-group-photo` | `IMG_8513` | |
-| 05 | `talk-speaker-microphone` | `IMG_1202` | s3 |
-| 06 | `football-corner-crowd` | `IMG_1814` | |
+| 01 | `conference-group-photo` | `IMG_8513` | |
+| 02 | `talk-speaker-microphone` | `IMG_1202` | s2 |
+| 03 | `football-team-huddle` | `IMG_2211` | |
+| 04 | `football-goalkeeper-dive` | `IMG_4386` | s1 |
+| 05 | `football-smile-touchline` | `IMG_4830` | |
+| 06 | `ball-smile-through-crowd` | `IMG_6410` | |
 | 07 | `ball-tiara-portrait` | `IMG_5429` | s4 |
 | 08 | `football-header-jump` | `IMG_1548` | |
-| 09 | `party-table-laugh` | `IMG_5952` | s5 |
-| 10 | `football-team-huddle` | `IMG_2211` | |
-| 11 | `street-newspapers` | `IMG_4197` | |
-| 12 | `street-hat-flower` | `IMG_4028` | s6 |
-| 13 | `football-arms-raised` | `IMG_1068` | |
-| 14 | `party-beer-glance` | `IMG_5966` | s7 |
-| 15 | `football-smile-touchline` | `IMG_4830` | |
-| 16 | `ball-smile-through-crowd` | `IMG_6410` | |
-| 17 | `floorball-shot-goalkeeper` | `IMG_0421` | s8 |
-| 18 | `football-assistant-referee` | `IMG_1978` | |
-| 19 | `floorball-goalkeeper-kneel` | `IMG_8731` | |
+| 09 | `football-arms-raised` | `IMG_1068` | |
+| 10 | `gathering-table-smile` | `IMG_3724` | |
+| 11 | `party-table-laugh` | `IMG_5952` | s5 |
+| 12 | `party-beer-glance` | `IMG_5966` | s7 |
+| 13 | `floorball-faceoff` | `IMG_9964` | s3 |
+| 14 | `floorball-goalkeeper-kneel` | `IMG_8731` | |
+| 15 | `floorball-shot-goalkeeper` | `IMG_0421` | s8 |
+| 16 | `street-newspapers` | `IMG_4197` | |
+| 17 | `street-hat-flower` | `IMG_4028` | s6 |
+| 18 | `football-corner-crowd` | `IMG_1814` | |
+
+Pořadí jde po focení jako na skutečném filmu: diskuse, zápas, ples, zápas, večírek, florbal, ulice, zápas. Vybrané snímky tak v archu leží nepravidelně. Rozvržení začíná zápasem vedle diskuse (nadpis slibuje „akce a zápasy“) a dál se střídá. 18 políček vyplní celé řady při 9, 6 i 3 sloupcích. Snímky na výšku jsou v archu otočené o 90°, jak to vypadá na filmu, a při otevření se narovnají.
 
 ## Rezerva
 
-Všech 11 fotek z rezervy (22. 11. 2026) je v kontaktním archu. Na výšku jsou 3 z 19: `floorball-faceoff`, `talk-speaker-microphone`, `floorball-goalkeeper-kneel`.
+`football-assistant-referee` (`IMG_1978`) je zveřejněná, ale arch ji teď vynechává (`PLACEMENT.work.reserve`), aby řady vyšly celé. Vrátí se, až budou hotové `IMG_4505-2` a `IMG_4510` (20 políček vyplní 10, 5 i 4 sloupce, jen se upraví počty sloupců ve `work.css`). Na výšku jsou 3 z 18: `talk-speaker-microphone`, `floorball-faceoff`, `floorball-goalkeeper-kneel`.
 
 Zbývají `IMG_4505-2` a `IMG_4510`: v hledišti jsou poznatelné děti. Před zveřejněním je Martin rozmaže ručně, teprve pak se importují.
 

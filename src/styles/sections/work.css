@@ -5,7 +5,8 @@
 .cs {
   position: relative;
   isolation: isolate;
-  --cs-cols: 10;
+  /* 18 frames fill whole rows of 9, 6 and 3 (PLACEMENT.work.sheet) */
+  --cs-cols: 9;
   --cs-mark: var(--accent);
 }
 
@@ -23,6 +24,11 @@
   place-items: center;
   aspect-ratio: 3 / 2;
 }
+/* on the sheet the cell is a size container: a turned frame is sized from the cell (cqw, cqh) */
+.cs-sheet .cs-cell {
+  position: relative;
+  container-type: size;
+}
 /* the photo box keeps the photo's own proportions: a portrait frame stands inside its 3:2 cell */
 .cs-box {
   display: block;
@@ -35,6 +41,21 @@
 }
 .cs-sheet .cs-box {
   height: 100%;
+}
+/* A vertical frame lies turned on the sheet, as on a strip of film: its box keeps the photo's proportions, is as
+   large as fits the cell once turned, and is centred by layout (left, top), so the offsets sheet.ts measures are
+   the box's own and only \`rotate\` turns it. The pick straightens as it leaves its seat. */
+.cs-sheet .cs-turn .cs-box {
+  --bh: min(100cqw, 100cqh / var(--r, 0.6667));
+  position: absolute;
+  left: calc(50% - var(--bh) * var(--r, 0.6667) / 2);
+  top: calc(50% - var(--bh) / 2);
+  width: calc(var(--bh) * var(--r, 0.6667));
+  height: var(--bh);
+  max-width: none;
+  max-height: none;
+  aspect-ratio: auto;
+  rotate: -90deg;
 }
 .cs-box picture {
   display: contents;
@@ -52,11 +73,14 @@
   letter-spacing: 0.06em;
   font-variant-numeric: tabular-nums;
 }
-/* A pick's seat: the empty frame, circled like a grease-pencil mark on a real contact sheet */
+/* A pick's seat: a dimmed copy of the frame that was taken out, marked like with a grease pencil on a real
+   contact sheet. The pick lies over it until the sheet opens. */
 .cs-seat .cs-box {
-  background: var(--light);
-  outline: 1.5px solid var(--cs-mark);
+  outline: 2px solid var(--cs-mark);
   outline-offset: 3px;
+}
+.cs-seat img {
+  opacity: 0.45;
 }
 .cs-seat .cs-no {
   color: var(--light-ink);
@@ -131,12 +155,12 @@
 
 @media (max-width: 1100px) {
   .cs {
-    --cs-cols: 7;
+    --cs-cols: 6;
   }
 }
 @media (max-width: 900px) {
   .cs {
-    --cs-cols: 4;
+    --cs-cols: 3;
   }
   .cs-spread {
     grid-template-columns: repeat(2, minmax(0, 1fr));

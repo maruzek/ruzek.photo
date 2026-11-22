@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { PLACEMENT } from '@/config/placement';
-import { SPREAD_SLOTS, buildContactSheet } from '@/lib/photos/contact-sheet';
+import { SPREAD_SLOTS, buildContactSheet, frameBox } from '@/lib/photos/contact-sheet';
+
+describe('frameBox', () => {
+  it('turns vertical frames only and passes the proportions to the CSS', () => {
+    expect(frameBox({ width: 1600, height: 2400 })).toEqual({
+      vertical: true,
+      style: '--ar: 1600 / 2400; --r: 0.6667',
+    });
+    expect(frameBox({ width: 2400, height: 1600 }).vertical).toBe(false);
+    expect(frameBox({ width: 2000, height: 2000 }).vertical).toBe(false);
+  });
+});
 
 const sheet = ['a', 'b', 'c', 'd', 'e'];
 const picks = { b: 's2', d: 's1' } as const;

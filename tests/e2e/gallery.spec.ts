@@ -55,21 +55,30 @@ for (const path of ['/', '/en/']) {
     // the seats are decorative, the pick itself is the link
     await expect(page.locator('.cs-seat a, .cs-seat[tabindex]')).toHaveCount(0);
     await expect(page.locator('.cs-front')).toHaveAttribute('aria-hidden', 'true');
+    // a vertical frame lies turned on the sheet (thumbnail and seat alike), an enlarged pick stands upright
+    const turned = page.locator('.cs-sheet .cs-turn .cs-box');
+    expect(await turned.count()).toBeGreaterThan(0);
+    for (const box of await turned.all()) await expect(box).toHaveCSS('rotate', '-90deg');
+    await expect(page.locator('.cs-spread .cs-turn')).toHaveCount(0);
   });
 }
 
 test('a pick starts folded into its seat and the scroll opens it', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(motionIs, 'on' as const);
-  const folded = await pickAndSeat(page, 's1');
-  expect(folded.pick && folded.seat).toBeTruthy();
-  if (!folded.pick || !folded.seat) return;
-  expect(Math.abs(folded.pick.x - folded.seat.x)).toBeLessThan(2);
-  expect(Math.abs(folded.pick.y - folded.seat.y)).toBeLessThan(2);
-  expect(Math.abs(folded.pick.w - folded.seat.w)).toBeLessThan(2);
+  // s1 lies flat on the sheet, s2 (a vertical frame) lies turned like its seat: the boxes cover each other
+  for (const slot of ['s1', 's2']) {
+    const folded = await pickAndSeat(page, slot);
+    expect(folded.pick && folded.seat, slot).toBeTruthy();
+    if (!folded.pick || !folded.seat) return;
+    expect(Math.abs(folded.pick.x - folded.seat.x), slot).toBeLessThan(2);
+    expect(Math.abs(folded.pick.y - folded.seat.y), slot).toBeLessThan(2);
+    expect(Math.abs(folded.pick.w - folded.seat.w), slot).toBeLessThan(2);
+    expect(Math.abs(folded.pick.h - folded.seat.h), slot).toBeLessThan(2);
+  }
 
-  // past the end of the run (desktop: top 12 %, phone: top −20 %) every pick is in its slot
-  await sheetTopAt(page, -0.4);
+  // past the end of the run (desktop: top −10 %, phone: top −60 %) every pick is in its slot
+  await sheetTopAt(page, -0.8);
   for (const pick of await page.locator('.cs-pick').all())
     await expect
       .poll(() => pick.evaluate((el) => getComputedStyle(el).transform))
@@ -99,7 +108,7 @@ test('reduced motion: the sheet is rendered open and still', async ({ page }) =>
   for (const pick of await page.locator('.cs-pick').all())
     expect(IDENTITY).toContain(await pick.evaluate((el) => getComputedStyle(el).transform));
   const { pick, seat } = await pickAndSeat(page, 's1');
-  // the pick is in the spread below the sheet, its seat stays empty and marked
+  // the pick is in the spread below the sheet, its seat keeps a dimmed copy and the mark
   expect(pick?.y ?? 0).toBeGreaterThan((seat?.y ?? 0) + (seat?.h ?? 0));
   await expect(page.locator('[data-seat="s1"] .cs-box')).toHaveCSS('outline-style', 'solid');
 });
@@ -108,7 +117,7 @@ test('at 360 px the sheet fits the width, folded, opening and open', async ({ pa
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto('/');
   await page.waitForFunction(motionIs, 'on' as const);
-  for (const line of [0.9, 0.4, 0.1, -0.5]) {
+  for (const line of [0.9, 0.4, 0.1, -0.5, -0.8]) {
     await sheetTopAt(page, line);
     await page.waitForTimeout(150);
     const { sw, cw, right } = await page.evaluate(() => ({
@@ -123,9 +132,9 @@ test('at 360 px the sheet fits the width, folded, opening and open', async ({ pa
     expect(sw, `sheet top at ${line}`).toBeLessThanOrEqual(cw);
     expect(right, `sheet top at ${line}`).toBeLessThanOrEqual(cw);
   }
-  // the sheet has 4 columns on a phone
+  // the sheet has 3 columns on a phone
   const columns = await page
     .locator('.cs-sheet')
     .evaluate((el) => getComputedStyle(el).gridTemplateColumns.split(' ').length);
-  expect(columns).toBe(4);
+  expect(columns).toBe(3);
 });
