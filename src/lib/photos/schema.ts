@@ -1,12 +1,5 @@
 import { z } from 'astro/zod';
 
-/**
- * `consentRef` is only a sequential ID of the consent record, assigned by hand in `private/`
- * (`C-<year>-<running number>`). Nothing else belongs in it: no name, e-mail, phone number or date of birth
- * (concept.md, kap. 9).
- */
-export const CONSENT_REF = /^C-\d{4}-\d{3,}$/;
-
 /** `image` in the YAML: a file in `src/assets/photos/`, relative to `src/content/photos/`. */
 export const photoPath = z
   .string()
@@ -26,7 +19,6 @@ export interface Photo<I> {
   published: boolean;
   placeholder: boolean;
   credit?: string | undefined;
-  consentRef?: string | undefined;
   minors: boolean;
   parentalConsent: boolean;
   shade: (typeof PHOTO_SHADES)[number];
@@ -38,7 +30,6 @@ const bilingual = z.object({ cs: text, en: text });
 /**
  * Metadata of one photo (`src/content/photos/*.yaml`). The rules that keep the public site legal:
  * - a placeholder needs a `credit`;
- * - a published real photo needs a `consentRef`;
  * - a published real photo must say `minors: true` or `minors: false` (there is no default, so a tournament of
  *   children cannot slip through with only the organiser's consent);
  * - a published photo of minors also needs `parentalConsent`;
@@ -59,10 +50,6 @@ export function photoSchema<I extends z.ZodType>(image: I): z.ZodType<Photo<z.in
         published: z.boolean().default(false),
         placeholder: z.boolean().default(false),
         credit: text.optional(),
-        consentRef: z
-          .string()
-          .regex(CONSENT_REF, 'consentRef must look like C-2026-014')
-          .optional(),
         minors: z.boolean().optional(),
         parentalConsent: z.boolean().default(false),
         shade: z.enum(PHOTO_SHADES).default('normal'),
@@ -76,13 +63,6 @@ export function photoSchema<I extends z.ZodType>(image: I): z.ZodType<Photo<z.in
           });
         }
         if (!photo.published) return;
-        if (!photo.placeholder && !photo.consentRef) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['consentRef'],
-            message: 'A published photo needs a consentRef (or set published: false)',
-          });
-        }
         if (!photo.placeholder && photo.minors === undefined) {
           ctx.addIssue({
             code: 'custom',

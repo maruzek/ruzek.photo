@@ -5,6 +5,6 @@ draft: true
 title: { cs: "TODO: název akce", en: "TODO: event name" }
 summary: { cs: "TODO: krátké shrnutí akce", en: "TODO: short summary of the event" }
 date: 2026-01-01
-photos: [hockey, floorball]
+photos: [football-goalkeeper-dive, floorball-faceoff]
 # matchReport: { score: "TODO", venue: "TODO" }
 ---

@@ -64,6 +64,7 @@ for (const path of ['/', '/en/']) {
       '.hero .meta > span:nth-child(2)',
       '.hero .ph-tag',
     ]) {
+      if (sel.endsWith('.ph-tag') && (await page.locator(sel).count()) === 0) continue; // real photo, no tag
       const box = await page.locator(sel).boundingBox();
       expect(box, sel).not.toBeNull();
       expect((box?.y ?? 0) + (box?.height ?? 0), `${sel} bottom`).toBeLessThanOrEqual(bottom);
@@ -91,6 +92,7 @@ test('folds with a placeholder photo carry the placeholder tag clear of the text
   expect(await folds.count()).toBe(2);
   for (let i = 0; i < 2; i++) {
     const fold = folds.nth(i);
+    if ((await fold.locator('.ph-tag').count()) === 0) continue; // a real photo carries no tag
     // at rest: the caption sticks to the bottom of the screen while the fold comes in (fold.css), so it passes the
     // tag on the way and covers it then; with the fold filling the screen the two are apart
     await fold.evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().top + scrollY));

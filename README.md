@@ -58,12 +58,19 @@ Přesné verze drží `pnpm-lock.yaml`. Hlavní nástroje:
 ## Jak přidat fotku
 Fotky jsou v repozitáři: soubor v `src/assets/photos/`, popis v `src/content/photos/<název>.yaml`. Build je zpracuje do AVIF, WebP a JPEG.
 
-1. **Souhlas.** Fotku smíte zveřejnit jen se souhlasem klienta nebo pořadatele. U dětí je potřeba souhlas rodičů. Záznam o souhlasu si vedete **mimo repozitář**, ve složce `private/` (je v `.gitignore`). Každý záznam dostane pořadové číslo ve tvaru `C-2026-014`.
+1. **Souhlas.** Fotku smíte zveřejnit jen se souhlasem klienta nebo pořadatele. U dětí je potřeba souhlas rodičů. Souhlasy se do repozitáře nezapisují.
 2. **Import:**
    ```sh
    pnpm photos:import cesta/k/fotce.jpg
+   pnpm photos:import cesta/k/IMG_1234.jpg --slug football-duel
+   pnpm photos:import cesta/k/IMG_4428.jpg --slug football-slide-tackle --crop left=0.06,top=0.2
    ```
-   Skript otočí fotku podle orientace, zmenší ji nejvýš na 3000 px na delší straně, uloží jako JPEG bez EXIF (tedy i bez GPS) do `src/assets/photos/` a vytvoří YAML se zástupnými hodnotami. Existující soubor nikdy nepřepíše. Podporované jsou běžné formáty včetně PNG a WebP. HEIC/HEIF se nepoužívá.
+   Skript otočí fotku podle orientace, zmenší ji nejvýš na 2400 px na delší straně, uloží jako JPEG bez EXIF (tedy i bez GPS) do `src/assets/photos/` a vytvoří YAML se zástupnými hodnotami. Existující soubor nikdy nepřepíše. Podporované jsou běžné formáty včetně PNG a WebP. HEIC/HEIF se nepoužívá.
+   - `--slug` dá souboru anglický název podle obsahu (`football-duel`, ne `IMG_1234`). Bez něj se název odvodí ze jména souboru.
+   - `--crop` před zmenšením uřízne okraje: podíl strany od 0 do 1 pro `left`, `top`, `right` a `bottom`. Hodí se, když do záběru zasahuje rušivý prvek nebo když ořez na webu schová to podstatné.
+   - `--slug` a `--crop` platí jen pro jednu fotku najednou.
+
+   Originály (exporty z úprav) patří do `private/photos-inbox/`, do gitu nikdy. Do repozitáře jdou jen zmenšené fotky bez metadat. Složka `public/` se pro fotky nepoužívá: Astro by ji zkopírovalo na web tak, jak je, i s EXIF.
 3. **Doplňte YAML.** Pole:
 
    | Pole | Význam |
@@ -73,14 +80,13 @@ Fotky jsou v repozitáři: soubor v `src/assets/photos/`, popis v `src/content/p
    | `caption` | volitelný popisek `{ cs, en }` |
    | `category` | `event`, `sport` nebo `portrait` |
    | `published` | `true` = fotka je na webu. Bez tohoto pole platí `false` |
-   | `consentRef` | pořadové číslo záznamu o souhlasu, např. `C-2026-014`. **Nic jiného**: žádné jméno, e-mail, telefon ani datum narození |
    | `minors` | `true`, pokud je na fotce poznatelný někdo mladší 18 let, jinak `false`. U zveřejněné fotky je povinné, nemá výchozí hodnotu |
    | `parentalConsent` | `true`, pokud je souhlas rodičů. U `minors: true` je povinné |
    | `shade` | `normal` nebo `strong`: síla ztmavení pod textem, kde text leží přes fotku |
    | `placeholder`, `credit` | jen pro zástupné fotky. Zástupná fotka nikdy nepatří na veřejný web |
 
-   Build selže, když zveřejněná fotka nemá `consentRef`, `minors` nebo skutečný `alt`, nebo když má `minors: true` bez `parentalConsent: true`.
-4. **Umístění.** Která fotka je v úvodu, v sekcích a v mřížce prací, říká `src/config/placement.ts`. Mění-li se fotka pod textem, spusťte `pnpm check:contrast` (ověří čitelnost) a případně upravte `TEXT_OVER_PHOTOS` a `SHADE_OPACITY` ve `scripts/check-contrast.ts`.
+   Build selže, když zveřejněná fotka nemá `minors` nebo skutečný `alt`, nebo když má `minors: true` bez `parentalConsent: true`.
+4. **Umístění.** Která fotka je v úvodu, v sekcích a v mřížce prací, říká `src/config/placement.ts`. Přehled současného výběru a náhradníků je v [`docs/photos.md`](docs/photos.md). Mění-li se fotka pod textem, spusťte `pnpm check:contrast` (ověří čitelnost) a případně upravte `TEXT_OVER_PHOTOS` a `SHADE_OPACITY` ve `scripts/check-contrast.ts`.
 5. `pnpm check` a nasaďte.
 
 Pro případovou studii je vzor v `src/content/case-studies/example.md`. Koncept (`draft: true`) nemá stránku ani záznam v sitemapě.
