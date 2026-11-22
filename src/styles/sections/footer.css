@@ -67,4 +67,8 @@
     white-space: normal;
     font-size: clamp(64px, 22vw, 128px);
   }
+  /* first and last name on two lines, never broken inside a word (as .hero h1 span) */
+  .foot .big > span {
+    display: block;
+  }
 }

@@ -117,7 +117,8 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
   const big = root.querySelector<HTMLElement>('.foot .big');
   if (big) {
     SplitText.create(big, {
-      type: 'chars',
+      // words keep their characters together: split into chars alone, the name could wrap as "Rů / žek"
+      type: 'words,chars',
       mask: 'chars',
       charsClass: 'fb-ch', // the mask gets `fb-ch-mask` (footer.css gives it headroom for Ů)
       autoSplit: true,

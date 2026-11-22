@@ -16,6 +16,8 @@ const f = d.footer;
 const year = new Date().getFullYear();
 const home = localePath(locale, 'home');
 const onHome = Astro.url.pathname.replace(/\/?$/, '/') === home;
+// first and last name in their own elements, as in the hero: under 900 px each takes a line (footer.css)
+const [first = '', ...rest] = site.name.split(' ');
 ---
 
 <footer class="foot">
@@ -26,7 +28,7 @@ const onHome = Astro.url.pathname.replace(/\/?$/, '/') === home;
     </Button>
   </div>
   <div class="big" aria-hidden="true">
-    {site.name}
+    <span>{first}</span> <span>{rest.join(' ')}</span>
   </div>
   <div class="cols">
     <div>
