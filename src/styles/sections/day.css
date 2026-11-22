@@ -75,12 +75,12 @@
 }
 /* The scroll run of the pinned steps (choreo.ts sameDay: 1.1 viewport heights, start.ts DAY_PIN), reserved from the
    first paint whenever the motion layer is expected, so nothing below moves when the pin starts and links to the
-   sections below land where they should. Without motion, or after the safety net, there is no pin and no run.
+   sections below land where they should. Without motion, or after the safety net (even when the motion layer
+   starts later), there is no pin and no run.
    On the light wrapper rather than as a margin of .day: a margin would collapse through the wrapper and show the
    night background under the pinned steps. `:has(.day)`, not `> .day`: the pin moves .day into a spacer. */
 @media (min-width: 901px) and (min-height: 840px) and (prefers-reduced-motion: no-preference) {
-  html.motion:not(.reveal-fallback) .light:has(.day),
-  html.motion-ready .light:has(.day) {
+  html.motion:not(.reveal-fallback) .light:has(.day) {
     padding-bottom: 110vh;
   }
 }

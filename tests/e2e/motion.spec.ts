@@ -62,6 +62,8 @@ test('a late motion layer skips entrance animations', async ({ page }) => {
   expect(nameTransforms).toEqual([]);
   for (const el of await page.locator('[data-split], [data-rise]').all())
     await expect(el).toHaveCSS('opacity', '1');
+  // no "same day" pin either, so its scroll run is not added back and nothing below moves
+  await expect(page.locator('.light:has(.day)')).toHaveCSS('padding-bottom', '0px');
 });
 
 test('open lightbox blocks page scroll (wheel, space, arrows)', async ({ page }) => {

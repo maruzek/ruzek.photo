@@ -141,7 +141,8 @@ export async function start(): Promise<() => void> {
     });
     mm.add({ motion: MOTION, pin: DAY_PIN }, (ctx) => {
       if (!ctx.conditions?.['motion']) return;
-      return sameDay(libs, document, ctx.conditions['pin'] === true);
+      // a late start keeps the static layout the safety net showed: no pin, so no run to reserve (day.css)
+      return sameDay(libs, document, withEntrances && ctx.conditions['pin'] === true);
     });
     mm.add({ motion: MOTION, fine: FINE }, (ctx) => {
       if (!ctx.conditions?.['motion'] || !ctx.conditions['fine']) return;
