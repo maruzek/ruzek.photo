@@ -344,6 +344,69 @@ test('after a jump from the menu, the About section is fully shown (desktop pin)
     .toBe(0);
 });
 
+// day.css reserves the pin's scroll run from the first paint: a deep link below the pin lands on its section and
+// nothing shifts when the motion layer pins "same day"
+for (const hash of ['#o-mne', '#poptavka']) {
+  test(`a deep link to ${hash} lands on it, with no layout shift from the pin`, async ({ page }) => {
+    await page.addInitScript(() => {
+      const w = window as unknown as { __shift: number };
+      w.__shift = 0;
+      new PerformanceObserver((list) => {
+        for (const e of list.getEntries() as Array<PerformanceEntry & { value: number }>)
+          w.__shift += e.value;
+      }).observe({ type: 'layout-shift', buffered: true });
+    });
+    await page.goto(`/${hash}`);
+    await page.waitForFunction(motionIs, 'on' as const);
+    await page.waitForTimeout(800);
+    const top = await page.locator(hash).evaluate((el) => el.getBoundingClientRect().top);
+    expect(top).toBeGreaterThanOrEqual(0);
+    expect(top).toBeLessThan(120);
+    expect(await page.evaluate(() => (window as unknown as { __shift: number }).__shift)).toBe(0);
+  });
+}
+
+// On a short desktop screen the steps would not fit under the header: no pin, the photo is never held off screen
+test('"same day" pins only where its steps fit, with the photo in view', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'the "same day" pin is desktop only');
+  for (const height of [900, 560]) {
+    await page.setViewportSize({ width: 1440, height });
+    await page.goto('/');
+    await page.waitForFunction(motionIs, 'on' as const);
+    const pinned = await page.evaluate(() => document.querySelector('.day')?.parentElement?.classList.contains('pin-spacer'));
+    expect(pinned).toBe(height === 900);
+    if (!pinned) continue;
+    // half-way through the pin
+    await page.evaluate(() => {
+      const spacer = document.querySelector('.day')?.parentElement as HTMLElement;
+      window.scrollTo(0, spacer.getBoundingClientRect().top + scrollY + innerHeight * 0.5);
+    });
+    await expect
+      .poll(() => page.locator('.day').evaluate((el) => getComputedStyle(el).position))
+      .toBe('fixed');
+    const photo = await page.locator('.day .dph').boundingBox();
+    expect((photo?.y ?? 0) + (photo?.height ?? 0)).toBeLessThanOrEqual(height);
+  }
+});
+
+// Under 900 px the footer name is two lines, first and last name, never broken inside a word ("Rů / žek")
+test('the footer name keeps its words whole', async ({ page, viewport }) => {
+  test.skip((viewport?.width ?? 0) > 900, 'one line on desktop');
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  await page.locator('.foot .big').scrollIntoViewIfNeeded();
+  await expect(page.locator('.foot .big .fb-ch').first()).toBeAttached();
+  const lines = await page.locator('.foot .big').evaluate((big) => {
+    const rows = new Map<number, string>();
+    for (const ch of big.querySelectorAll('.fb-ch')) {
+      const y = Math.round(ch.parentElement?.getBoundingClientRect().top ?? 0);
+      rows.set(y, (rows.get(y) ?? '') + ch.textContent);
+    }
+    return [...rows.values()];
+  });
+  expect(lines).toEqual(['Martin', 'Růžek']);
+});
+
 // Each mask (SplitText sets overflow: clip inline) must reach above the ink of its glyph: Ů's ring, i's dot.
 // The hero name and the big name in the footer share the 0.84 line height.
 for (const [what, selector] of [

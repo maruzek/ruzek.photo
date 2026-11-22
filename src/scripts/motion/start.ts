@@ -26,7 +26,8 @@ const FONT_WAIT_MS = 1200;
 
 const MOTION = '(prefers-reduced-motion: no-preference)';
 const REDUCE = '(prefers-reduced-motion: reduce)';
-const DESKTOP = '(min-width: 901px)';
+/** Room for the pinned "Same day" steps under the header; the same query as day.css, which reserves the pin run */
+const DAY_PIN = '(min-width: 901px) and (min-height: 640px)';
 const FINE = '(hover: hover) and (pointer: fine)';
 
 /** Dither reveals and wipes on one scheduler driven by the GSAP ticker (concept.md §7). */
@@ -138,9 +139,9 @@ export async function start(): Promise<() => void> {
       }
       return run;
     });
-    mm.add({ motion: MOTION, desktop: DESKTOP }, (ctx) => {
+    mm.add({ motion: MOTION, pin: DAY_PIN }, (ctx) => {
       if (!ctx.conditions?.['motion']) return;
-      return sameDay(libs, document, ctx.conditions['desktop'] === true);
+      return sameDay(libs, document, ctx.conditions['pin'] === true);
     });
     mm.add({ motion: MOTION, fine: FINE }, (ctx) => {
       if (!ctx.conditions?.['motion'] || !ctx.conditions['fine']) return;

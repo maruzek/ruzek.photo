@@ -249,12 +249,28 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
   };
 }
 
-/** "Same day": the progress line fills and the steps light up; pinned on desktop only. */
-export function sameDay({ gsap }: Libs, root: ParentNode, desktop: boolean): Cleanup {
+/** Scroll run of the "Same day" pin, in viewport heights; day.css reserves the same run below the section */
+const DAY_PIN_RUN = 1.1;
+/** Gap between the bottom of the pinned steps and the bottom of the screen (px) */
+const DAY_PIN_INSET = 24;
+
+/**
+ * "Same day": the progress line fills and the steps light up. Pinned only on a desktop tall enough for the
+ * progress line and the steps (start.ts, the same media query as day.css). The pin's scroll run is reserved by
+ * the CSS from the first paint and the pin adds no spacing of its own, so nothing below moves when it starts.
+ */
+export function sameDay({ gsap }: Libs, root: ParentNode, pin: boolean): Cleanup {
   const day = root.querySelector<HTMLElement>('.day');
   const line = day?.querySelector('.progress i');
-  if (!day || !line) return noop;
+  const stage = day?.querySelector<HTMLElement>('.steps');
+  if (!day || !line || !stage) return noop;
   const steps = [...day.querySelectorAll('.step')];
+  // pinned in the middle of the screen while the section fits; when it is taller, the bottom of the steps stops
+  // just above the bottom of the screen, so the vertical photo of step 2 is in view for the whole pin
+  const pinStart = (): string =>
+    day.offsetHeight < innerHeight
+      ? 'center center'
+      : `top+=${Math.round(stage.getBoundingClientRect().bottom - day.getBoundingClientRect().top)} bottom-=${DAY_PIN_INSET}`;
   gsap.fromTo(
     line,
     { scaleX: 0 },
@@ -263,14 +279,12 @@ export function sameDay({ gsap }: Libs, root: ParentNode, desktop: boolean): Cle
       ease: 'none',
       scrollTrigger: {
         trigger: day,
-        // pinned in the middle of the screen while it fits, at the top when it is taller (short laptops)
-        start: desktop
-          ? () => (day.offsetHeight < innerHeight ? 'center center' : 'top top')
-          : 'top 70%',
-        end: desktop ? '+=110%' : 'bottom 60%',
+        start: pin ? pinStart : 'top 70%',
+        end: pin ? `+=${DAY_PIN_RUN * 100}%` : 'bottom 60%',
         scrub: true,
-        pin: desktop,
-        // created after the triggers below it (start.ts): refreshing first lets them include the pin spacing
+        pin,
+        pinSpacing: false,
+        // created after the triggers below it (start.ts): refreshing first keeps the order of the triggers
         refreshPriority: 1,
         onUpdate: (s) =>
           steps.forEach((el, i) =>
