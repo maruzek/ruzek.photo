@@ -24,12 +24,7 @@
   place-items: center;
   aspect-ratio: 3 / 2;
 }
-/* on the sheet the cell is a size container: a turned frame is sized from the cell (cqw, cqh) */
-.cs-sheet .cs-cell {
-  position: relative;
-  container-type: size;
-}
-/* the photo box keeps the photo's own proportions: a portrait frame stands inside its 3:2 cell */
+/* the photo box keeps the photo's own proportions (on the sheet, a vertical frame is cropped, see .cs-tall) */
 .cs-box {
   display: block;
   position: relative;
@@ -42,20 +37,14 @@
 .cs-sheet .cs-box {
   height: 100%;
 }
-/* A vertical frame lies turned on the sheet, as on a strip of film: its box keeps the photo's proportions, is as
-   large as fits the cell once turned, and is centred by layout (left, top), so the offsets sheet.ts measures are
-   the box's own and only \`rotate\` turns it. The pick straightens as it leaves its seat. */
-.cs-sheet .cs-turn .cs-box {
-  --bh: min(100cqw, 100cqh / var(--r, 0.6667));
-  position: absolute;
-  left: calc(50% - var(--bh) * var(--r, 0.6667) / 2);
-  top: calc(50% - var(--bh) / 2);
-  width: calc(var(--bh) * var(--r, 0.6667));
-  height: var(--bh);
-  max-width: none;
-  max-height: none;
-  aspect-ratio: auto;
-  rotate: -90deg;
+/* A vertical frame stands upright on the sheet, cropped to the same 3:2 cell as the others, so the rows stay even.
+   --cs-focus is the height of the crop in the photo (40 %: faces and action sit a little above the middle);
+   sheet.ts reads it from the seat, so the pick leaves showing the same crop and opens it to the whole photo. */
+.cs-sheet .cs-tall .cs-box {
+  aspect-ratio: 3 / 2;
+}
+.cs-sheet .cs-tall img {
+  object-position: 50% var(--cs-focus, 40%);
 }
 .cs-box picture {
   display: contents;

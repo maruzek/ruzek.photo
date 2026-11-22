@@ -3,10 +3,10 @@ import { PLACEMENT } from '@/config/placement';
 import { SPREAD_SLOTS, buildContactSheet, frameBox } from '@/lib/photos/contact-sheet';
 
 describe('frameBox', () => {
-  it('turns vertical frames only and passes the proportions to the CSS', () => {
+  it('crops vertical frames only and passes the proportions to the CSS', () => {
     expect(frameBox({ width: 1600, height: 2400 })).toEqual({
       vertical: true,
-      style: '--ar: 1600 / 2400; --r: 0.6667',
+      style: '--ar: 1600 / 2400',
     });
     expect(frameBox({ width: 2400, height: 1600 }).vertical).toBe(false);
     expect(frameBox({ width: 2000, height: 2000 }).vertical).toBe(false);

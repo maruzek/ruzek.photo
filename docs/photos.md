@@ -41,7 +41,7 @@ Galerie je kontaktní arch (prototyp 3, větev `proto/gallery-contact-sheet-v2`)
 | 17 | `street-hat-flower` | `IMG_4028` | s6 |
 | 18 | `football-corner-crowd` | `IMG_1814` | |
 
-Pořadí jde po focení jako na skutečném filmu: diskuse, zápas, ples, zápas, večírek, florbal, ulice, zápas. Vybrané snímky tak v archu leží nepravidelně. Rozvržení začíná zápasem vedle diskuse (nadpis slibuje „akce a zápasy“) a dál se střídá. 18 políček vyplní celé řady při 9, 6 i 3 sloupcích. Snímky na výšku jsou v archu otočené o 90°, jak to vypadá na filmu, a při otevření se narovnají.
+Pořadí jde po focení jako na skutečném filmu: diskuse, zápas, ples, zápas, večírek, florbal, ulice, zápas. Vybrané snímky tak v archu leží nepravidelně. Rozvržení začíná zápasem vedle diskuse (nadpis slibuje „akce a zápasy“) a dál se střídá. 18 políček vyplní celé řady při 9, 6 i 3 sloupcích. Snímky na výšku stojí v archu rovně, oříznuté na políčko 3:2 (výřez sedí na 40 % výšky, u jednotlivé fotky jde posunout přes `--cs-focus`). Když vybraný snímek odlétá, výřez se rozbalí na celou fotku.
 
 ## Rezerva
 

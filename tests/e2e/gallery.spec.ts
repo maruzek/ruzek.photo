@@ -17,16 +17,20 @@ async function sheetTopAt(page: Page, line: number): Promise<void> {
   }, line);
 }
 
-/** The pick's picture and its seat on the sheet, as viewport boxes. */
+/** The visible part of the pick's picture (its clip-path inset taken off) and its seat, as viewport boxes. */
 async function pickAndSeat(page: Page, slot: string) {
   return page.evaluate((s) => {
-    const box = (el: Element | null) => {
+    const box = (el: HTMLElement | null) => {
       const r = el?.getBoundingClientRect();
-      return r ? { x: r.x, y: r.y, w: r.width, h: r.height } : null;
+      if (!el || !r) return null;
+      // a vertical pick is clipped to its crop on the sheet while folded: inset(top 0 bottom 0), unscaled px
+      const [top = 0, , bottom = 0] = (getComputedStyle(el).clipPath.match(/[\d.]+(?=px)/g) ?? []).map(Number);
+      const scale = el.offsetWidth > 0 ? r.width / el.offsetWidth : 1;
+      return { x: r.x, y: r.y + top * scale, w: r.width, h: r.height - (top + bottom) * scale };
     };
     return {
-      pick: box(document.querySelector(`.cs-pick.${s} .cs-box`)),
-      seat: box(document.querySelector(`[data-seat="${s}"] .cs-box`)),
+      pick: box(document.querySelector<HTMLElement>(`.cs-pick.${s} .cs-box`)),
+      seat: box(document.querySelector<HTMLElement>(`[data-seat="${s}"] .cs-box`)),
     };
   }, slot);
 }
@@ -55,18 +59,25 @@ for (const path of ['/', '/en/']) {
     // the seats are decorative, the pick itself is the link
     await expect(page.locator('.cs-seat a, .cs-seat[tabindex]')).toHaveCount(0);
     await expect(page.locator('.cs-front')).toHaveAttribute('aria-hidden', 'true');
-    // a vertical frame lies turned on the sheet (thumbnail and seat alike), an enlarged pick stands upright
-    const turned = page.locator('.cs-sheet .cs-turn .cs-box');
-    expect(await turned.count()).toBeGreaterThan(0);
-    for (const box of await turned.all()) await expect(box).toHaveCSS('rotate', '-90deg');
-    await expect(page.locator('.cs-spread .cs-turn')).toHaveCount(0);
+    // a vertical frame stands upright on the sheet, cropped to the same 3:2 cell (thumbnail and seat alike)
+    const tall = page.locator('.cs-sheet .cs-tall .cs-box');
+    expect(await tall.count()).toBeGreaterThan(0);
+    for (const box of await tall.all()) {
+      await expect(box).toHaveCSS('rotate', 'none');
+      const { w, h } = await box.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { w: r.width, h: r.height };
+      });
+      expect(Math.abs(w / h - 1.5)).toBeLessThan(0.05);
+    }
+    await expect(page.locator('.cs-spread .cs-tall')).toHaveCount(0);
   });
 }
 
 test('a pick starts folded into its seat and the scroll opens it', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(motionIs, 'on' as const);
-  // s1 lies flat on the sheet, s2 (a vertical frame) lies turned like its seat: the boxes cover each other
+  // s1 is a horizontal frame, s2 a vertical one clipped to its crop on the sheet: either covers its seat exactly
   for (const slot of ['s1', 's2']) {
     const folded = await pickAndSeat(page, slot);
     expect(folded.pick && folded.seat, slot).toBeTruthy();

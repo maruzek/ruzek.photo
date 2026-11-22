@@ -1,9 +1,10 @@
 // The contact sheet opens (ContactSheet.astro, prototype 3). The page is rendered open; here every pick is folded
 // back into its seat on the sheet with a transform, and one scrubbed ScrollTrigger over the sheet's pass through the
 // viewport opens it again: first a Bayer front develops the bare sheet, then the picks leave their seats one after
-// another, in reading order of the spread (the marked seats with their dimmed copies stay), straighten when they
-// lay turned on the sheet, and grow into the spread below. No pin, no layout change: only transform, opacity
-// and the canvas, so the stage keeps its height from the first paint and CLS stays 0.
+// another, in reading order of the spread (the marked seats with their dimmed copies stay), and grow into the spread
+// below; a vertical frame, cropped to 3:2 on the sheet, opens to the whole photo on the way. No pin, no layout
+// change: only transform, clip-path, opacity and the canvas, so the stage keeps its height from the first paint and
+// CLS stays 0.
 //
 // The fit is computed from offsets (layout boxes ignore transforms), so it is re-measured on every
 // ScrollTrigger refresh without first undoing the scrubbed state. A pick's link moves with its picture: what you
@@ -44,6 +45,14 @@ interface Box {
   h: number;
 }
 
+/** Vertical share (0–1) of the photo's `object-position` in a seat (work.css --cs-focus), 0.5 when unknown. */
+function focusOf(seat: HTMLElement): number {
+  const img = seat.querySelector('img');
+  const y = img ? getComputedStyle(img).objectPosition.split(' ')[1] : undefined;
+  const share = y?.endsWith('%') ? Number.parseFloat(y) / 100 : Number.NaN;
+  return Number.isFinite(share) ? clamp(share, 0, 1) : 0.5;
+}
+
 /** Layout box of `el` relative to `root` (offsets, so transforms on the way are ignored). */
 function boxIn(el: HTMLElement, root: HTMLElement): Box {
   let x = 0;
@@ -78,31 +87,30 @@ export function contactSheet(
     return slot ? sheet.querySelector<HTMLElement>(`[data-seat="${slot}"] .cs-box`) : null;
   };
   /**
-   * The transform that puts the pick's picture exactly over its seat, turned like the seat when the frame lies
-   * turned on the sheet (work.css .cs-turn: the seat box keeps the photo's proportions and only `rotate` turns it
-   * about its centre). The pick's origin is its top-left corner: x, y place the centre of the scaled and turned
-   * picture on the centre of the seat.
+   * Where the pick's picture lies over its seat. A vertical frame shows on the sheet only a 3:2 band of the photo
+   * (work.css .cs-tall), at the height its seat's `object-position` gives, so the folded pick is clipped to the same
+   * band (`top`, `bottom`: the clip-path insets of its box) and that band is put over the seat. The pick's origin is
+   * its top-left corner: x, y place the centre of the scaled band on the centre of the seat.
    */
-  const fit = (pick: HTMLElement): { x: number; y: number; scale: number; rotation: number } => {
+  const fit = (
+    pick: HTMLElement,
+  ): { x: number; y: number; scale: number; top: number; bottom: number } => {
     const seat = seatOf(pick);
     const box = pick.querySelector<HTMLElement>('.cs-box');
-    if (!seat || !box) return { x: 0, y: 0, scale: 1, rotation: 0 };
+    if (!seat || !box) return { x: 0, y: 0, scale: 1, top: 0, bottom: 0 };
     const at = boxIn(pick, cs);
     const from = boxIn(box, cs);
     const to = boxIn(seat, cs);
     const scale = from.w > 0 ? to.w / from.w : 1;
-    const rotation = seat.closest('.cs-turn') ? -90 : 0;
-    // the picture's centre in the pick's own coordinates, scaled and turned about the origin
-    const cx = (from.x - at.x + from.w / 2) * scale;
-    const cy = (from.y - at.y + from.h / 2) * scale;
-    const rad = (rotation * Math.PI) / 180;
-    const cos = Math.round(Math.cos(rad) * 1e6) / 1e6;
-    const sin = Math.round(Math.sin(rad) * 1e6) / 1e6;
+    // the band of the photo the seat shows: the seat's proportions at the photo's width
+    const band = Math.min(from.h, to.w > 0 ? (from.w * to.h) / to.w : from.h);
+    const top = (from.h - band) * focusOf(seat);
     return {
-      x: to.x + to.w / 2 - at.x - (cx * cos - cy * sin),
-      y: to.y + to.h / 2 - at.y - (cx * sin + cy * cos),
+      x: to.x + to.w / 2 - at.x - (from.x - at.x + from.w / 2) * scale,
+      y: to.y + to.h / 2 - at.y - (from.y - at.y + top + band / 2) * scale,
       scale,
-      rotation,
+      top,
+      bottom: from.h - band - top,
     };
   };
 
@@ -128,15 +136,19 @@ export function contactSheet(
     gsap.set(pick, { zIndex: picks.length - i, transformOrigin: '0 0' });
     tl.fromTo(
       pick,
-      {
-        x: () => fit(pick).x,
-        y: () => fit(pick).y,
-        scale: () => fit(pick).scale,
-        rotation: () => fit(pick).rotation,
-      },
-      { x: 0, y: 0, scale: 1, rotation: 0, ease: 'power2.inOut', duration },
+      { x: () => fit(pick).x, y: () => fit(pick).y, scale: () => fit(pick).scale },
+      { x: 0, y: 0, scale: 1, ease: 'power2.inOut', duration },
       at,
     );
+    // a vertical frame leaves showing its crop from the sheet and opens to the whole photo as it flies
+    const box = pick.querySelector('.cs-box');
+    if (box && seatOf(pick)?.closest('.cs-tall'))
+      tl.fromTo(
+        box,
+        { clipPath: () => `inset(${fit(pick).top}px 0px ${fit(pick).bottom}px 0px)` },
+        { clipPath: 'inset(0px 0px 0px 0px)', ease: 'power2.inOut', duration },
+        at,
+      );
     const no = pick.querySelector('.cs-no');
     if (no)
       tl.fromTo(

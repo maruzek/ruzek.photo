@@ -1,8 +1,8 @@
 ---
-// One frame of the work gallery: a thumbnail left on the contact sheet (turned when vertical), or a pick enlarged
-// in the spread. The link
-// opens the full image without JavaScript; lightbox.ts turns it into the <dialog>. `data-full` is the large file
-// the lightbox shows, `data-lb` its caption: frame number, category and place (the tile itself shows the number).
+// One frame of the work gallery: a thumbnail left on the contact sheet (cropped to 3:2 when vertical), or a pick
+// enlarged in the spread. The link opens the full image without JavaScript; lightbox.ts turns it into the <dialog>.
+// `data-full` is the large file the lightbox shows, `data-lb` its caption: frame number, category and place (the
+// tile itself shows the number).
 import { Picture, getImage } from 'astro:assets';
 import { t, type Locale } from '../i18n';
 import { frameBox, type Frame } from '../lib/photos/contact-sheet';
@@ -29,12 +29,12 @@ const full = await getImage({
 });
 const place = caption?.[locale] ?? `TODO: ${d.captionTodo}`;
 const label = `${frame.no} · ${d.categories[category]} · ${place}`;
-// a vertical thumbnail lies turned on the sheet; an enlarged pick always stands upright
+// a vertical thumbnail is cropped to the sheet's 3:2 cell; an enlarged pick shows the whole photo
 const box = frameBox(image);
 ---
 
 <a
-  class:list={['cs-print', frame.slot ? ['cs-pick', frame.slot] : ['cs-thumb', { 'cs-turn': box.vertical }]]}
+  class:list={['cs-print', frame.slot ? ['cs-pick', frame.slot] : ['cs-thumb', { 'cs-tall': box.vertical }]]}
   href={full.src}
   data-lb={label}
   data-full={full.src}

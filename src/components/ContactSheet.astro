@@ -1,9 +1,10 @@
 ---
 // "Selected work" as a contact sheet that opens (prototype 3). Every published frame sits on a dense, numbered
 // sheet; the picks (PLACEMENT.work.picks) are enlarged in the spread below, and their seats on the sheet keep a
-// dimmed copy of the frame with a grease-pencil mark. A vertical frame lies turned on the sheet, as on film. This server render is the open sheet, which is also the page without JavaScript and with reduced
-// motion. The motion layer (scripts/motion/sheet.ts) only adds transforms: it folds each pick back into its seat
-// and lets the scroll open the sheet, while a Bayer front develops it (effects/front.ts).
+// dimmed copy of the frame with a grease-pencil mark. A vertical frame is cropped to the sheet's 3:2 cell. This
+// server render is the open sheet, which is also the page without JavaScript and with reduced motion. The motion
+// layer (scripts/motion/sheet.ts) only adds transforms: it folds each pick back into its seat and lets the scroll
+// open the sheet, while a Bayer front develops it (effects/front.ts).
 import '../styles/sections/work.css';
 import { Picture } from 'astro:assets';
 import { PLACEMENT } from '../config/placement';
@@ -60,7 +61,7 @@ const { frames, spread } = buildContactSheet(ids, PLACEMENT.work.picks, (id) => 
               // the pick's seat: decorative, the photo itself is the link in the spread. The dimmed copy shows
               // which frame was taken out once the pick has left.
               <span
-                class:list={['cs-seat', { 'cs-turn': frameBox(frame.photo.data.image).vertical }]}
+                class:list={['cs-seat', { 'cs-tall': frameBox(frame.photo.data.image).vertical }]}
                 data-seat={frame.slot}
                 aria-hidden="true"
               >
