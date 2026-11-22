@@ -169,7 +169,7 @@ export const en = {
     lead: 'Send the date, place and type of event. I will reply with a price and confirm whether I am free.',
     estimate: {
       label: 'Estimate from',
-      note: 'Based on the selected options. I am not a VAT payer.',
+      note: 'Based on the selected options.',
     },
     direct: {
       label: 'Prefer to reach me directly',
