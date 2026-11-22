@@ -1,6 +1,6 @@
 // Fine ordered dither over photos (prototype: rozpad.js, section 2): the photo assembles from the cover colour
 // as it enters, falls apart as it leaves, with a coral "developing" band at the edge. `hover` (service cards)
-// re-develops the photo when the pointer enters. Progress comes from a ScrollTrigger, not from layout reads.
+// re-develops the photo when a mouse pointer enters. Progress comes from a ScrollTrigger, not from layout reads.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { b8 } from './bayer';
@@ -65,7 +65,9 @@ export function ditherEffect(el: HTMLElement): DitherHandle {
     mode === 'hover'
       ? null
       : ScrollTrigger.create({ trigger: el, start: 'top bottom', end: 'bottom top' });
-  const onEnter = (): void => {
+  const onEnter = (e: PointerEvent): void => {
+    // a mouse only: a tap fires pointerenter too, and the card replayed its dither on every touch
+    if (e.pointerType !== 'mouse') return;
     gsap.fromTo(hover, { p: 0 }, { p: CLEAR - 0.05, duration: 0.7, ease: 'power2.out' });
   };
   if (mode === 'hover') el.addEventListener('pointerenter', onEnter);
