@@ -261,9 +261,10 @@ const DAY_PIN_RUN = 1.1;
 const DAY_PIN_INSET = 24;
 
 /**
- * "Same day": the progress line fills and the steps light up. Pinned only on a desktop tall enough for the
- * progress line and the steps (start.ts, the same media query as day.css). The pin's scroll run is reserved by
- * the CSS from the first paint and the pin adds no spacing of its own, so nothing below moves when it starts.
+ * "Same day": the progress line fills and the steps light up. Pinned only on a desktop tall enough for the whole
+ * section content, heading to steps (start.ts, the same media query as day.css): a shorter pin either cut off the
+ * heading or held the vertical photo of step 2 below the screen. The pin's scroll run is reserved by the CSS from
+ * the first paint and the pin adds no spacing of its own, so nothing below moves when it starts.
  */
 export function sameDay({ gsap }: Libs, root: ParentNode, pin: boolean): Cleanup {
   const day = root.querySelector<HTMLElement>('.day');
@@ -271,12 +272,18 @@ export function sameDay({ gsap }: Libs, root: ParentNode, pin: boolean): Cleanup
   const stage = day?.querySelector<HTMLElement>('.steps');
   if (!day || !line || !stage) return noop;
   const steps = [...day.querySelectorAll('.step')];
-  // pinned in the middle of the screen while the section fits; when it is taller, the bottom of the steps stops
-  // just above the bottom of the screen, so the vertical photo of step 2 is in view for the whole pin
-  const pinStart = (): string =>
-    day.offsetHeight < innerHeight
-      ? 'center center'
-      : `top+=${Math.round(stage.getBoundingClientRect().bottom - day.getBoundingClientRect().top)} bottom-=${DAY_PIN_INSET}`;
+  // in the middle of the screen while the section fits; when it is taller, the bottom of the steps stops just
+  // above the bottom of the screen; should the content still not fit (a large text size), the heading stays
+  // at the top of the screen
+  const pinStart = (): string => {
+    if (day.offsetHeight < innerHeight) return 'center center';
+    const top = day.getBoundingClientRect().top;
+    const contentTop = Math.round(parseFloat(getComputedStyle(day).paddingTop));
+    const stepsBottom = Math.round(stage.getBoundingClientRect().bottom - top);
+    return stepsBottom - contentTop + DAY_PIN_INSET <= innerHeight
+      ? `top+=${stepsBottom} bottom-=${DAY_PIN_INSET}`
+      : `top+=${contentTop} top`;
+  };
   gsap.fromTo(
     line,
     { scaleX: 0 },

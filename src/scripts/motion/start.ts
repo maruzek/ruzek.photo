@@ -26,8 +26,8 @@ const FONT_WAIT_MS = 1200;
 
 const MOTION = '(prefers-reduced-motion: no-preference)';
 const REDUCE = '(prefers-reduced-motion: reduce)';
-/** Room for the pinned "Same day" steps under the header; the same query as day.css, which reserves the pin run */
-const DAY_PIN = '(min-width: 901px) and (min-height: 640px)';
+/** Room for the whole pinned "Same day" section content; the same query as day.css, which reserves the pin run */
+const DAY_PIN = '(min-width: 901px) and (min-height: 840px)';
 const FINE = '(hover: hover) and (pointer: fine)';
 
 /** Dither reveals and wipes on one scheduler driven by the GSAP ticker (concept.md §7). */

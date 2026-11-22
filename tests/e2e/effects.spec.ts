@@ -29,7 +29,7 @@ test('reduced motion: dither and ASCII canvases hidden, wipes painted statically
   expect(await wipes.count()).toBeGreaterThan(0);
   for (const cv of await wipes.all()) await expect(cv).toHaveAttribute('data-painted', 'static');
   // the destination colour grows from the bottom edge, where the next zone starts: the bottom row is all `to`,
-  // the top row mostly `from`, so neither edge of the band is a hard line
+  // the top row at most half (one Bayer row), so neither edge of the band is a hard line
   const rows = await wipes.first().evaluate((cv: HTMLCanvasElement) => {
     const ctx = cv.getContext('2d');
     const to = cv.dataset['to'] ?? '';
@@ -47,7 +47,7 @@ test('reduced motion: dither and ASCII canvases hidden, wipes painted statically
     return { top: isTo(0), bottom: isTo(cv.height - 1) };
   });
   expect(rows.bottom).toBe(1);
-  expect(rows.top).toBeLessThan(0.5);
+  expect(rows.top).toBeLessThanOrEqual(0.5);
   await expect(page.locator('.hero')).not.toHaveAttribute('data-ascii-intro', /.+/);
 });
 

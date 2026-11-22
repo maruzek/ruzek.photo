@@ -368,17 +368,25 @@ for (const hash of ['#o-mne', '#poptavka']) {
   });
 }
 
-// On a short desktop screen the steps would not fit under the header: no pin, the photo is never held off screen
-test('"same day" pins only where its steps fit, with the photo in view', async ({ page }, info) => {
+// Review Focus 2 and the short-laptop finding: the pin holds the whole section, heading to the step 2 photo, so
+// it pins only where all of it fits (day.css, start.ts DAY_PIN); on a shorter screen the section scrolls through
+test('"same day" pins only where it fits, with its heading and photo in view', async ({
+  page,
+}, info) => {
   test.skip(info.project.name !== 'desktop', 'the "same day" pin is desktop only');
-  for (const height of [900, 560]) {
-    await page.setViewportSize({ width: 1440, height });
+  for (const [width, height, pins] of [
+    [1440, 900, true],
+    [1280, 840, true],
+    [1280, 640, false],
+    [1440, 560, false],
+  ] as const) {
+    await page.setViewportSize({ width, height });
     await page.goto('/');
     await page.waitForFunction(motionIs, 'on' as const);
     const pinned = await page.evaluate(() =>
       document.querySelector('.day')?.parentElement?.classList.contains('pin-spacer'),
     );
-    expect(pinned).toBe(height === 900);
+    expect(pinned, `${width} x ${height}`).toBe(pins);
     if (!pinned) continue;
     // half-way through the pin
     await page.evaluate(() => {
@@ -388,8 +396,13 @@ test('"same day" pins only where its steps fit, with the photo in view', async (
     await expect
       .poll(() => page.locator('.day').evaluate((el) => getComputedStyle(el).position))
       .toBe('fixed');
+    const eyebrow = await page.locator('.day .eyebrow').boundingBox();
+    expect(eyebrow?.y ?? -1, `${width} x ${height} heading`).toBeGreaterThanOrEqual(0);
     const photo = await page.locator('.day .dph').boundingBox();
-    expect((photo?.y ?? 0) + (photo?.height ?? 0)).toBeLessThanOrEqual(height);
+    expect(
+      (photo?.y ?? 0) + (photo?.height ?? 0),
+      `${width} x ${height} photo`,
+    ).toBeLessThanOrEqual(height);
   }
 });
 
@@ -522,17 +535,4 @@ test('a fold heading is in view before the whole photo is', async ({ page }) => 
     /none|matrix\(1, 0, 0, 1, 0, 0\)/,
     { timeout: 4000 },
   );
-});
-
-// Review Focus 2: on a short laptop the pinned section must not cut off its own heading
-test('"same day" pinned on a short screen keeps its heading in view', async ({ page }, info) => {
-  test.skip(info.project.name !== 'desktop', 'the pin is desktop only');
-  await page.setViewportSize({ width: 1280, height: 640 });
-  await page.goto('/');
-  await page.waitForFunction(motionIs, 'on' as const);
-  await page.locator('.day').scrollIntoViewIfNeeded();
-  await page.mouse.wheel(0, 300); // into the pinned range
-  await page.waitForTimeout(800);
-  const top = await page.locator('.day .eyebrow').evaluate((el) => el.getBoundingClientRect().top);
-  expect(top).toBeGreaterThanOrEqual(0);
 });
