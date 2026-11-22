@@ -224,7 +224,8 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
     trigger: band,
     start: 'top bottom',
     end: 'bottom top',
-    onToggle: () => sync(),
+    // create() can fire this before `st` exists (page loaded with the band on screen)
+    onToggle: (s) => sync(s.isActive),
     onUpdate: (s) => {
       if (paused) return;
       const v = clamp(Math.abs(s.getVelocity()) / 600, 0, 5);
@@ -233,18 +234,18 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
       gsap.to(loop, { timeScale: dir, duration: 1.2, delay: 0.3, overwrite: false });
     },
   });
-  function sync(): void {
-    if (st.isActive && !paused) loop.play();
+  function sync(active: boolean): void {
+    if (active && !paused) loop.play();
     else loop.pause();
   }
-  sync();
+  sync(st.isActive);
   if (!toggle) return noop;
   const onToggle = (): void => {
     paused = !paused;
     toggle.setAttribute('aria-pressed', String(paused));
     gsap.killTweensOf(loop);
     if (!paused) loop.timeScale(1);
-    sync();
+    sync(st.isActive);
   };
   toggle.hidden = false;
   toggle.addEventListener('click', onToggle);

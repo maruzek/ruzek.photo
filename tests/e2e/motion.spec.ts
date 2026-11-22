@@ -146,6 +146,18 @@ test('marquee can be paused', async ({ page }) => {
   await expect(toggle).toHaveAttribute('aria-pressed', 'false');
 });
 
+test('reloading with the marquee on screen still starts the motion layer', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  await page.locator('.marquee').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
+  await page.reload();
+  await page.waitForFunction(motionIs, 'on' as const);
+  expect(
+    await page.locator('.marquee').evaluate((e) => e.getBoundingClientRect().top),
+  ).toBeLessThan(page.viewportSize()?.height ?? 0);
+});
+
 test('header blends only over flat sections and never over photos', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(motionIs, 'on' as const);
