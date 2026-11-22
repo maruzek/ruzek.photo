@@ -27,6 +27,15 @@ const RUN = {
 } as const;
 /** The frame number under a pick fades in over the last part of its own flight */
 const NUMBER_AT = 0.8;
+/**
+ * Desktop only: once landed, the picks drift at lane speeds, as in the "three speeds" gallery. The left lane of
+ * the spread (s3, s6, s7) rises faster than the page, the right lane (s2, s5) lags behind it, the wide picks (s1,
+ * s4, s8) keep the page's pace. The offset is measured from the middle of the viewport and capped at `DRIFT_REACH`
+ * of half its height, because the spread's slots span lanes: a stronger drift would push them into each other.
+ */
+const DRIFT: Readonly<Record<string, number>> = { s2: -0.05, s3: 0.05, s5: -0.05, s6: 0.05, s7: 0.05 };
+const DRIFT_REACH = 1;
+const clamp = (v: number, a: number, b: number): number => (v < a ? a : v > b ? b : v);
 
 interface Box {
   x: number;
@@ -49,7 +58,7 @@ function boxIn(el: HTMLElement, root: HTMLElement): Box {
 }
 
 export function contactSheet(
-  { gsap }: Libs,
+  { gsap, ScrollTrigger }: Libs,
   root: ParentNode,
   scheduler: Scheduler,
   wide: boolean,
@@ -62,8 +71,10 @@ export function contactSheet(
   // a late start (a deep link, a restored scroll position) misses the closed sheet: it stays open
   if (sheet.getBoundingClientRect().top < innerHeight * run.start) return noop;
 
+  const slotOf = (pick: HTMLElement): string | undefined =>
+    [...pick.classList].find((c) => /^s\d$/.test(c));
   const seatOf = (pick: HTMLElement): HTMLElement | null => {
-    const slot = [...pick.classList].find((c) => /^s\d$/.test(c));
+    const slot = slotOf(pick);
     return slot ? sheet.querySelector<HTMLElement>(`[data-seat="${slot}"] .cs-box`) : null;
   };
   /**
@@ -157,7 +168,59 @@ export function contactSheet(
   };
   cs.addEventListener('focusin', onFocus);
 
+  const stopDrift = wide ? drift() : noop;
+
+  /**
+   * The lane drift of the landed picks (DRIFT). It moves each pick's `.cs-float` (picture and number), never the
+   * link itself, which the fold moves; it grows in as the pick lands, so a folded pick stays exactly on its seat.
+   * Positions come from offsets, measured at every refresh, because the folded picks are transformed.
+   */
+  function drift(): Cleanup {
+    if (!cs) return noop;
+    const lanes = picks.flatMap((pick, i) => {
+      const el = pick.querySelector<HTMLElement>('.cs-float');
+      const speed = DRIFT[slotOf(pick) ?? ''] ?? 0;
+      if (!el || speed === 0) return [];
+      return [{ pick, el, speed, at: run.open + i * step, mid: 0, set: gsap.quickSetter(el, 'y', 'px') }];
+    });
+    if (lanes.length === 0) return noop;
+    const measure = (): void => {
+      if (!cs) return;
+      const top = cs.getBoundingClientRect().top + scrollY;
+      for (const lane of lanes) {
+        const box = boxIn(lane.pick, cs);
+        lane.mid = top + box.y + box.h / 2;
+      }
+    };
+    const update = (): void => {
+      const half = innerHeight / 2;
+      const progress = tl.progress();
+      for (const lane of lanes) {
+        const landed = clamp((progress - lane.at) / duration, 0, 1);
+        const reach = Math.abs(lane.speed) * half * DRIFT_REACH;
+        lane.set(landed * clamp(lane.speed * (lane.mid - scrollY - half), -reach, reach));
+      }
+    };
+    const trigger = ScrollTrigger.create({
+      trigger: cs,
+      start: 'top bottom',
+      end: 'bottom top',
+      onUpdate: update,
+      onRefresh: () => {
+        measure();
+        update();
+      },
+    });
+    measure();
+    update();
+    return () => {
+      trigger.kill();
+      for (const lane of lanes) gsap.set(lane.el, { clearProps: 'transform' });
+    };
+  }
+
   return () => {
+    stopDrift();
     cs.removeEventListener('focusin', onFocus);
     cs.classList.remove('cs-live');
     removeFx();

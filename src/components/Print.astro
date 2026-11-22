@@ -41,18 +41,22 @@ const box = frameBox(image);
   data-cursor
   data-placeholder={placeholder ? '' : undefined}
 >
-  <span class="cs-cell">
-    <span class="cs-box" style={box.style}>
-      <Picture
-        src={image}
-        alt={alt[locale]}
-        widths={IMAGE_WIDTHS}
-        formats={IMAGE_FORMATS}
-        sizes={sizes}
-        loading="lazy"
-      />
-      {placeholder && <PlaceholderTag locale={locale} />}
+  <!-- the picture and its number drift together once a pick has landed (sheet.ts), apart from the fold, which
+       moves the link itself -->
+  <span class="cs-float">
+    <span class="cs-cell">
+      <span class="cs-box" style={box.style}>
+        <Picture
+          src={image}
+          alt={alt[locale]}
+          widths={IMAGE_WIDTHS}
+          formats={IMAGE_FORMATS}
+          sizes={sizes}
+          loading="lazy"
+        />
+        {placeholder && <PlaceholderTag locale={locale} />}
+      </span>
     </span>
+    <span class="cs-no mono" aria-hidden="true">{frame.no}</span>
   </span>
-  <span class="cs-no mono" aria-hidden="true">{frame.no}</span>
 </a>

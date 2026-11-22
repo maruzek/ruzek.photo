@@ -35,7 +35,7 @@ for (const path of ['/', '/en/']) {
   test(`the sheet numbers every frame once and marks each pick's seat ${path}`, async ({ page }) => {
     await page.goto(path);
     const numbers = await page
-      .locator('.cs-sheet > :is(.cs-thumb, .cs-seat) > .cs-no')
+      .locator('.cs-sheet > :is(.cs-thumb, .cs-seat) .cs-no')
       .allTextContents();
     expect(numbers.length).toBeGreaterThan(0);
     expect(numbers).toEqual(numbers.map((_, i) => String(i + 1).padStart(2, '0')));
