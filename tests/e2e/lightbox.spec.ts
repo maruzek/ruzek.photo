@@ -1,4 +1,7 @@
 import { test, expect } from './fixtures';
+import { PLACEMENT } from '../../src/config/placement';
+
+const total = String(PLACEMENT.work.length).padStart(2, '0');
 
 test('lightbox keyboard and focus return', async ({ page }) => {
   await page.goto('/');
@@ -6,9 +9,9 @@ test('lightbox keyboard and focus return', async ({ page }) => {
   await shot.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('dialog.lb')).toHaveAttribute('open', '');
-  await expect(page.locator('.lb-no')).toHaveText('02 / 08');
+  await expect(page.locator('.lb-no')).toHaveText(`02 / ${total}`);
   await page.keyboard.press('ArrowRight');
-  await expect(page.locator('.lb-no')).toHaveText('03 / 08');
+  await expect(page.locator('.lb-no')).toHaveText(`03 / ${total}`);
   await page.keyboard.press('Escape');
   await expect(shot).toBeFocused();
 });
