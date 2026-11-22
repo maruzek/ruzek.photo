@@ -209,12 +209,16 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
   const track = band?.querySelector<HTMLElement>('.track');
   if (!band || !track) return noop;
   const toggle = band.querySelector<HTMLButtonElement>('.marquee-toggle');
-  const loop = gsap.to(track, { xPercent: -50, duration: 38, ease: 'none', repeat: -1 });
+  // before the loop the line scrolled natively (marquee.css); the loop starts from its first item
+  track.parentElement?.scrollTo(0, 0);
+  // it runs only while the band is on screen and not paused; off screen it keeps its phase
+  const loop = gsap.to(track, { xPercent: -50, duration: 38, ease: 'none', repeat: -1, paused: true });
   let paused = false;
-  ScrollTrigger.create({
+  const st = ScrollTrigger.create({
     trigger: band,
     start: 'top bottom',
     end: 'bottom top',
+    onToggle: () => sync(),
     onUpdate: (s) => {
       if (paused) return;
       const v = clamp(Math.abs(s.getVelocity()) / 600, 0, 5);
@@ -223,13 +227,18 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
       gsap.to(loop, { timeScale: dir, duration: 1.2, delay: 0.3, overwrite: false });
     },
   });
+  function sync(): void {
+    if (st.isActive && !paused) loop.play();
+    else loop.pause();
+  }
+  sync();
   if (!toggle) return noop;
   const onToggle = (): void => {
     paused = !paused;
     toggle.setAttribute('aria-pressed', String(paused));
     gsap.killTweensOf(loop);
-    if (paused) loop.pause();
-    else loop.timeScale(1).play();
+    if (!paused) loop.timeScale(1);
+    sync();
   };
   toggle.hidden = false;
   toggle.addEventListener('click', onToggle);

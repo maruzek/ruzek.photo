@@ -234,6 +234,8 @@ for (const path of ['/', '/en/']) {
     await page.goto(path);
     await expect(page.locator('html')).toHaveClass(/\bmotion\b/);
     await expect(page.locator('html')).not.toHaveClass(/motion-ready/);
+    // until the 3 s safety net the band waits for the loop as one line (marquee.css); then it wraps
+    await expect(page.locator('html')).toHaveClass(/\breveal-fallback\b/, { timeout: 5000 });
     const vw = page.viewportSize()?.width ?? 0;
     const items = page.locator('.marquee ul').first().locator('li');
     const count = await items.count();
@@ -262,6 +264,31 @@ test('marquee turns into one moving line with a hidden second copy once the moti
     .locator('li')
     .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().y)));
   expect(new Set(ys).size).toBe(1);
+});
+
+test('marquee keeps its height when the loop starts, and the band never runs under the pause button', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { __bandHeights: number[] };
+    w.__bandHeights = [];
+    const tick = (): void => {
+      const band = document.querySelector<HTMLElement>('.marquee');
+      if (band && document.fonts.status === 'loaded') w.__bandHeights.push(band.offsetHeight);
+      if (!document.documentElement.classList.contains('motion-ready') || w.__bandHeights.length < 5)
+        requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  await page.goto('/');
+  await page.waitForFunction(() => document.documentElement.dataset['motion'] === 'on');
+  const heights = await page.evaluate(
+    () => (window as unknown as { __bandHeights: number[] }).__bandHeights,
+  );
+  expect(new Set(heights).size).toBe(1);
+  const toggle = await page.locator('.marquee-toggle').boundingBox();
+  const clip = await page.locator('.marquee .viewport').boundingBox();
+  expect((clip?.x ?? 0) + (clip?.width ?? 0)).toBeLessThanOrEqual(toggle?.x ?? 0);
 });
 
 test('reduced motion: marquee shows every item once, wrapped, with no button', async ({ page }) => {

@@ -11,18 +11,21 @@ const d = t(locale).marquee;
 ---
 
 <div class="marquee" role="group" aria-label={d.label}>
-  <div class="track">
-    <ul>
-      {d.items.map((item) => (
-        <li>{item}</li>
-      ))}
-    </ul>
-    <!-- second copy closes the loop; hidden from assistive technology -->
-    <ul aria-hidden="true">
-      {d.items.map((item) => (
-        <li>{item}</li>
-      ))}
-    </ul>
+  <!-- the band clips here, so the moving text never runs under the pause button next to it -->
+  <div class="viewport">
+    <div class="track">
+      <ul>
+        {d.items.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+      <!-- second copy closes the loop; hidden from assistive technology -->
+      <ul aria-hidden="true">
+        {d.items.map((item) => (
+          <li>{item}</li>
+        ))}
+      </ul>
+    </div>
   </div>
   <!-- WCAG 2.2.2: the choreography (task 8) reveals the button when it starts the loop and wires it up.
        The name stays "Pause"; only aria-pressed tells whether the band is stopped (toggle button pattern). -->

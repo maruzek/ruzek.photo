@@ -1,14 +1,25 @@
 /* Marquee. Source: index.html "MARQUEE" block.
-   Default (no JavaScript, reduced motion, motion layer not up yet): every item at once, wrapped, one copy.
-   The single-line moving band applies only once the motion layer has set `html.motion-ready` (task 8), so a
-   page whose script fails never shows a band that clips most items. */
+   Default (no JavaScript, reduced motion, motion layer failed or later than the 3 s safety net): every item at
+   once, wrapped, one copy.
+   When the motion layer is expected (html.motion, set by the inline script before the first paint) the band is a
+   single line from the start, so it keeps its height when the loop begins (no layout shift, anchors below land
+   where they should). Until the loop runs that line scrolls natively; should the motion layer not arrive before
+   the safety net (html.reveal-fallback), the band goes back to the wrapped list instead of clipping most items. */
 .marquee {
+  --mq-pad: 22px;
   position: relative;
+  display: flex;
+  align-items: center;
   overflow: hidden;
   border-top: 1px solid var(--rule-d);
   border-bottom: 1px solid var(--rule-d);
-  padding: 22px 0;
+  padding: var(--mq-pad) 0;
   background: var(--night);
+}
+.marquee .viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 .marquee ul {
   display: flex;
@@ -46,13 +57,11 @@
   color: var(--muted);
 }
 
-/* Pause button (WCAG 2.2.2). The motion layer removes `hidden` once the loop runs. */
+/* Pause button (WCAG 2.2.2). The motion layer removes `hidden` once the loop runs. It sits beside the band, not
+   over it; the negative block margins keep it from adding height, so the band does not grow when it appears. */
 .marquee-toggle {
-  position: absolute;
-  top: 50%;
-  right: var(--m);
-  transform: translateY(-50%);
-  z-index: 1;
+  flex: none;
+  margin: calc(-1 * var(--mq-pad)) var(--m) calc(-1 * var(--mq-pad)) 16px;
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid var(--rule-d);
@@ -68,16 +77,22 @@
   outline-offset: 2px;
 }
 
-/* The moving band: one line, two copies side by side */
+/* The band: one line; with the loop running, two copies side by side */
 @media (prefers-reduced-motion: no-preference) {
+  html.motion:not(.reveal-fallback) .marquee .track,
   html.motion-ready .marquee .track {
     display: flex;
     width: max-content;
   }
+  html.motion:not(.reveal-fallback) .marquee ul,
   html.motion-ready .marquee ul {
     flex: none;
     flex-wrap: nowrap;
     padding: 0;
+  }
+  html.motion:not(.motion-ready, .reveal-fallback) .marquee .viewport {
+    overflow-x: auto;
+    scrollbar-width: none;
   }
   html.motion-ready .marquee ul[aria-hidden='true'] {
     display: flex;
