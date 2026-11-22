@@ -41,12 +41,7 @@ const [first = '', ...rest] = site.name.split(' ');
     </div>
     <div>
       <span class="mono">{f.instagram.label}</span>
-      <a
-        href={site.instagram}
-        rel="me"
-        data-umami-event="contact_click"
-        data-umami-event-type="instagram"
-      >
+      <a href={site.instagram} rel="me" data-umami-event="contact_click" data-umami-event-type="instagram">
         {site.handle}
       </a>
     </div>
@@ -56,19 +51,15 @@ const [first = '', ...rest] = site.name.split(' ');
         href={`mailto:${site.contact.email}`}
         data-copy-email
         data-umami-event="contact_click"
-        data-umami-event-type="email"
+        data-umami-event-type="email">{site.contact.email}</a
       >
-        {site.contact.email}
-      </a>
       <br />
       {site.contact.phone ? (
         <a
           href={telHref(site.contact.phone)}
           data-umami-event="contact_click"
-          data-umami-event-type="phone"
+          data-umami-event-type="phone">{site.contact.phone}</a
         >
-          {site.contact.phone}
-        </a>
       ) : (
         <Todo>{f.contact.phoneTodo}</Todo>
       )}
