@@ -34,17 +34,24 @@
   align-items: center;
   gap: 10px;
 }
+/* the diamond is a square turned by 45°: a clip-path diamond cut its own border down to four corner dots.
+   7 px plus 1.5 px each side keep the 10 px footprint of the band's diamonds */
 .step .no::before {
   content: '';
-  width: 10px;
-  height: 10px;
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-inline: 1.5px;
   border: 1px solid var(--light-ink);
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  transform: rotate(45deg);
   background: transparent;
-  transition: background 0.3s;
+  transition:
+    background 0.3s,
+    border-color 0.3s;
 }
 .step.is-on .no::before {
   background: var(--accent);
+  border-color: var(--accent);
 }
 .step h3 {
   font-weight: 600;
