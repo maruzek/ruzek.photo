@@ -11,25 +11,26 @@ Postup přidání fotky je v [README](../README.md#jak-přidat-fotku), umístěn
 | Úvod (`hero`) | `ball-dance-red` | `IMG_5436` | | `IMG_6410`, `IMG_5925` |
 | Fotka přes obrazovku: akce | `conference-speaker` | `text-remove.jpg` (`IMG_7167`, Martinova retuš bez textu na plátně) | | `IMG_5925`, `IMG_5952` |
 | Fotka přes obrazovku: sport | `football-slide-tackle` | `IMG_4428` | `left=0.06,top=0.2` | `IMG_2211`, `IMG_1068` |
-| Galerie w1 | `football-goalkeeper-dive` | `IMG_4386` | | `IMG_1814`, `IMG_4505-2` |
-| Galerie w2 | `gathering-table-smile` | `IMG_3724` | | `IMG_7350`, `IMG_6410` |
-| Galerie w3 | `floorball-faceoff` | `IMG_9964` | | `IMG_8731`, `IMG_0421` |
-| Galerie w4 | `party-table-laugh` | `IMG_5952` | | `IMG_4197`, `IMG_5429` |
-| Galerie w5 | `football-team-huddle` | `IMG_2211` | | `IMG_2195`, `IMG_1068` |
-| Galerie w6 | `talk-speaker-microphone` | `IMG_1202` | | `IMG_8513`, `IMG_4124` |
-| Galerie w7 | `football-assistant-referee` | `IMG_1978` | | `IMG_4830`, `IMG_4510` |
-| Galerie w8 | `party-beer-glance` | `IMG_5966` | | `IMG_6410`, `IMG_5429` |
+| Galerie 1 (vyvolává se) | `football-goalkeeper-dive` | `IMG_4386` | | `IMG_1814`, `IMG_4505-2` |
+| Galerie 2 (na výšku) | `floorball-faceoff` | `IMG_9964` | | `IMG_8731`, `IMG_0421` |
+| Galerie 3 | `gathering-table-smile` | `IMG_3724` | | `IMG_7350`, `IMG_6410` |
+| Galerie 4 | `football-header-jump` | `IMG_1548` | | TODO |
+| Galerie 5 | `party-table-laugh` | `IMG_5952` | | `IMG_4197`, `IMG_5429` |
+| Galerie 6 (na výšku) | `talk-speaker-microphone` | `IMG_1202` | | `IMG_8513`, `IMG_4124` |
+| Galerie 7 (vyvolává se) | `street-hat-flower` | `IMG_4028` | | TODO |
+| Galerie 8 | `football-team-huddle` | `IMG_2211` | | `IMG_2195`, `IMG_1068` |
+| Galerie 9 | `party-beer-glance` | `IMG_5966` | | `IMG_6410`, `IMG_5429` |
 | Karta služby: akce | `conference-audience` | `IMG_6139` | | `IMG_8513`, `IMG_5925` |
 | Karta služby: sport | `football-duel` | `IMG_0948` | | `IMG_1548`, `IMG_1973` |
 | Karta služby: portrét | `portrait-street-peace` | `IMG_4124` | | `IMG_3828`, `IMG_4028` |
 | Ještě ten den, krok 2 | `football-shoulder-run` | `IMG_4591` | | `IMG_4510`, `IMG_8731` |
 | O mně | `martin-ruzek-portrait` | `profile/IMG_9844-Edit-2` | | `profile/IMG_3866-2`, `profile/IMG_4151` |
 
-Pořadí v galerii odpovídá slotům w1–w8. Slot patří fotce: když se fotka stáhne (`published: false`), její místo zůstane prázdné a ostatní fotky si drží svou velikost.
+Pořadí v galerii odpovídá slotům 1–9 v `src/lib/work-layout.ts` (prototyp „Vyvolávání“). Slot patří fotce: když se fotka stáhne (`published: false`), ostatní fotky si drží svou roli a řádek se zavře, takže v mřížce nevznikne díra.
 
 ## Rezerva pro větší galerii
 
-11 fotek z rezervy je naimportovaných (22. 11. 2026) a v `placement.ts` jsou jako `reserve`. Žádné rozvržení je zatím neukazuje, slouží prototypům galerie (kontaktní arch, sloupce). S galerií je to 19 fotek, z toho 1 na výšku (`floorball-goalkeeper-kneel`).
+11 fotek z rezervy je naimportovaných (22. 11. 2026). S galerií je to 19 fotek, z toho 3 na výšku (`floorball-faceoff`, `talk-speaker-microphone`, `floorball-goalkeeper-kneel`). Prototyp „Vyvolávání“ z nich do galerie přesunul `football-header-jump` a `street-hat-flower` a do rezervy vrátil `football-assistant-referee`; `placement.ts` vede zbylých 10 jako `reserve`.
 
 | Slug | Zdroj | Kategorie |
 |---|---|---|
