@@ -1,90 +1,165 @@
-/* Selected work. Source: index.html "WORK GRID". A shot is a link (full image without JavaScript), so the
-   prototype's figure/figcaption became spans with the same roles in the layout. */
-.work {
+/* Selected work as a contact sheet that opens (ContactSheet.astro). The static layout is the OPEN sheet: the
+   numbered sheet with the picks' seats marked, and the spread of enlarged picks below it. The motion layer only
+   transforms the picks back into their seats (scripts/motion/sheet.ts), so the stage height is fixed from the
+   first paint and nothing below it moves. */
+.cs {
+  position: relative;
+  isolation: isolate;
+  --cs-cols: 10;
+  --cs-mark: var(--accent);
+}
+
+/* The sheet: a strip-like grid of uniform 3:2 cells on a slightly darker paper */
+.cs-sheet {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cs-cols), minmax(0, 1fr));
+  gap: clamp(12px, 1.2vw, 18px) clamp(8px, 0.8vw, 12px);
+  padding: clamp(12px, 1.6vw, 24px);
+  background: var(--light-2);
+}
+.cs-cell {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 3 / 2;
+}
+/* the photo box keeps the photo's own proportions: a portrait frame stands inside its 3:2 cell */
+.cs-box {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: var(--ar, 3 / 2);
+  max-width: 100%;
+  max-height: 100%;
+  background: var(--light-2);
+}
+.cs-sheet .cs-box {
+  height: 100%;
+}
+.cs-box picture {
+  display: contents;
+}
+.cs-box img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cs-no {
+  display: block;
+  margin-top: 6px;
+  font: 500 11px / 1 var(--f-mono);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+/* A pick's seat: the empty frame, circled like a grease-pencil mark on a real contact sheet */
+.cs-seat .cs-box {
+  background: var(--light);
+  outline: 1.5px solid var(--cs-mark);
+  outline-offset: 3px;
+}
+.cs-seat .cs-no {
+  color: var(--light-ink);
+}
+
+/* The Bayer front that develops the sheet (motion only; empty and transparent otherwise) */
+.cs-front {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+/* The spread: the enlarged picks, each in the slot that belongs to it (a withdrawn pick leaves its slot empty) */
+.cs-spread {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: clamp(20px, 2.4vw, 40px) var(--gap);
+  gap: clamp(28px, 3vw, 48px) var(--gap);
   align-items: start;
+  margin-top: clamp(48px, 6vw, 96px);
 }
-.shot {
-  display: grid;
-  gap: 12px;
+.cs-pick .cs-cell {
+  display: block;
+  aspect-ratio: auto;
+}
+.cs-pick .cs-box {
+  width: 100%;
+}
+.cs-pick .cs-no {
+  margin-top: 10px;
+}
+.s1 { grid-area: 1 / 1 / 2 / 9; }
+.s2 { grid-area: 1 / 9 / 2 / 13; }
+.s3 { grid-area: 2 / 1 / 3 / 4; }
+.s4 { grid-area: 2 / 4 / 3 / 9; align-self: center; }
+.s5 { grid-area: 2 / 9 / 3 / 13; align-self: end; }
+.s6 { grid-area: 3 / 1 / 4 / 5; }
+.s7 { grid-area: 4 / 1 / 5 / 5; align-self: end; }
+.s8 { grid-area: 3 / 5 / 5 / 13; }
+
+/* The frames left on the sheet lie above the picks: a pick slides out from under the sheet as it opens */
+.cs-thumb {
+  z-index: 20;
+}
+/* A frame is a link to the full photo */
+.cs-print {
+  display: block;
   position: relative;
   color: inherit;
   text-decoration: none;
   cursor: pointer;
 }
-.shot .frame {
-  display: block;
-  overflow: hidden;
-  position: relative;
-  background: var(--light-2);
+.cs-print:focus-visible {
+  outline: none;
 }
-.shot picture {
-  display: contents;
-}
-.shot img {
-  width: 100%;
-  height: auto;
-  display: block;
+.cs-print:focus-visible .cs-box {
+  outline: 2px solid var(--light-ink);
+  outline-offset: 4px;
 }
 /* a short zoom for a mouse with motion allowed; touch and reduced motion keep the photo still */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .shot img {
+  .cs-print img {
     transition: transform 220ms var(--ease);
   }
-  .shot:hover img {
+  .cs-print:hover img {
     transform: scale(1.025);
   }
 }
-.shot .cap {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-family: var(--f-mono);
-  font-size: var(--t-xs);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--light-muted);
+
+@media (max-width: 1100px) {
+  .cs {
+    --cs-cols: 7;
+  }
 }
-.shot .cap b {
-  color: var(--light-ink);
-  font-weight: 500;
+@media (max-width: 900px) {
+  .cs {
+    --cs-cols: 4;
+  }
+  .cs-spread {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 12px;
+  }
+  .cs-spread > .cs-pick {
+    grid-area: auto;
+    align-self: start;
+  }
+  .cs-spread > .s1,
+  .cs-spread > .s8 {
+    grid-column: 1 / -1;
+  }
+  .cs-pick .cs-no {
+    margin-top: 8px;
+  }
 }
-.shot:focus-visible {
-  outline: 2px solid var(--light-ink);
-  outline-offset: 6px;
+@media (prefers-reduced-motion: reduce) {
+  .cs-front {
+    display: none;
+  }
 }
-.w1 {
-  grid-column: 1 / 8;
-}
-.w2 {
-  grid-column: 9 / 13;
-  margin-top: 18%;
-}
-.w3 {
-  grid-column: 2 / 6;
-}
-.w4 {
-  grid-column: 7 / 13;
-  margin-top: -8%;
-}
-.w5 {
-  grid-column: 1 / 5;
-  margin-top: 6%;
-}
-.w6 {
-  grid-column: 6 / 10;
-}
-.w7 {
-  grid-column: 10 / 13;
-  margin-top: 24%;
-}
-.w8 {
-  grid-column: 3 / 9;
-}
+
 .work-foot {
   display: flex;
   justify-content: space-between;
@@ -98,28 +173,6 @@
 .work-foot p {
   color: var(--light-muted);
   max-width: 52ch;
-}
-@media (max-width: 900px) {
-  .work {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-  .w1,
-  .w4,
-  .w8 {
-    grid-column: 1 / -1;
-    margin-top: 0;
-  }
-  .w2,
-  .w5,
-  .w7 {
-    grid-column: 1 / 4;
-    margin-top: 0;
-  }
-  .w3,
-  .w6 {
-    grid-column: 4 / 7;
-    margin-top: 12%;
-  }
 }
 /* The "view" cursor over photos (fine pointers with motion only; cursor.ts moves it) */
 .cur {
@@ -153,4 +206,9 @@
   color: var(--light);
   padding: 6px 8px;
   margin-top: -28px;
+}
+
+/* While the sheet is folded and opening, the picks are compositor layers (motion only, sheet.ts) */
+.cs-live .cs-pick {
+  will-change: transform;
 }

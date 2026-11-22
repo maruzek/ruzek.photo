@@ -21,7 +21,7 @@ import PhotoFold from './PhotoFold.astro';
 import SameDay from './SameDay.astro';
 import Services from './Services.astro';
 import Todo from './Todo.astro';
-import WorkGrid from './WorkGrid.astro';
+import ContactSheet from './ContactSheet.astro';
 
 interface Props {
   locale: Locale;
@@ -57,7 +57,7 @@ const [hero, events, sport] = await Promise.all([
     <PhotoFold locale={locale} photo={sport} id="fold-sport" {...d.folds.sport} />
     <DitherWipe from="night" to="light" />
     <div class="light">
-      <WorkGrid locale={locale} />
+      <ContactSheet locale={locale} />
       <Services locale={locale} />
       <SameDay locale={locale} />
     </div>

@@ -92,6 +92,8 @@ export const en = {
     foot: 'You get the whole event in a private online gallery.',
     footLink: 'I want photos like these',
     captionTodo: 'place and date',
+    categories: { event: 'Event', sport: 'Sport', portrait: 'Portrait' },
+    sheetLabel: 'Contact sheet',
   },
   services: {
     eyebrow: 'Services and prices',
