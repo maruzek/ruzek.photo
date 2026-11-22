@@ -40,3 +40,6 @@ worker-configuration.d.ts
 # (pnpm lhci runs from a temp dir, this is only a safety net)
 /C:*
 /.vitest/
+
+# Impeccable per-developer settings (hook consent)
+.impeccable/config.local.json
