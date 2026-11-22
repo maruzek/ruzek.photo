@@ -1,12 +1,15 @@
 /* Lightbox. Source: index.html "Cursor + lightbox" */
+/* scroll lock while the dialog is open; on the root, clip reaches the viewport as hidden (same lock, no
+   hidden overflow on an element that would break sticky positioning) */
 html.lb-open {
-  overflow: hidden;
+  overflow: clip;
 }
 dialog.lb {
   border: 0;
   padding: 0;
   margin: 0;
-  width: 100vw;
+  /* the modal dialog sits in the top layer: 100% is the viewport without its scrollbar, 100vw is not */
+  width: 100%;
   height: 100dvh;
   max-width: none;
   max-height: none;
