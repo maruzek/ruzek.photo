@@ -8,6 +8,7 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 | Mřížka „kontaktní arch“ | Líbí se, ale musí být výrazně přetvořená. Ověřit, jestli šlo o mřížku ze směru A, nebo o izometrickou ze směru D |
 | Stack Sans Notch | Zkouší se. Argumenty: v malých velikostech působí jako chyba, má jinou geometrii než logo, pochází z rebrandingu Stack Overflow, je zdarma. Doporučení: jen display ≥ 64 px. Pro porovnání vzniká i varianta bez něj |
 | Ikony místo typografických znaků | Ikony jsou ze sady Hugeicons (zdarma, MIT), zatím jen u kontaktů. Šipky „→“ a „↗“ v tlačítkách a odkazech a kosočtverec „◆“ jsou zatím znaky písma. Možná výměna, hlavně šipek, za ikony ze stejné sady. Rozhodne Martin |
+| Loader po dodání skutečné hero fotky | Podoba a barvy loaderu (tmavé pozadí, světlé dlaždice, tlumené pole se zářícím rohem) jsou laděné k zástupné fotce. Až bude skutečná hero fotka, je potřeba loader znovu vyhodnotit: přechod z loaderu do úvodu, barvy dlaždic a jas plné hustoty. Rozhodne Martin |
 | Fotky v repozitáři, nebo v R2 | Primárně repozitář. R2 jen tam, kde to dává smysl, rozhodne koncept |
 | Podoba ceníku | Hodinové ceny, nebo balíčky? Řeší se mimo repozitář |
 | Využití `martinruzek.cz` | Zatím neurčeno (přesměrování na .eu?) |
