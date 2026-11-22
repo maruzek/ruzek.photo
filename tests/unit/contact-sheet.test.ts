@@ -45,6 +45,12 @@ describe('PLACEMENT.work', () => {
     expect(new Set(slots).size).toBe(slots.length);
     for (const slot of slots) expect(SPREAD_SLOTS).toContain(slot);
   });
+  it('keeps the reserve off the sheet', () => {
+    for (const id of PLACEMENT.work.reserve) expect(PLACEMENT.work.sheet).not.toContain(id);
+  });
+  it('fills whole rows of 9, 6 and 3 columns', () => {
+    expect(PLACEMENT.work.sheet.length % 18).toBe(0);
+  });
   it('keeps the placed photos off the sheet (one photo, one place on the page)', () => {
     const elsewhere = [
       PLACEMENT.hero,
