@@ -29,11 +29,23 @@ export function initCopyEmail(doc: Document = document): () => void {
   };
   const onClick = (e: MouseEvent): void => {
     const a = (e.target as Element | null)?.closest<HTMLAnchorElement>('a[data-copy-email]');
-    if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    if (!matchMedia(FINE).matches) return;
+    if (
+      !a ||
+      e.defaultPrevented ||
+      e.button !== 0 ||
+      e.metaKey ||
+      e.ctrlKey ||
+      e.shiftKey ||
+      e.altKey
+    )
+      return;
+    // only a mouse click copies; Enter on the link (detail 0) opens the mail app as before, so keyboard focus
+    // never has to reach a toast that disappears
+    if (!matchMedia(FINE).matches || e.detail === 0) return;
     e.preventDefault();
     const address = decodeURIComponent(a.href.replace(/^mailto:/, '').split('?')[0] ?? '');
-    const copied = navigator.clipboard?.writeText(address) ?? Promise.reject(new Error('no clipboard'));
+    const copied =
+      navigator.clipboard?.writeText(address) ?? Promise.reject(new Error('no clipboard'));
     copied.then(
       () => show(toast.dataset['copied'] ?? '', a.href),
       () => show(toast.dataset['failed'] ?? '', a.href),

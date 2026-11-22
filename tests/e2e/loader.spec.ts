@@ -77,6 +77,30 @@ test('an entry from outside shows the loader, its logo flies into the header, th
   expect(await page.evaluate(() => localStorage.length + sessionStorage.length)).toBe(0);
 });
 
+test('a key press ends the loader at once, so Tab never reaches a link under the curtain', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('.ldr')).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('html')).not.toHaveClass(/\bldr-on\b/);
+  await expect(page.locator('.ldr')).toBeHidden();
+  await expect(page.locator(':focus')).toBeVisible();
+});
+
+test('a slow hero photo still gets the hero entrance after the loader', async ({ page }) => {
+  // the loader stops waiting at 2.5 s and hands over later than the 3 s reveal safety net would fire
+  await page.route(/\/_astro\/.*\.(avif|webp|jpe?g)$/, async (route) => {
+    await new Promise((r) => setTimeout(r, 4000));
+    await route.continue();
+  });
+  await page.goto('/');
+  await page.waitForFunction(() => document.documentElement.dataset['motion'] === 'on', undefined, {
+    timeout: 10000,
+  });
+  await expect(page.locator('html')).not.toHaveClass(/\breveal-fallback\b/);
+});
+
 test('no loader after an internal link', async ({ page, baseURL }) => {
   await page.goto('/', { referer: `${baseURL}/ochrana-osobnich-udaju/` });
   await expect(page.locator('html')).not.toHaveClass(/\bldr-on\b/);

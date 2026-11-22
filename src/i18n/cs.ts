@@ -246,7 +246,7 @@ export const cs = {
     errors: {
       service: 'Vyberte, co budeme fotit.',
       hours: 'Napište délku akce v\u00A0celých hodinách, od 1 do 12.',
-      hoursFromTimes: 'Mezi začátkem a\u00A0koncem je víc než 12 hodin. Delší akci popište v\u00A0poznámce.',
+      hoursFromTimes: 'Mezi začátkem a\u00A0koncem je víc než 12 hodin. Konec nechte prázdný a\u00A0délku akce popište v\u00A0poznámce.',
       date: 'Datum se nepodařilo přečíst. Vyberte ho v\u00A0kalendáři.',
       time: 'Čas se nepodařilo přečíst. Napište ho jako 18:30.',
       guests: 'Počet lidí napište celým číslem.',

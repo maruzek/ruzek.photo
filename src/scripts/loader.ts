@@ -211,16 +211,14 @@ function run(root: HTMLElement, box: HTMLElement): void {
       // swap the canvas for the vector logo (same pixels), then hand off to the header
       fly!.style.opacity = '1';
       canvas!.style.opacity = '0';
-      setTimeout(exit, SWAP_MS);
+      swapT = setTimeout(exit, SWAP_MS);
       return;
     }
     draw(Math.max(now, phaseT));
   }
 
   function exit(): void {
-    removeEventListener('wheel', block, opts);
-    removeEventListener('touchmove', block, opts);
-    removeEventListener('resize', layout);
+    stop();
     const target = document.querySelector<SVGSVGElement>('.top .mark .roh');
     const to = target?.getBoundingClientRect();
     if (target && to && to.width > 0) {
@@ -237,8 +235,31 @@ function run(root: HTMLElement, box: HTMLElement): void {
     setTimeout(() => finish(root), FLY_MS);
   }
 
+  let swapT = 0;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  /** Stops the animation and every listener; the flight to the header, once started, finishes on its own. */
+  function stop(): void {
+    cancelAnimationFrame(raf);
+    clearTimeout(swapT);
+    removeEventListener('wheel', block, opts);
+    removeEventListener('touchmove', block, opts);
+    removeEventListener('resize', layout);
+    removeEventListener('keydown', abort, true);
+    reduce.removeEventListener('change', abort);
+  }
+  // a key press (Tab must not reach links under the curtain, PageDown must not scroll under it) or a switch to
+  // reduced motion ends the loader at once; the key keeps its default action
+  function abort(): void {
+    stop();
+    finish(root);
+  }
+
   layout();
   addEventListener('resize', layout);
+  addEventListener('keydown', abort, true);
+  reduce.addEventListener('change', abort);
+  // the head script's safety net may end it first
+  document.addEventListener('ldr:exit', stop, { once: true });
   raf = requestAnimationFrame(tick);
 }
 

@@ -232,7 +232,7 @@ export const en = {
     errors: {
       service: 'Choose what we are shooting.',
       hours: 'Enter the event length in whole hours, from 1 to 12.',
-      hoursFromTimes: 'There are more than 12 hours between the start and end. Describe a longer event in the note.',
+      hoursFromTimes: 'There are more than 12 hours between the start and end. Leave the end empty and describe the length in the note.',
       date: 'The date could not be read. Pick it in the calendar.',
       time: 'The time could not be read. Enter it like 18:30.',
       guests: 'Enter the number of people as a whole number.',
