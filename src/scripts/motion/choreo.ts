@@ -180,23 +180,23 @@ export function folds({ gsap }: Libs, root: ParentNode): Cleanup {
   return noop;
 }
 
-/** Work grid parallax (`data-par` = offset in px). */
-export function parallax({ gsap }: Libs, root: ParentNode): Cleanup {
-  for (const el of root.querySelectorAll<HTMLElement>('[data-par]')) {
-    const par = Number(el.dataset['par']);
-    if (!Number.isFinite(par)) continue;
+/**
+ * Work grid drift: the photo layer slides inside its still frame (`data-drift` = signed travel in px on desktop,
+ * `data-drift-m` on a phone). Neighbours have opposite signs, so adjacent photos move against each other while the
+ * links, frames and captions stay where they are.
+ */
+export function drift({ gsap }: Libs, root: ParentNode, phone: boolean): Cleanup {
+  for (const el of root.querySelectorAll<HTMLElement>('[data-drift]')) {
+    const travel = Number(el.dataset[phone ? 'driftM' : 'drift']);
+    const frame = el.parentElement;
+    if (!travel || !Number.isFinite(travel) || !frame) continue;
     gsap.fromTo(
       el,
-      { y: par },
+      { y: travel },
       {
-        y: -par,
+        y: -travel,
         ease: 'none',
-        scrollTrigger: {
-          trigger: el.parentElement,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
-        },
+        scrollTrigger: { trigger: frame, start: 'top 95%', end: 'bottom 12%', scrub: true },
       },
     );
   }

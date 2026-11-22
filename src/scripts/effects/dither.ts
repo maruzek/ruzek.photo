@@ -1,6 +1,7 @@
 // Fine ordered dither over photos (prototype: rozpad.js, section 2): the photo assembles from the cover colour
 // as it enters, falls apart as it leaves, with a coral "developing" band at the edge. `hover` (service cards)
-// re-develops the photo when a mouse pointer enters. Progress comes from a ScrollTrigger, not from layout reads.
+// re-develops the photo when a mouse pointer enters. `develop` (work grid) assembles once as the photo rises
+// into the screen (scrolling back reverses it). Progress comes from a ScrollTrigger, not from layout reads.
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { b8 } from './bayer';
@@ -25,8 +26,8 @@ export interface DitherHandle extends Effect {
 export function ditherEffect(el: HTMLElement): DitherHandle {
   const cv = el.querySelector<HTMLCanvasElement>('canvas.dz');
   const ctx = cv?.getContext('2d') ?? null;
-  const mode =
-    el.dataset['dz'] === 'hover' ? 'hover' : el.dataset['dz'] === 'stay' ? 'stay' : 'scroll';
+  const dz = el.dataset['dz'];
+  const mode = dz === 'hover' || dz === 'stay' || dz === 'develop' ? dz : 'scroll';
   const cover = pack(hex(el.dataset['dzColor'] ?? '#07080b'));
   const band = pack(CORAL);
   let cols = 0;
@@ -35,6 +36,13 @@ export function ditherEffect(el: HTMLElement): DitherHandle {
   let buf: Uint32Array | null = null;
   let last = -1;
   const hover = { p: CLEAR - 0.05 };
+  // `develop` (work grid): keyboard focus shows the whole photo at once, no animation
+  const shot = mode === 'develop' ? (el.closest('a') ?? el) : null;
+  let focused = false;
+  const onFocus = (): void => {
+    focused = true;
+  };
+  shot?.addEventListener('focusin', onFocus);
 
   const layout = (): boolean => {
     if (!cv || !ctx) return false;
@@ -64,7 +72,10 @@ export function ditherEffect(el: HTMLElement): DitherHandle {
   const st =
     mode === 'hover'
       ? null
-      : ScrollTrigger.create({ trigger: el, start: 'top bottom', end: 'bottom top' });
+      : mode === 'develop'
+        ? // develops while its top climbs from 92 % to 55 % of the screen, then stays developed
+          ScrollTrigger.create({ trigger: el, start: 'top 92%', end: 'top 55%' })
+        : ScrollTrigger.create({ trigger: el, start: 'top bottom', end: 'bottom top' });
   const onEnter = (e: PointerEvent): void => {
     // a mouse only: a tap fires pointerenter too, and the card replayed its dither on every touch
     if (e.pointerType !== 'mouse') return;
@@ -80,6 +91,7 @@ export function ditherEffect(el: HTMLElement): DitherHandle {
     el,
     progress() {
       if (mode === 'hover') return hover.p;
+      if (mode === 'develop') return focused ? CLEAR : (st?.progress ?? 1) * 1.4;
       const q = st?.progress ?? 1; // 0 entering at the bottom → 1 leaving at the top
       const enter = clamp(q / 0.42, 0, 1);
       const leave = mode === 'stay' ? 0 : clamp((q - 0.74) / 0.26, 0, 1);
@@ -101,6 +113,7 @@ export function ditherEffect(el: HTMLElement): DitherHandle {
     destroy() {
       st?.kill();
       el.removeEventListener('pointerenter', onEnter);
+      shot?.removeEventListener('focusin', onFocus);
       gsap.killTweensOf(hover);
       ro.disconnect();
       if (cv && ctx) {

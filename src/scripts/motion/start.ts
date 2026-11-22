@@ -14,8 +14,8 @@ import {
   headerBlend,
   headerHide,
   heroLeave,
+  drift,
   marquee,
-  parallax,
   sameDay,
   type Libs,
 } from './choreo';
@@ -29,6 +29,8 @@ const REDUCE = '(prefers-reduced-motion: reduce)';
 /** Room for the whole pinned "Same day" section content; the same query as day.css, which reserves the pin run */
 const DAY_PIN = '(min-width: 901px) and (min-height: 840px)';
 const FINE = '(hover: hover) and (pointer: fine)';
+/** The work grid's two-column layout (work.css) */
+const PHONE = '(max-width: 900px)';
 
 /** Dither reveals and wipes on one scheduler driven by the GSAP ticker (concept.md §7). */
 function canvasEffects(scope: ParentNode): () => void {
@@ -51,7 +53,9 @@ function canvasEffects(scope: ParentNode): () => void {
   }
   for (const cv of scope.querySelectorAll<HTMLCanvasElement>('canvas.dwipe')) {
     // prototype: edge position = (vh - top) / (0.75 vh), i.e. from entering the viewport until its top hits 25 %
-    const st = ScrollTrigger.create({ trigger: cv, start: 'top bottom', end: 'top 25%' });
+    // a wipe can set its own range (`data-range="start|end"`, the one before the work grid runs later)
+    const [start = 'top bottom', end = 'top 25%'] = cv.dataset['range']?.split('|') ?? [];
+    const st = ScrollTrigger.create({ trigger: cv, start, end });
     const remove = scheduler.add(wipeEffect(cv, () => st.progress));
     removers.push(() => {
       remove();
@@ -128,7 +132,6 @@ export async function start(): Promise<() => void> {
         cleanups.push(heroLeave(libs, document));
         if (withEntrances) cleanups.push(entrances(libs, document));
         cleanups.push(folds(libs, document));
-        cleanups.push(parallax(libs, document));
         cleanups.push(marquee(libs, document));
         cleanups.push(headerHide(libs, document));
         cleanups.push(headerBlend(document));
@@ -138,6 +141,11 @@ export async function start(): Promise<() => void> {
         throw error;
       }
       return run;
+    });
+    // the work grid's photos drift less on a phone, where the frames are small
+    mm.add({ motion: MOTION, phone: PHONE }, (ctx) => {
+      if (!ctx.conditions?.['motion']) return;
+      return drift(libs, document, ctx.conditions['phone'] === true);
     });
     mm.add({ motion: MOTION, pin: DAY_PIN }, (ctx) => {
       if (!ctx.conditions?.['motion']) return;
