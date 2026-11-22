@@ -55,7 +55,8 @@ const [hero, events, sport] = await Promise.all([
     }
     <PhotoFold locale={locale} photo={events} id="fold-events" {...d.folds.events} />
     <PhotoFold locale={locale} photo={sport} id="fold-sport" {...d.folds.sport} />
-    <DitherWipe from="night" to="light" />
+    <!-- runs later than the other wipes, so the light zone clears just before the first work photo develops -->
+    <DitherWipe from="night" to="light" range="top 92%|top 42%" />
     <div class="light">
       <WorkGrid locale={locale} />
       <Services locale={locale} />

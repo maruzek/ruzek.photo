@@ -7,15 +7,18 @@ import { COVER, type Cover } from '../lib/palette';
 interface Props {
   from: Cover;
   to: Cover;
+  /** Scroll range of the edge as ScrollTrigger `start|end`; the motion layer's default when omitted */
+  range?: string;
 }
 
-const { from, to } = Astro.props;
+const { from, to, range } = Astro.props;
 ---
 
 <canvas
   class="dwipe"
   data-from={COVER[from]}
   data-to={COVER[to]}
+  data-range={range}
   style={`--from:${COVER[from]};--to:${COVER[to]}`}
   aria-hidden="true"
 ></canvas>
