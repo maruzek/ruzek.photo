@@ -7,23 +7,25 @@ export const PLACEMENT = {
   /** Events fold, then sport fold */
   folds: ['conference-speaker', 'football-slide-tackle'],
   /**
-   * The work grid: the photo at index i always takes the prototype's slot w(i+1). A withdrawn photo leaves its
-   * slot empty, the other photos keep theirs.
+   * The work grid ("Developing" prototype): the photo at index i always takes slot i of WorkGrid.astro (row,
+   * width, role). A withdrawn photo leaves the grid and the others keep their slots; its row closes up.
+   * Roles: 1 and 7 develop out of the Bayer dither, 2–6 drift inside their frames, 8 and 9 stand still.
    */
   work: [
     'football-goalkeeper-dive',
-    'gathering-table-smile',
     'floorball-faceoff',
+    'gathering-table-smile',
+    'football-header-jump',
     'party-table-laugh',
-    'football-team-huddle',
     'talk-speaker-microphone',
-    'football-assistant-referee',
+    'street-hat-flower',
+    'football-team-huddle',
     'party-beer-glance',
   ],
-  /** Imported spares for a bigger gallery (contact sheet, columns); no layout shows them yet */
+  /** Imported spares no layout shows yet */
   reserve: [
-    'ball-smile-through-crowd', 'ball-tiara-portrait', 'street-newspapers', 'street-hat-flower', 'conference-group-photo',
-    'football-corner-crowd', 'football-header-jump', 'football-smile-touchline', 'football-arms-raised',
+    'ball-smile-through-crowd', 'ball-tiara-portrait', 'street-newspapers', 'conference-group-photo',
+    'football-corner-crowd', 'football-smile-touchline', 'football-arms-raised', 'football-assistant-referee',
     'floorball-shot-goalkeeper', 'floorball-goalkeeper-kneel',
   ],
   /** Photo of each service card (the `short` card is shared with the portrait) */

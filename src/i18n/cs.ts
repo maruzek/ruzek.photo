@@ -105,6 +105,8 @@ export const cs = {
     footLink: 'Chci podobné fotky',
     // A photo caption names the event; the place and date are not known yet
     captionTodo: 'místo a\u00A0datum',
+    // The lightbox caption starts with the photo's category (the grid tiles carry no labels)
+    category: { event: 'Akce', sport: 'Sport', portrait: 'Portrét' },
   },
   services: {
     eyebrow: 'Služby a\u00A0ceny',

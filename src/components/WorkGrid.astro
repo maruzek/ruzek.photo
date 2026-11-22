@@ -5,6 +5,8 @@ import { t, type Locale } from '../i18n';
 import { getPhoto } from '../lib/photos/get';
 import Rich from './Rich.astro';
 import Shot from './Shot.astro';
+import { layoutWork } from '../lib/work-layout';
+import '../styles/dither.css';
 
 interface Props {
   locale: Locale;
@@ -13,23 +15,16 @@ interface Props {
 const { locale } = Astro.props;
 const d = t(locale);
 
-// The prototype's asymmetric grid: slot class, parallax offset and the rendered width (≤ 900 px: 6 columns)
-const SLOTS = [
-  { slot: 'w1', sizes: '(max-width: 900px) 100vw, 58vw' },
-  { slot: 'w2', sizes: '(max-width: 900px) 50vw, 33vw', par: 40 },
-  { slot: 'w3', sizes: '(max-width: 900px) 50vw, 33vw', par: 24 },
-  { slot: 'w4', sizes: '(max-width: 900px) 100vw, 50vw' },
-  { slot: 'w5', sizes: '(max-width: 900px) 50vw, 33vw', par: 56 },
-  { slot: 'w6', sizes: '(max-width: 900px) 50vw, 33vw' },
-  { slot: 'w7', sizes: '(max-width: 900px) 50vw, 25vw', par: 32 },
-  { slot: 'w8', sizes: '(max-width: 900px) 100vw, 50vw' },
-] as const;
-
-// The slot belongs to the photo, not to its index after filtering: a withdrawn photo leaves the grid and
-// the others keep their slots (and with them their size and parallax)
-const shots = (await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)))).flatMap((photo, i) =>
-  photo ? [{ photo, slot: SLOTS[i % SLOTS.length] ?? SLOTS[0] }] : [],
-);
+// Slots, rows and roles are in lib/work-layout.ts; the photo at index i of PLACEMENT.work takes slot i, so a
+// withdrawn photo leaves the grid and the others keep their slot (its row closes up, no empty cell)
+const photos = await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)));
+const cells = layoutWork(photos, (p) => p.data.image.height > p.data.image.width);
+/** Rendered width: the share of the 12 columns on desktop, full or half width on a phone */
+const sizesOf = (cell: (typeof cells)[number]): string => {
+  const span = Number(/span (\d+)/.exec(cell.column)?.[1] ?? 12);
+  const phone = cell.phoneColumn === '1 / -1' ? '100vw' : '50vw';
+  return `(max-width: 900px) ${phone}, ${Math.round((span / 12) * 100)}vw`;
+};
 ---
 
 <section class="sec" id={d.anchors.work} tabindex="-1" aria-labelledby="work-h">
@@ -42,15 +37,7 @@ const shots = (await Promise.all(PLACEMENT.work.map((id) => getPhoto(id)))).flat
     </div>
   </div>
   <div class="work">
-    {shots.map(({ photo, slot: s }) => (
-      <Shot
-        photo={photo}
-        locale={locale}
-        slot={s.slot}
-        sizes={s.sizes}
-        par={'par' in s ? s.par : undefined}
-      />
-    ))}
+    {cells.map((cell) => <Shot cell={cell} locale={locale} sizes={sizesOf(cell)} />)}
   </div>
   <div class="work-foot">
     <p>{d.work.foot}</p>

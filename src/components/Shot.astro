@@ -1,59 +1,80 @@
 ---
 // One photo of the work grid. The link opens the full image without JavaScript; lightbox.ts turns it into
 // the <dialog> (concept.md §7). `data-full` is the large file the lightbox shows.
+// Layers: the link and the frame stand still; `.par` is the photo layer the motion layer slides inside the frame
+// (overscanned by its travel), the image inside it zooms on mouse hover, and a developing frame has the
+// decorative Bayer canvas on top.
 import { Picture, getImage } from 'astro:assets';
 import type { Locale } from '../i18n';
 import { t } from '../i18n';
 import type { PublishedPhoto } from '../lib/photos/get';
 import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+import { COVER } from '../lib/palette';
+import type { WorkCell } from '../lib/work-layout';
 import PlaceholderTag from './PlaceholderTag.astro';
-import Todo from './Todo.astro';
 
 /** Width of the file the lightbox opens (never larger than the source) */
 const FULL_WIDTH = 2000;
 
 interface Props {
-  photo: PublishedPhoto;
+  cell: WorkCell<PublishedPhoto>;
   locale: Locale;
-  /** Layout slot of the prototype grid: `w1`–`w8` */
-  slot: string;
   sizes: string;
-  /** Parallax offset in px for the motion layer */
-  par?: number | undefined;
 }
 
-const { photo, locale, slot, sizes, par } = Astro.props;
-const { image, alt, caption, placeholder } = photo.data;
+const { cell, locale, sizes } = Astro.props;
+const { item: photo, role } = cell;
+const { image, alt, caption, placeholder, category } = photo.data;
+const d = t(locale).work;
 const full = await getImage({
   src: image,
   width: Math.min(FULL_WIDTH, image.width),
   format: 'webp',
 });
 const title = caption?.[locale];
+// the tile carries no labels; the lightbox caption says the category, the event and the missing place and date
+const lightboxCaption = [d.category[category], title ?? alt[locale], `TODO: ${d.captionTodo}`].join(' · ');
+const style = [
+  `--gc:${cell.column}`,
+  `--gcm:${cell.phoneColumn}`,
+  `--ar:${cell.ratio === null ? 'auto' : cell.ratio.toFixed(4)}`,
+  `--arm:${cell.phoneRatio.toFixed(4)}`,
+  `--ov:${Math.abs(cell.drift)}px`,
+  `--ovm:${Math.abs(cell.phoneDrift)}px`,
+].join(';');
 ---
 
 <a
-  class:list={['shot', slot]}
+  class="shot"
   href={full.src}
-  data-lb={title ?? alt[locale]}
+  data-lb={lightboxCaption}
   data-full={full.src}
+  data-role={role}
   data-cursor
-  data-par={par}
   data-placeholder={placeholder ? '' : undefined}
+  style={style}
 >
-  <span class="frame">
-    <Picture
-      src={image}
-      alt={alt[locale]}
-      widths={IMAGE_WIDTHS}
-      formats={IMAGE_FORMATS}
-      sizes={sizes}
-      loading="lazy"
-    />
+  <span
+    class="frame"
+    data-dz={role === 'develop' ? 'develop' : undefined}
+    data-dz-color={role === 'develop' ? COVER.light : undefined}
+  >
+    <span
+      class="par"
+      data-drift={cell.drift || undefined}
+      data-drift-m={cell.phoneDrift || undefined}
+    >
+      <Picture
+        src={image}
+        alt={alt[locale]}
+        widths={IMAGE_WIDTHS}
+        formats={IMAGE_FORMATS}
+        sizes={sizes}
+        loading="lazy"
+      />
+    </span>
+    {role === 'develop' && <canvas class="dz" aria-hidden="true" />}
     {placeholder && <PlaceholderTag locale={locale} />}
   </span>
-  <span class="cap">
-    {title && <b>{title}</b>}
-    <Todo>{t(locale).work.captionTodo}</Todo>
-  </span>
+  {title && <span class="cap"><b>{title}</b></span>}
 </a>
