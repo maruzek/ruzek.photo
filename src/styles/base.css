@@ -157,6 +157,11 @@ em.s {
   padding-block: 0.12em;
   margin-block: -0.12em;
 }
+/* the negative margins of block siblings collapse into one, and the split heading grew by 0.12em per line once
+   the motion layer split it (a layout shift); grid items keep their own margins */
+[data-split]:has(> .sl-mask) {
+  display: grid;
+}
 .eyebrow {
   display: flex;
   align-items: center;
