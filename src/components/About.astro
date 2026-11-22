@@ -25,6 +25,7 @@ const portrait = await getPhoto(PLACEMENT.about);
       photo={portrait}
       locale={locale}
       sizes="(max-width: 900px) 100vw, 40vw"
+      mode="stay"
       cover="night"
       alt={portrait.data.placeholder ? a.portraitAlt : portrait.data.alt[locale]}
     >
