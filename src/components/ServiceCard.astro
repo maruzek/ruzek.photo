@@ -30,8 +30,8 @@ const items = ids
 if (items.length !== ids.length)
   throw new Error(`ServiceCard: unknown service in ${ids.join(', ')}`);
 
-/** "30–50 fotek za hodinu · do 3–5 dnů"; parts that brief.md does not state are left out */
-function deliverables(s: Service): string {
+/** ["30–50 fotek za hodinu", "do 3–5 dnů"]; parts that brief.md does not state are left out */
+function deliverables(s: Service): string[] {
   const v = s.deliverables;
   const range = (r: { from: number; to: number }): string => formatCount(r, locale);
   const parts: string[] = [];
@@ -51,7 +51,7 @@ function deliverables(s: Service): string {
       }),
     );
   }
-  return parts.join(' · ');
+  return parts;
 }
 
 const first = items[0];
@@ -90,7 +90,13 @@ const typeNames = d.inquiry.form.type.options;
     {items.map((s) => (
       <li>
         {items.length > 1 && <b>{typeNames[s.id]}: </b>}
-        {deliverables(s)}
+        {/* each part on one line: a range broke after its dash ("2– / 3 dnů") */}
+        {deliverables(s).map((part, i) => (
+          <>
+            {i > 0 && ' · '}
+            <span class="nw">{part}</span>
+          </>
+        ))}
       </li>
     ))}
   </ul>

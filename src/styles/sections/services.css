@@ -12,6 +12,18 @@
   gap: 18px;
   align-content: start;
 }
+/* side by side the cards share their rows (photo, title, text, deliverables, price, link), so the prices of all
+   three sit on one line */
+@media (min-width: 901px) {
+  .svc {
+    grid-row: span 6;
+    grid-template-rows: subgrid;
+  }
+}
+/* the link's dashed underline is as wide as its text, not the card */
+.svc .lnk {
+  justify-self: start;
+}
 .svc .dph {
   aspect-ratio: 4 / 3;
 }
