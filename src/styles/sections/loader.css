@@ -27,14 +27,15 @@ html.ldr-on .ldr.out {
   position: absolute;
   left: var(--m);
   bottom: 18px;
-  font: 400 11px / 1 var(--f-mono);
-  letter-spacing: 0.04em;
+  font: 400 11px / 1 var(--f-text);
   color: var(--muted);
   transition: opacity 0.3s;
 }
 .ldr .lab.n {
   top: 18px;
   bottom: auto;
+  font-family: var(--f-mono);
+  letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
 }
 .ldr.resolving .lab {
@@ -57,7 +58,7 @@ html.ldr-on .ldr-fly {
     opacity 0.55s ease;
 }
 .ldr-fly.go path {
-  fill: var(--to, #fff);
+  fill: var(--to, var(--white));
   transition: fill 0.72s ease;
 }
 html.ldr-on .ldr-fly.fade {

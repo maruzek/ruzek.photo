@@ -58,10 +58,10 @@ for (const path of ['/', '/en/']) {
     expect(hero?.height).toBeGreaterThanOrEqual(600);
     const bottom = (hero?.y ?? 0) + (hero?.height ?? 0);
     for (const sel of [
+      '.hero .kick',
+      '.hero .row > p',
       '.hero .cta .btn',
       '.hero .cta .lnk',
-      '.hero .meta > span:nth-child(1)',
-      '.hero .meta > span:nth-child(2)',
       '.hero .ph-tag',
     ]) {
       if (sel.endsWith('.ph-tag') && (await page.locator(sel).count()) === 0) continue; // real photo, no tag
@@ -71,6 +71,34 @@ for (const path of ['/', '/en/']) {
     }
     const clipped = await page.locator('.hero').evaluate((el) => el.scrollHeight > el.clientHeight);
     expect(clipped).toBe(false);
+  });
+
+  test(`the home page uses its headings and subpages keep the footer inquiry link ${path}`, async ({
+    page,
+  }) => {
+    const english = path === '/en/';
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(path);
+    await expect(page.locator('main .eyebrow, .hero .scroll-hint, .hero .meta')).toHaveCount(0);
+    await expect(page.locator('.fold .chips, .fold .idx, .svc .lbl')).toHaveCount(0);
+    await expect(page.getByRole('region', {
+      name: english ? 'Nothing happens twice on the pitch.' : 'Na hřišti se nic neopakuje.',
+    })).toBeVisible();
+    const gallery = page.getByRole('region', {
+      name: english ? 'Events and matches as they happened.' : 'Z akcí a zápasů, naostro.',
+    });
+    await expect(gallery.locator('.work-foot p')).toHaveCount(0);
+    await expect(gallery.locator('.work-foot a')).toHaveAttribute('href', english ? '#inquiry' : '#poptavka');
+    await expect(page.locator('.day .step').first().locator('p')).toHaveCount(0);
+    await expect(page.locator('#day-h em')).toHaveText(english ? 'the same day' : 'ještě ten den');
+    await expect(page.locator('#inq-h em')).toHaveCount(0);
+    await expect(page.locator('header nav li').last()).toHaveText(english ? 'Request a shoot' : 'Poptat focení');
+    await expect(page.locator('footer .lead')).toHaveCount(0);
+    await expect(page.locator('footer .cols > *')).toHaveCount(4);
+    await expect(page.locator('.about .facts a[rel="me"]')).toHaveCount(1);
+
+    await page.goto(english ? '/en/privacy/' : '/zasady-ochrany-osobnich-udaju/');
+    await expect(page.locator('footer .lead a')).toHaveAttribute('href', english ? '/en/#inquiry' : '/#poptavka');
   });
 
   test(`/en/ shows the translation check marker only in English ${path}`, async ({ page }) => {
@@ -99,7 +127,7 @@ test('folds with a placeholder photo carry the placeholder tag clear of the text
     const tag = fold.locator('.ph-tag');
     await expect(tag).toHaveText('Zástupná fotka');
     const tagBox = await tag.boundingBox();
-    for (const sel of ['h2', '.chips', '.note > p', '.idx']) {
+    for (const sel of ['h2', '.note > p']) {
       const box = await fold.locator(sel).boundingBox();
       const apart =
         (tagBox?.y ?? 0) + (tagBox?.height ?? 0) <= (box?.y ?? 0) ||
@@ -108,17 +136,6 @@ test('folds with a placeholder photo carry the placeholder tag clear of the text
       expect(apart, `fold ${i} tag overlaps ${sel}`).toBe(true);
     }
   }
-});
-
-test('the scroll hint stops after at most two passes (5 s)', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/');
-  const anim = await page.locator('.scroll-hint').evaluate((el) => {
-    const cs = getComputedStyle(el, '::after');
-    return { count: cs.animationIterationCount, duration: parseFloat(cs.animationDuration) };
-  });
-  expect(Number(anim.count)).toBeLessThanOrEqual(2);
-  expect(Number(anim.count) * anim.duration).toBeLessThanOrEqual(5);
 });
 
 // Keyboard focus ring must have 3:1 against what is really painted behind it, also over a mid-grey photo.
@@ -407,7 +424,7 @@ test('no dead band between services and "same day", sections after a wipe start 
     const top = (s: string): number => document.querySelector(s)!.getBoundingClientRect().top;
     const svc = document.querySelector('.svc-sec')!;
     return {
-      gap: top('.day .eyebrow') - svc.lastElementChild!.getBoundingClientRect().bottom,
+      gap: top('#day-h') - svc.lastElementChild!.getBoundingClientRect().bottom,
       aboutPad: parseFloat(getComputedStyle(document.querySelector('.about')!).paddingTop),
       secPad: parseFloat(getComputedStyle(svc).paddingBottom), // the full --sec (its top padding is 0)
     };

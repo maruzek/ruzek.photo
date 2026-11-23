@@ -91,10 +91,10 @@ const bodyFace = [{ weight: 400, style: 'normal' as const }];
         // timer started here counts from navigation. A CSS animation would count from when the stylesheet is
         // applied, and a late stylesheet moved the reveal to 3.9 s. Behind the loader it counts from the hand-over,
         // or a slow hero photo would skip the entrance while the curtain still covers the page.
-        const fallback = () => setTimeout(() => root.classList.add('reveal-fallback'), 3000);
+        const fallback = (delay = 3000) => setTimeout(() => root.classList.add('reveal-fallback'), delay);
         if (root.classList.contains('ldr-on'))
-          document.addEventListener('ldr:exit', fallback, { once: true });
-        else if (!reduced) fallback();
+          document.addEventListener('ldr:exit', () => fallback(), { once: true });
+        else if (!reduced) fallback(Math.max(0, 3000 - performance.now()));
       }
     </script>
     <Font cssVariable="--font-notch" preload={aboveTheFold} />

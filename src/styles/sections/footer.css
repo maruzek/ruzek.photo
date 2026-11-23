@@ -15,6 +15,7 @@
 .foot .lead p {
   font-size: var(--t-m);
   max-width: 30ch;
+  text-wrap: pretty;
 }
 .foot .big {
   font-family: var(--f-name);
@@ -38,7 +39,7 @@
   padding-top: 24px;
   border-top: 1px solid var(--rule-d);
 }
-.foot .cols .mono {
+.foot .cols .label {
   color: var(--muted);
   display: block;
   margin-bottom: 10px;

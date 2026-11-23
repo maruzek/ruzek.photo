@@ -62,6 +62,7 @@
 .step p {
   color: var(--light-muted);
   max-width: 34ch;
+  text-wrap: pretty;
 }
 .step .dph {
   width: min(168px, 52%);

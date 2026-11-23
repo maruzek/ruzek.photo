@@ -208,7 +208,7 @@ export type ServicePricing =
   | { kind: 'flat'; price: Range; unit: 'session' | 'match' };
 
 export interface Service {
-  id: 'event' | 'short' | 'match' | 'portrait';
+  id: 'event' | 'sport' | 'portrait';
   pricing: ServicePricing;
   deliverables: { photos: Range; perHour?: true; turnaround: { value: Range; unit: 'days' | 'hours' }; durationMin?: Range };
 }
@@ -219,7 +219,7 @@ export type Addon =
 ```
 
 - Typy jsou připravené i na **balíčky** (otázka „hodinové ceny, nebo balíčky“ je otevřená). Balíček by byl další varianta `ServicePricing`, kterou kalkulačka a JSON-LD obslouží bez přepisu stránek.
-- `estimate()` v `lib/pricing/estimate.ts` je čistá funkce pokrytá testy. Počítá jako prototyp: hodinová cena, potom procentní příplatek, potom pevné příplatky. Výsledek je vždy rozsah.
+- `estimate()` v `lib/pricing/estimate.ts` je čistá funkce pokrytá testy. Výpočet pro naceněné služby postupuje od základní ceny přes procentní k pevným příplatkům. Poptávka typu „Jiné“ má individuální cenu.
 - Formátování čísel přes `Intl.NumberFormat('cs-CZ')` s nezlomitelnými mezerami, v angličtině `CZK 1,500`.
 - Doprava (Praha zdarma, jinde 5–6 Kč/km), záloha 30–50 % a opakovaná spolupráce jsou v configu jako informace pro text. Kalkulačka je v1 nepočítá.
 
@@ -230,7 +230,7 @@ export type Addon =
 - Pole podle briefu: typ akce, délka (jen u akce), datum, čas od–do, místo, počet lidí, požadované výstupy (příplatky jako zaškrtávátka), poznámka, jméno, e-mail, telefon (nepovinný), skryté pole proti robotům.
 - **Žádné zaškrtávátko souhlasu** (rozhodnutí 2026-11-21). Poptávku zpracováváme kvůli jednání před uzavřením smlouvy, souhlas k tomu není potřeba. Nad tlačítkem je věta „Odesláním berete na vědomí [zásady ochrany osobních údajů](…).“ a s poptávkou se uloží verze zásad, které platily.
 - **Zdroj poptávky:** formulář při odeslání přidá `document.referrer`, vstupní cestu a parametry UTM z adresy. Nic se kvůli tomu neukládá do prohlížeče. Slouží to pro statistiku a později i pro vyhodnocení reklam.
-- Odhad ceny vedle formuláře počítá `estimate()` ze stejného configu. Odkazy „Spočítat cenu“ u služeb předvyplní typ (`#poptavka?sluzba=match`).
+- Odhad ceny počítá `estimate()` ze stejného configu. Na desktopu je výstup vedle formuláře a na mobilu u odeslání. Odkazy „Spočítat cenu“ u služeb předvyplní typ (`#poptavka?sluzba=sport`).
 - Validace sdíleným schématem `lib/inquiry/schema.ts` (zod z `astro/zod`) při opuštění pole a při odeslání. Chyby jsou u pole, napojené přes `aria-describedby`, a po odeslání se fokus přesune na první chybu.
 - **Turnstile** se načte, až když je formulář blízko viewportu nebo uživatel začne psát. Neblokuje tak načtení stránky.
 - Bez JS formulář nejde odeslat (Turnstile JS potřebuje). `<noscript>` proto nabídne telefon, WhatsApp a e-mail. Ty jsou vedle formuláře vidět vždy.
@@ -241,13 +241,13 @@ Logika je v `server/inquiry/handler.ts` a závislosti dostává zvenku (DB, ově
 1. Jen `POST` s JSON a stejným `Origin`. Rate limit podle IP přes binding Workers Rate Limiting. IP se nikam neukládá.
 2. Ověření Turnstile tokenu (`siteverify`, IP z `CF-Connecting-IP`).
 3. Validace stejným zod schématem. Vyplněné skryté pole → odpověď 200 bez uložení.
-4. Odhad ceny se přepočítá na serveru (klientovi se nevěří).
+4. Server spočítá odhad u naceněných služeb. Pro typ „Jiné“ uloží cenu jako neurčenou.
 5. Zápis do D1. Ukládá se jen to, co je ve formuláři, zdroj poptávky a verze zásad ochrany osobních údajů.
 6. E-maily přes `ctx.waitUntil`: na `foto@martinruzek.cz` celá poptávka s `Reply-To` na klienta (Martin odpovídá rovnou ze své adresy), klientovi z `noreply@martinruzek.eu` krátké potvrzení s `Reply-To: foto@martinruzek.cz` a **bez** volného textu z formuláře, aby se formulář nedal zneužít k rozesílání spamu. Když e-mail selže, poptávka zůstane uložená s `notified_at = NULL` a údržbový worker ji pošle znovu.
 7. Odpověď `{ ok: true }`, nebo `{ ok: false, errors }` se stavovým kódem 400, 403 nebo 429.
 
 ### Databáze
-`db/migrations/0001_inquiries.sql`: tabulka `inquiries` s poli formuláře, `created_at`, `estimate_from/to`, `notice_version`, zdrojem (`referrer`, `landing_path`, `utm_*`), stavem (`status`: `new` / `won` / `lost`), `notified_at`, `confirmed_at`, `anonymized_at` a indexem na `created_at`. Osobní sloupce jsou `NULL`-ovatelné kvůli anonymizaci. Migrace přes `wrangler d1 migrations`. Stav zatím Martin mění ručně (`wrangler d1 execute`). Později ho převezme jeho vlastní aplikace.
+`db/migrations/0001_inquiries.sql`: tabulka `inquiries` s poli formuláře, `created_at`, `estimate_from/to`, `notice_version`, zdrojem (`referrer`, `landing_path`, `utm_*`), stavem (`status`: `new` / `won` / `lost`), `notified_at`, `confirmed_at`, `anonymized_at` a indexem na `created_at`. U typu `other` mají oba sloupce odhadu hodnotu `NULL`. Osobní sloupce jsou `NULL`-ovatelné kvůli anonymizaci. Migrace přes `wrangler d1 migrations`. Stav zatím Martin mění ručně (`wrangler d1 execute`). Později ho převezme jeho vlastní aplikace.
 
 ### Doba uchování (GDPR): anonymizace místo mazání
 Rozhodnutí 2026-11-21. Martin chce z poptávek dlouhodobě dělat statistiku (a později je převzít do vlastní aplikace pro fotografy). GDPR dovoluje držet osobní údaje jen po dobu nutnou pro účel, anonymní data ale ne. Proto:

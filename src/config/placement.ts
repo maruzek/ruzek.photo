@@ -51,11 +51,11 @@ export const PLACEMENT = {
     /** Published photos the sheet leaves out now (back on the sheet when a 19th and 20th frame fill a row again) */
     reserve: ['football-assistant-referee'],
   },
-  /** Photo of each service card (the `short` card is shared with the portrait) */
+  /** Photo of each service card */
   services: {
     event: 'conference-audience',
-    match: 'football-duel',
-    short: 'portrait-street-peace',
+    sport: 'football-duel',
+    portrait: 'portrait-street-peace',
   },
   /** The vertical photo in step 2 of "Same day" */
   sameDay: 'football-shoulder-run',
@@ -71,3 +71,9 @@ export const PLACEMENT = {
 };
 
 export const TEXT_OVER_PHOTOS: readonly string[] = [PLACEMENT.hero, ...PLACEMENT.folds];
+
+/** Mobile cover positioning for the selected hero and event fold photos. */
+export const MOBILE_PHOTO_POSITION: Readonly<Partial<Record<string, string>>> = {
+  'ball-dance-red': '66% 50%', // Keep the dancer to the right of the lettering.
+  'conference-speaker': '35% 50%',
+};

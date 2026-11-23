@@ -10,7 +10,8 @@ export interface Range {
   to: Czk;
 }
 
-export type ServiceId = 'event' | 'short' | 'match' | 'portrait';
+export type ServiceId = (typeof SERVICE_IDS)[number];
+export type InquiryType = (typeof INQUIRY_TYPES)[number];
 export type AddonId = 'sameDay' | 'video';
 
 // A package variant can be added here later without rewriting pages (concept.md, kap. 10).
@@ -29,8 +30,6 @@ export interface Service {
     turnaround?: { value: Range; unit: 'days' | 'hours' };
     /** Length of the shoot in minutes. */
     durationMin?: Range;
-    /** Upper limit of the shoot in minutes ("do 1 h"), when brief.md gives no minimum. */
-    durationMax?: number;
   };
 }
 
@@ -38,7 +37,8 @@ export type Addon =
   | { id: 'sameDay'; kind: 'percent'; value: Range }
   | { id: 'video'; kind: 'fixed'; value: Range };
 
-export const SERVICE_IDS = ['event', 'short', 'match', 'portrait'] as const satisfies readonly ServiceId[];
+export const SERVICE_IDS = ['event', 'sport', 'portrait'] as const;
+export const INQUIRY_TYPES = [...SERVICE_IDS, 'other'] as const;
 export const ADDON_IDS = ['sameDay', 'video'] as const satisfies readonly AddonId[];
 
 export const services: readonly Service[] = [
@@ -48,16 +48,7 @@ export const services: readonly Service[] = [
     deliverables: { photos: { from: 30, to: 50 }, perHour: true, turnaround: { value: { from: 3, to: 5 }, unit: 'days' } },
   },
   {
-    id: 'short',
-    pricing: { kind: 'flat', price: { from: 1500, to: 1500 }, unit: 'session' },
-    deliverables: {
-      photos: { from: 15, to: 25 },
-      turnaround: { value: { from: 2, to: 3 }, unit: 'days' },
-      durationMax: 60,
-    },
-  },
-  {
-    id: 'match',
+    id: 'sport',
     pricing: { kind: 'flat', price: { from: 1500, to: 2500 }, unit: 'match' },
     deliverables: { photos: { from: 30, to: 50 }, turnaround: { value: { from: 24, to: 24 }, unit: 'hours' } },
   },

@@ -3,6 +3,7 @@ import { ANALYTICS_TEST_ENV, BLOCKED_HOSTS } from './tests/e2e/analytics-env';
 
 // E2E_PORT lets a second checkout (worktree) run its own preview next to the main one
 const PORT = Number(process.env['E2E_PORT'] ?? 8787);
+const persistence = process.env['E2E_PERSIST_TO'] ? ' --persist-to "$E2E_PERSIST_TO"' : '';
 
 // Cloudflare's public Turnstile TEST site key (always passes); never a real key. It lives here and not only in the
 // git-ignored .dev.vars, because Playwright always builds fresh (lead note L1-02). The matching test secret and
@@ -28,8 +29,8 @@ export default defineConfig({
     // mailer, which sends nothing
     command: [
       'pnpm build',
-      'pnpm exec wrangler d1 migrations apply ruzek-inquiries --local -c wrangler.jsonc',
-      `pnpm exec wrangler dev --port ${PORT} --env-file tests/e2e/preview.env` +
+      'pnpm exec wrangler d1 migrations apply ruzek-inquiries --local -c wrangler.jsonc' + persistence,
+      `pnpm exec wrangler dev --port ${PORT} --env-file tests/e2e/preview.env` + persistence +
         ` --var ALLOWED_ORIGIN:http://localhost:${PORT}`,
     ].join(' && '),
     env: { PUBLIC_TURNSTILE_SITE_KEY: TURNSTILE_TEST_SITE_KEY, ...ANALYTICS_TEST_ENV },

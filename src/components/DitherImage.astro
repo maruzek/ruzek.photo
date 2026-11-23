@@ -16,14 +16,30 @@ interface Props {
   /** Colour the dither covers the photo with: the surface behind it */
   cover: Cover;
   eager?: boolean;
+  /** Mobile object position for a specific placement. */
+  mobilePosition?: string | undefined;
   /** Replaces the photo's own alt text where the section gives the photo another role (the placeholder portrait) */
   alt?: string;
 }
 
-const { photo, locale, sizes, mode = 'scroll', cover, eager = false, alt } = Astro.props;
+const {
+  photo,
+  locale,
+  sizes,
+  mode = 'scroll',
+  cover,
+  eager = false,
+  mobilePosition,
+  alt,
+} = Astro.props;
 ---
 
-<div class="dph" data-dz={mode} data-dz-color={COVER[cover]}>
+<div
+  class="dph"
+  data-dz={mode}
+  data-dz-color={COVER[cover]}
+  style={mobilePosition && `--mobile-photo-position: ${mobilePosition}`}
+>
   <Picture
     src={photo.data.image}
     alt={alt ?? photo.data.alt[locale]}

@@ -1,16 +1,16 @@
-import { ADDON_IDS, SERVICE_IDS, type AddonId, type ServiceId } from '../config/pricing';
+import { ADDON_IDS, INQUIRY_TYPES, type AddonId, type InquiryType } from '../config/pricing';
 
 export interface Prefill {
-  service?: ServiceId;
+  service?: InquiryType;
   hours?: number;
   addons?: AddonId[];
 }
 
-const isService = (v: string): v is ServiceId => (SERVICE_IDS as readonly string[]).includes(v);
+const isService = (v: string): v is InquiryType => (INQUIRY_TYPES as readonly string[]).includes(v);
 const isAddon = (v: string): v is AddonId => (ADDON_IDS as readonly string[]).includes(v);
 
 /**
- * Reads the "Spočítat cenu" link: `#poptavka?sluzba=match&hodiny=4&doplnky=video`
+ * Reads the "Spočítat cenu" link: `#poptavka?sluzba=sport&doplnky=video`
  * (English: `#inquiry?service=…&hours=…&addons=…`). Unknown values are ignored.
  */
 export function readPrefill(hash: string): Prefill {

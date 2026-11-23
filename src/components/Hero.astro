@@ -2,14 +2,14 @@
 import { Picture } from 'astro:assets';
 import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/sections/hero.css';
+import { MOBILE_PHOTO_POSITION } from '../config/placement';
 import { site } from '../config/site';
-import { fill, t, type Locale } from '../i18n';
+import { t, type Locale } from '../i18n';
 import { HERO_SIZES, IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
 import AsciiHero from './AsciiHero.astro';
 import Button from './Button.astro';
 import PlaceholderTag from './PlaceholderTag.astro';
 import Rich from './Rich.astro';
-import Todo from './Todo.astro';
 
 interface Props {
   locale: Locale;
@@ -17,6 +17,7 @@ interface Props {
 }
 
 const { locale, photo } = Astro.props;
+const mobilePosition = photo && MOBILE_PHOTO_POSITION[photo.id];
 const d = t(locale);
 const [first = '', ...rest] = site.name.split(' ');
 const anchor = (key: keyof typeof d.anchors): string => `#${d.anchors[key]}`;
@@ -25,7 +26,7 @@ const anchor = (key: keyof typeof d.anchors): string => `#${d.anchors[key]}`;
 <section class="hero" id="top" tabindex="-1" data-ascii aria-labelledby="name">
   {
     photo && (
-      <div class="media">
+      <div class="media" style={mobilePosition && `--mobile-photo-position: ${mobilePosition}`}>
         <Picture
           src={photo.data.image}
           alt={photo.data.alt[locale]}
@@ -41,13 +42,10 @@ const anchor = (key: keyof typeof d.anchors): string => `#${d.anchors[key]}`;
   <AsciiHero />
   {photo && <div class:list={['shade', photo.data.shade === 'strong' && 'strong']} aria-hidden="true" />}
   {photo?.data.placeholder && <PlaceholderTag locale={locale} />}
-  <div class="kick mono">
+  <div class="kick label">
     <span>{d.hero.kicker}</span>
     <span>{d.hero.places}</span>
   </div>
-  <span class="scroll-hint mono" aria-hidden="true">
-    {d.hero.scrollHint}
-  </span>
   <div class="base">
     <h1 id="name">
       <span>{first}</span> <span>{rest.join(' ')}</span>
@@ -63,12 +61,6 @@ const anchor = (key: keyof typeof d.anchors): string => `#${d.anchors[key]}`;
         <a class="lnk" href={anchor('work')}>
           {d.hero.ctaWork}
         </a>
-      </div>
-      <div class="meta mono">
-        <span>{fill(d.hero.instagram, { handle: site.handle })}</span>
-        <span>
-          {d.hero.onPhoto} <Todo>{d.hero.onPhotoTodo}</Todo>
-        </span>
       </div>
     </div>
   </div>

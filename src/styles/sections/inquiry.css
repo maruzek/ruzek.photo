@@ -10,14 +10,12 @@
   gap: 24px;
   align-content: start;
 }
-.inq-side .eyebrow {
-  margin: 0;
-}
 .inq-side p {
   color: var(--light-muted);
   font-size: var(--t-m);
   line-height: 1.5;
   max-width: 34ch;
+  text-wrap: pretty;
 }
 .direct {
   display: grid;

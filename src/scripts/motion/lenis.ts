@@ -38,22 +38,25 @@ export function startLenis(gsap: typeof Gsap, ScrollTrigger: typeof ST): LenisHa
       event.button !== 0 ||
       event.metaKey ||
       event.ctrlKey ||
-      event.shiftKey
+      event.shiftKey ||
+      event.altKey
     )
       return;
     const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a[href^="#"]');
     const hash = link?.getAttribute('href') ?? '';
     if (!link || hash.length < 2) return;
-    const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+    const [id = '', params] = hash.slice(1).split('?', 2);
+    const target = document.getElementById(decodeURIComponent(id));
     if (!target) return;
     event.preventDefault();
-    // land below the fixed header (HM-09); the same offset as the CSS scroll-padding of the native jump
-    const header = document.querySelector<HTMLElement>('header.top');
+    // Lenis already accounts for the CSS scroll-padding. Prefill also needs hashchange, including for a hydrated form.
     lenis.scrollTo(target, {
-      offset: -(header?.offsetHeight ?? 0),
+      immediate: event.detail === 0 || params !== undefined,
       onComplete: () => target.focus({ preventScroll: true }),
     });
-    history.replaceState(null, '', hash);
+    if (params === undefined) history.replaceState(null, '', hash);
+    else if (window.location.hash === hash) window.dispatchEvent(new HashChangeEvent('hashchange'));
+    else window.location.hash = hash;
   };
   document.addEventListener('click', onClick);
 

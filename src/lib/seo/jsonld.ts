@@ -52,7 +52,7 @@ export function buildJsonLd(locale: Locale, facts: SiteFacts = site): object[] {
     ...(facts.legal.seat ? { address: facts.legal.seat } : {}),
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
-      name: d.services.eyebrow.replace(/\u00A0/g, ' '),
+      name: d.nav.services.replace(/\u00A0/g, ' '),
       itemListElement: services.map((s) => {
         const max = highestPrice(s);
         return {

@@ -20,6 +20,11 @@
   height: 100%;
   object-fit: cover;
 }
+@media (max-width: 700px) {
+  .hero .media img {
+    object-position: var(--mobile-photo-position, 50% 50%);
+  }
+}
 .hero canvas.ascii {
   position: absolute;
   inset: 0;
@@ -33,22 +38,22 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgb(7 8 11 / 55%) 0%,
-    rgb(7 8 11 / 0%) 22%,
-    rgb(7 8 11 / 0%) 48%,
-    rgb(7 8 11 / 86%) 86%,
-    rgb(7 8 11 / 96%) 100%
+    color-mix(in srgb, var(--night) 55%, transparent) 0%,
+    color-mix(in srgb, var(--night) 0%, transparent) 22%,
+    color-mix(in srgb, var(--night) 0%, transparent) 48%,
+    color-mix(in srgb, var(--night) 86%, transparent) 86%,
+    color-mix(in srgb, var(--night) 96%, transparent) 100%
   );
 }
 /* YAML `shade: strong`: 0.7 at 65 % and rising (SHADE_OPACITY.strong) */
 .hero .shade.strong {
   background: linear-gradient(
     180deg,
-    rgb(7 8 11 / 55%) 0%,
-    rgb(7 8 11 / 0%) 22%,
-    rgb(7 8 11 / 15%) 40%,
-    rgb(7 8 11 / 70%) 65%,
-    rgb(7 8 11 / 95%) 100%
+    color-mix(in srgb, var(--night) 55%, transparent) 0%,
+    color-mix(in srgb, var(--night) 0%, transparent) 22%,
+    color-mix(in srgb, var(--night) 15%, transparent) 40%,
+    color-mix(in srgb, var(--night) 70%, transparent) 65%,
+    color-mix(in srgb, var(--night) 95%, transparent) 100%
   );
 }
 .hero .kick {
@@ -73,10 +78,10 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgb(7 8 11 / 0%) calc(var(--kick-top) - 48px),
-    rgb(7 8 11 / 62%) calc(var(--kick-top) - 8px),
-    rgb(7 8 11 / 62%) calc(100% - 48px),
-    rgb(7 8 11 / 0%) 100%
+    transparent calc(var(--kick-top) - 48px),
+    color-mix(in srgb, var(--night) 62%, transparent) calc(var(--kick-top) - 8px),
+    color-mix(in srgb, var(--night) 62%, transparent) calc(100% - 48px),
+    transparent 100%
   );
 }
 .hero .base {
@@ -86,8 +91,8 @@
 }
 /* Backing tied to the text block itself (HM-06): however tall the block gets (a narrow phone wraps the name and
    the lead onto many lines), its top edge already sits on 62 % night, and the backing moves with the
-   block while the hero scrolls away. It fades in over 72 px and reaches 62 % 48 px above the block: the name's
-   line-height is 0.84, so its accents (Ů, ž) rise above the block's top edge (2.94:1 under them at 1440 × 900).
+   block while the hero scrolls away. It fades in over 72 px and reaches 62 % 48 px above the block to cover
+   accents (Ů, ž) rising above the tightly set name.
    The .kick backing covers the label at the top. tests/e2e/contrast.spec.ts measures the worst pixel. */
 .hero .base::before {
   content: '';
@@ -97,9 +102,9 @@
   pointer-events: none;
   background: linear-gradient(
     180deg,
-    rgb(7 8 11 / 0%) 0,
-    rgb(7 8 11 / 62%) 72px,
-    rgb(7 8 11 / 92%) 100%
+    transparent 0,
+    color-mix(in srgb, var(--night) 62%, transparent) 72px,
+    color-mix(in srgb, var(--night) 92%, transparent) 100%
   );
 }
 .hero h1 {
@@ -119,12 +124,12 @@
 }
 .hero .row {
   display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 3fr);
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   gap: var(--gap);
   align-items: end;
   margin-top: clamp(24px, 2.6vw, 40px);
   padding-top: 24px;
-  border-top: 1px solid rgb(233 234 238 / 28%);
+  border-top: 1px solid color-mix(in srgb, var(--ink) 28%, transparent);
 }
 .hero .row p {
   font-size: var(--t-m);
@@ -134,18 +139,15 @@
   max-width: 26.8em;
   text-wrap: pretty;
 }
+.hero .row p em.s {
+  /* Let the paragraph control its line height when the emphasis wraps differently in the fallback font. */
+  line-height: 1;
+}
 .hero .row .cta {
   display: flex;
   gap: 28px;
   align-items: center;
   flex-wrap: wrap;
-}
-.hero .row .meta {
-  justify-self: end;
-  text-align: right;
-  color: var(--muted);
-  display: grid;
-  gap: 6px;
 }
 .hero .ph-tag {
   top: auto;
@@ -154,62 +156,14 @@
   right: var(--m);
   z-index: 2;
 }
-.scroll-hint {
-  position: absolute;
-  right: var(--m);
-  top: 50%;
-  writing-mode: vertical-rl;
-  color: var(--muted);
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-.scroll-hint::after {
-  content: '';
-  width: 1px;
-  height: 48px;
-  background: currentcolor;
-  /* two passes (4.8 s) and then a still line: no endless motion without a pause control (WCAG 2.2.2) */
-  animation: hint 2.4s var(--ease) 2;
-}
-@keyframes hint {
-  0% {
-    transform: scaleY(0);
-    transform-origin: top;
-  }
-  50% {
-    transform: scaleY(1);
-    transform-origin: top;
-  }
-  51% {
-    transform-origin: bottom;
-  }
-  100% {
-    transform: scaleY(0);
-    transform-origin: bottom;
-  }
-}
-
-@media (max-width: 1100px) {
-  .hero .row {
-    grid-template-columns: 1fr 1fr;
-  }
-  .hero .row .meta {
-    grid-column: 1 / -1;
-    justify-self: start;
-    text-align: left;
-  }
-}
 @media (max-width: 900px) {
-  .scroll-hint {
-    display: none;
-  }
   .hero {
     min-height: max(100svh, 600px);
   }
   .hero h1 {
     white-space: normal;
     font-size: clamp(68px, 22vw, 128px);
+    line-height: 0.94;
   }
   /* First and last name always on two lines. Left to wrap, the name was one line in Stack Sans Notch and two
      in the fallback around 900 px, and the block jumped when the font arrived (RZ2-11). */
@@ -219,7 +173,7 @@
   .hero .row {
     grid-template-columns: 1fr;
   }
-  /* room for the placeholder tag under the meta lines (not in the prototype, whose TODO was shorter) */
+  /* Keep the placeholder tag clear of the hero actions. */
   .hero .base {
     padding-bottom: 52px;
   }
@@ -227,11 +181,6 @@
     --kick-top: 88px;
     flex-direction: column;
     gap: 4px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .scroll-hint::after {
-    animation: none;
   }
 }
 

@@ -8,7 +8,6 @@ import { telHref } from '../lib/contact';
 import { localePath, t, type Locale } from '../i18n';
 import { Call02Icon, Mail01Icon, WhatsappIcon } from '@hugeicons/core-free-icons';
 import Icon from './Icon.astro';
-import Rich from './Rich.astro';
 import Todo from './Todo.astro';
 
 interface Props {
@@ -30,14 +29,11 @@ const q = d.inquiry;
     privacyHref={localePath(locale, 'privacy')}
   >
     <Fragment slot="intro">
-      <span class="eyebrow mono">{q.eyebrow}</span>
-      <h2 class="h" id="inq-h" data-split>
-        <Rich text={q.title} />
-      </h2>
+      <h2 class="h" id="inq-h" data-split>{q.title}</h2>
       <p>{q.lead}</p>
     </Fragment>
     <div slot="direct" class="direct">
-      <span class="mono">{q.direct.label}</span>
+      <span class="label">{q.direct.label}</span>
       <ul>
         <li>
           {site.contact.phone ? (

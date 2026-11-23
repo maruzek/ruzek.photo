@@ -51,9 +51,9 @@ Zbývají `IMG_4505-2` a `IMG_4510`: v hledišti jsou poznatelné děti. Před z
 
 ## Otevřené body
 
-- **`conference-speaker` na mobilu:** fotka přes obrazovku se ořezává na střed, přednášející stojí vlevo, a tak mu na 360 px uřízne půlku obličeje. Ořez souboru to nespraví (na desktopu by se uřízla hlava). Řešením je ohnisko ořezu (`object-position`) u fotky v komponentě `PhotoFold`.
 - **`IMG_3724`** čeká na Martinovo ověření. Kdyby nešla použít, v galerii ji nahradí `IMG_7350`.
-- **Popisky:** políčko ukazuje jen číslo snímku. Kategorii a místo ukazuje lightbox, místo a datum zatím jako `TODO`. Pole `caption` se doplní, až je Martin dodá.
+
+Mobilní ohniska pro `conference-speaker` (přednášející) a `ball-dance-red` (zaostřená tanečnice) určuje `MOBILE_PHOTO_POSITION` v `src/config/placement.ts`. Úvodní fotka sdílí výřez s ASCII vrstvou. Políčko ukazuje číslo snímku a lightbox zobrazuje číslo, kategorii a případný popisek.
 
 ## Jak vyměnit fotku na místě
 

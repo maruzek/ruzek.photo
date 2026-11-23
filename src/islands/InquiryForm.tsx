@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode, type SubmitEvent } from 'react';
-import { addons as addonConfig, services, type AddonId, type ServiceId } from '../config/pricing';
+import { addons as addonConfig, INQUIRY_TYPES, services, type AddonId, type InquiryType } from '../config/pricing';
 import { site } from '../config/site';
 import type { Dictionary, Locale } from '../i18n';
 import { hoursBetween } from '../lib/inquiry/duration';
@@ -23,7 +23,7 @@ interface Props {
   addonText: Dictionary['services']['addons'];
   /** `localePath(locale, 'privacy')` */
   privacyHref: string;
-  /** Astro named slot: eyebrow, heading and lead of the section, rendered above the estimate. */
+  /** Astro named slot: heading and lead of the section, rendered above the estimate. */
   intro?: ReactNode;
   /** Astro named slot: the direct contacts, rendered below the estimate. */
   direct?: ReactNode;
@@ -41,7 +41,7 @@ const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
 
 type Text =
   'name' | 'email' | 'phone' | 'hours' | 'date' | 'timeFrom' | 'timeTo' | 'place' | 'guests' | 'note' | 'website';
-type Values = Record<Text, string> & { service: ServiceId; addons: AddonId[] };
+type Values = Record<Text, string> & { service: InquiryType; addons: AddonId[] };
 type Errors = Partial<Record<InquiryField | 'form', string>>;
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
@@ -78,7 +78,7 @@ const ORDER: readonly InquiryField[] = [
   'note',
 ];
 
-const isHourly = (id: ServiceId): boolean => services.find((s) => s.id === id)?.pricing.kind === 'hourly';
+const isHourly = (id: InquiryType): boolean => services.find((s) => s.id === id)?.pricing.kind === 'hourly';
 /** With both times filled in, the hours are taken from them (the client does not enter the length twice). */
 const withDerivedHours = (v: Values): Values => {
   const h = hoursBetween(v.timeFrom, v.timeTo);
@@ -144,6 +144,8 @@ const DOM_ID: Partial<Record<InquiryField, string>> = {
   note: 'inq-note',
 };
 
+const ESTIMATE_INPUTS = [...INQUIRY_TYPES.map((id) => `inq-type-${id}`), 'inq-hours', 'inq-same', 'inq-video'].join(' ');
+
 /** Allows a line break after the en dash, so the longest EN range fits at 360 px (lead note T4-02). */
 function Range({ text }: { text: string }): ReactNode {
   const i = text.indexOf('–');
@@ -164,6 +166,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
   const [status, setStatus] = useState<Status>('idle');
   const [hydrated, setHydrated] = useState(false);
   const sending = useRef(false);
+  const edited = useRef(new Set<InquiryField>());
   const formRef = useRef<HTMLFormElement>(null);
   const widgetRef = useRef<HTMLDivElement>(null);
   const doneRef = useRef<HTMLDivElement>(null);
@@ -257,6 +260,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
   };
 
   const set = <K extends keyof Values>(key: K, value: Values[K]): void => {
+    edited.current.add(key);
     let next = withDerivedHours({ ...values, [key]: value });
     const timeKey = key === 'timeFrom' || key === 'timeTo';
     // a length taken from the times that no longer applies falls back into the 1–12 range
@@ -356,6 +360,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     setValues(INITIAL);
     setErrors({});
     setStatus('idle');
+    edited.current.clear();
     submissionId.current = ''; // a new inquiry
     focusNext.current = 'name';
   };
@@ -365,27 +370,29 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     ...(isHourly(values.service) ? { hours: Number(values.hours) } : {}),
     addons: values.addons,
   });
+  const estimateContent = range ? <Range text={formatRange(range, locale)} /> : text.estimate.individual;
+  const summary = (placement: 'desktop' | 'mobile'): ReactNode => (
+    <div className={`est est-${placement}`}>
+      {range && <span className="label">{text.estimate.label}</span>}
+      <output htmlFor={ESTIMATE_INPUTS} form="inq" aria-label={range ? text.estimate.label : undefined}>
+        {estimateContent}
+      </output>
+      {range && <small>{text.estimate.note}</small>}
+    </div>
+  );
 
   const field = (
     name: InquiryField,
     label: string,
     input: (aria: { 'aria-invalid'?: true; 'aria-describedby'?: string }) => ReactNode,
-    opts: { optional?: boolean; full?: boolean; hidden?: boolean; note?: string } = {},
+    opts: { full?: boolean; hidden?: boolean; note?: string } = {},
   ): ReactNode => {
     const id = DOM_ID[name] ?? name;
     const err = errors[name];
     const describedBy = [err && `${id}-msg`, opts.note && `${id}-note`].filter(Boolean).join(' ');
     return (
       <div className={['field', opts.full && 'full', err && 'bad'].filter(Boolean).join(' ')} hidden={opts.hidden}>
-        <label htmlFor={id}>
-          {label}
-          {opts.optional && (
-            <>
-              {' '}
-              <span className="opt">{f.optional}</span>
-            </>
-          )}
-        </label>
+        <label htmlFor={id}>{label}</label>
         {input({
           ...(err ? { 'aria-invalid': true as const } : {}),
           ...(describedBy ? { 'aria-describedby': describedBy } : {}),
@@ -405,7 +412,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
   };
 
   const blur = (name: InquiryField) => () => {
-    if (status !== 'sending') validate(name, values);
+    if (status !== 'sending' && (edited.current.has(name) || badInput(name, values))) validate(name, values);
   };
   const hourly = isHourly(values.service);
   const locked = hoursLocked(values);
@@ -414,13 +421,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
     <>
       <div className="inq-side">
         {intro}
-        <div className="est" aria-live="polite">
-          <span className="mono">{text.estimate.label}</span>
-          <output htmlFor="inq-type-event inq-type-short inq-type-match inq-type-portrait inq-hours inq-same inq-video">
-            <Range text={formatRange(range, locale)} />
-          </output>
-          <small>{text.estimate.note}</small>
-        </div>
+        {summary('desktop')}
         {direct}
       </div>
 
@@ -433,7 +434,10 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
         onSubmit={(e) => void onSubmit(e)}
         aria-busy={status === 'sending'}
       >
-        <h3 className="grp mono">{f.groups.contact}</h3>
+        <div className="grp">
+          <h3 className="label">{f.groups.contact}</h3>
+          <p className="note">{f.required}</p>
+        </div>
         {field('name', f.name.label, (aria) => (
           <input
             id="inq-name"
@@ -479,26 +483,25 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
               {...aria}
             />
           ),
-          { optional: true },
         )}
-        <h3 className="grp mono">{f.groups.event}</h3>
+        <h3 className="grp label">{f.groups.event}</h3>
         <fieldset
           className={['field', 'full', 'choice', errors.service && 'bad'].filter(Boolean).join(' ')}
           aria-describedby={errors.service ? 'inq-type-msg' : undefined}
         >
           <legend>{f.type.label}</legend>
           <div className="choices">
-            {services.map((s) => (
-              <label className="tick" key={s.id}>
+            {INQUIRY_TYPES.map((id) => (
+              <label className="tick" key={id}>
                 <input
                   type="radio"
-                  id={`inq-type-${s.id}`}
+                  id={`inq-type-${id}`}
                   name="service"
-                  value={s.id}
-                  checked={values.service === s.id}
-                  onChange={() => set('service', s.id)}
+                  value={id}
+                  checked={values.service === id}
+                  onChange={() => set('service', id)}
                 />
-                <span>{f.type.options[s.id]}</span>
+                <span>{f.type.options[id]}</span>
               </label>
             ))}
           </div>
@@ -522,7 +525,6 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
               {...aria}
             />
           ),
-          { optional: true },
         )}
         {field(
           'place',
@@ -539,7 +541,6 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
               {...aria}
             />
           ),
-          { optional: true },
         )}
         {field(
           'timeFrom',
@@ -555,7 +556,6 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
               {...aria}
             />
           ),
-          { optional: true },
         )}
         {field(
           'timeTo',
@@ -571,7 +571,6 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
               {...aria}
             />
           ),
-          { optional: true },
         )}
         {field(
           'hours',
@@ -632,9 +631,8 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
               {...aria}
             />
           ),
-          { optional: true },
         )}
-        <h3 className="grp mono">{f.groups.extras}</h3>
+        <h3 className="grp label">{f.groups.extras}</h3>
         <fieldset className="ticks">
           <legend className="vh">{text.fields.addons.legend}</legend>
           {addonConfig.map((a) => (
@@ -672,7 +670,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
               {...aria}
             />
           ),
-          { optional: true, full: true },
+          { full: true, ...(values.service === 'other' ? { note: f.note.otherHelp } : {}) },
         )}
 
         {/* Honeypot: hidden from people and assistive technology, bots fill it in */}
@@ -694,6 +692,7 @@ export default function InquiryForm({ locale, siteKey, text, addonText, privacyH
 
         <div className="turnstile" ref={widgetRef} />
 
+        {summary('mobile')}
         <div className="actions">
           <button
             className="btn dark"

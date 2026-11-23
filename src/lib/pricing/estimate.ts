@@ -1,14 +1,15 @@
-import { addons, services, type AddonId, type Range, type ServiceId } from '../../config/pricing';
+import { addons, services, type AddonId, type InquiryType, type Range } from '../../config/pricing';
 
 export interface EstimateInput {
-  service: ServiceId;
+  service: InquiryType;
   /** Only used by hourly services; clamped to the service's limits. Missing or NaN counts as one hour. */
   hours?: number;
   addons: readonly AddonId[];
 }
 
-/** Starting-price range: hourly price, then percent add-ons, then fixed add-ons (concept.md, kap. 10). */
-export function estimate({ service, hours, addons: picked }: EstimateInput): Range {
+/** Starting-price range for priced services, with percent add-ons applied before fixed add-ons. */
+export function estimate({ service, hours, addons: picked }: EstimateInput): Range | null {
+  if (service === 'other') return null;
   const s = services.find((x) => x.id === service);
   if (!s) throw new Error(`Unknown service ${service}`);
 

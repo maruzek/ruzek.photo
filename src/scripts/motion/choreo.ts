@@ -40,32 +40,33 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
   };
   const name = root.querySelector<HTMLElement>('#name');
   if (name) {
+    const hero = name.closest('.hero');
+    const kicker = hero?.querySelectorAll('.kick > *');
+    const actions = hero?.querySelector('.cta');
+    let intro: ReturnType<typeof gsap.timeline>;
     SplitText.create(name, {
       type: 'chars',
       mask: 'chars',
       charsClass: 'nm-ch', // the mask gets `nm-ch-mask` (hero.css gives it headroom for accents)
       autoSplit: true,
-      onSplit: (self) =>
-        gsap.from(self.chars, {
-          yPercent: 140, // below the mask's extra headroom, so no accent peeks out at the start
-          duration: 1.25,
-          ease: 'expo.out',
-          stagger: 0.045,
-          delay: 0.55,
-        }),
+      onSplit: (self) => {
+        intro = gsap.timeline();
+        intro.from(
+          self.chars,
+          { yPercent: 140, duration: 0.78, ease: 'expo.out', stagger: 0.03 },
+          0,
+        );
+        if (kicker?.length) {
+          intro.from(kicker, { y: 8, opacity: 0, duration: 0.32, ease: 'power3.out' }, 0.08);
+        }
+        if (actions) {
+          intro.from(actions, { y: 12, opacity: 0, duration: 0.36, ease: 'power3.out' }, 0.18);
+        }
+        if (hero?.matches(':focus-within')) intro.progress(1);
+        return intro;
+      },
     });
-  }
-  const heroBits = root.querySelectorAll('.hero .kick > *, .hero .row > :not(p)');
-  if (heroBits.length > 0) {
-    const tween = gsap.from(heroBits, {
-      y: 24,
-      opacity: 0,
-      duration: 0.9,
-      ease: 'power3.out',
-      stagger: 0.08,
-      delay: 1.1,
-    });
-    finishOnFocus(root.querySelector('.hero'), tween);
+    finishOnFocus(hero, { progress: (value) => intro.progress(value) });
   }
   for (const el of root.querySelectorAll<HTMLElement>('[data-split]')) {
     SplitText.create(el, {
@@ -165,16 +166,6 @@ export function folds({ gsap }: Libs, root: ParentNode): Cleanup {
           scrollTrigger: { trigger: fold, start: 'top bottom', end: 'bottom top', scrub: true },
         },
       );
-    }
-    const idx = fold.querySelector('.idx b');
-    if (idx) {
-      gsap.from(idx, {
-        yPercent: 60,
-        opacity: 0,
-        ease: 'none',
-        // the caption sticks to the bottom of the screen while the fold comes in (fold.css), so the number does too
-        scrollTrigger: { trigger: fold, start: 'top bottom-=120', end: 'top 45%', scrub: true },
-      });
     }
   }
   return noop;
@@ -297,16 +288,30 @@ export function sameDay({ gsap }: Libs, root: ParentNode, pin: boolean): Cleanup
 export function headerHide({ ScrollTrigger }: Libs, root: ParentNode): Cleanup {
   const top = root.querySelector<HTMLElement>('header.top');
   if (!top) return noop;
+  let previous = window.scrollY;
+  let travel = 0;
   ScrollTrigger.create({
-    start: 120,
+    start: 0,
     end: 'max',
-    onUpdate: (s) =>
-      top.classList.toggle(
-        'is-hidden',
-        s.direction === 1 && s.scroll() > 200 && !top.matches(':focus-within'),
-      ),
+    onUpdate: (trigger) => {
+      const position = trigger.scroll();
+      const delta = position - previous;
+      previous = position;
+      if (position <= 200 || top.matches(':focus-within')) {
+        travel = 0;
+        top.classList.remove('is-hidden');
+        return;
+      }
+      if (delta === 0) return;
+      travel = Math.sign(delta) === Math.sign(travel) ? travel + delta : delta;
+      if (travel >= 18) top.classList.add('is-hidden');
+      if (travel <= -12) top.classList.remove('is-hidden');
+    },
   });
-  const onFocus = (): void => top.classList.remove('is-hidden');
+  const onFocus = (): void => {
+    travel = 0;
+    top.classList.remove('is-hidden');
+  };
   top.addEventListener('focusin', onFocus);
   return () => {
     top.removeEventListener('focusin', onFocus);
@@ -329,7 +334,7 @@ export function headerBlend(root: Document): Cleanup {
   if (!top) return noop;
   const overFlat = (): boolean => {
     const h = top.offsetHeight;
-    const w = innerWidth;
+    const w = root.documentElement.clientWidth;
     // any photo box in the header band, however narrow, rules the blend out; the sample points below only
     // confirm the flat surface (HM-10)
     for (const el of root.querySelectorAll(PHOTO)) {

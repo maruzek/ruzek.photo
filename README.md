@@ -38,6 +38,7 @@ pnpm check:launch   # poslední kontrola před spuštěním (viz níže)
 ```
 
 - **Port e2e:** `pnpm test:e2e` a `pnpm test:perf` spouštějí vlastní preview na portu 8787. Běžící `pnpm preview` na tomto portu před nimi zastavte. Druhý checkout může použít jiný port: `E2E_PORT=8788 pnpm test:e2e`.
+- **Čistá testovací D1:** `E2E_PERSIST_TO="$(mktemp -d)" pnpm test:e2e` použije nový lokální stav a ponechá vývojovou databázi v `.wrangler/state`.
 - **Hotovo** znamená: `pnpm check` i `pnpm test:e2e` projdou.
 - Žádné cookies a žádné zápisy do `localStorage` kvůli měření. Při `prefers-reduced-motion: reduce` se GSAP ani Lenis nestáhnou.
 

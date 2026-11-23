@@ -15,7 +15,8 @@ test('reduced motion: no GSAP/Lenis downloaded, everything visible', async ({ pa
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await page.waitForLoadState('networkidle');
+  await page.waitForFunction(motionIs, 'off' as const);
+  await expect(page.locator('canvas.dwipe').last()).toHaveAttribute('data-painted', 'static');
   expect(scripts.some((u) => /gsap|lenis|start|choreo/i.test(u))).toBe(false);
   for (const el of await page.locator('[data-split], [data-rise], .step').all())
     await expect(el).toBeVisible();
@@ -110,6 +111,79 @@ test('anchor link moves focus to the section', async ({ page, viewport }) => {
     header: document.querySelector<HTMLElement>('header.top')!.offsetHeight,
   }));
   expect(top).toBeGreaterThanOrEqual(header - 1);
+});
+
+test('keyboard anchor jumps immediately while preserving the target focus', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  const state = await page.evaluate(() => {
+    const link = document.querySelector<HTMLAnchorElement>('.hero a[href="#prace"]')!;
+    link.focus();
+    link.click(); // Keyboard activation generates the same zero-detail click.
+    return {
+      focus: document.activeElement?.id,
+      scroll: scrollY,
+      top: document.querySelector('#prace')?.getBoundingClientRect().top ?? 0,
+      inset: Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop),
+    };
+  });
+  expect(state.focus).toBe('prace');
+  expect(state.scroll).toBeGreaterThan(600);
+  expect(Math.abs(state.top - state.inset)).toBeLessThan(2);
+});
+
+test('keyboard estimate link ends wheel inertia and prefills Sport', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'wheel smoothing is desktop only');
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  const link = page.locator('.svc a[href="#poptavka?sluzba=sport"]');
+  await link.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+  await link.focus();
+  await page.mouse.move(700, 430);
+  await page.mouse.wheel(0, 145);
+  await expect(page.locator('html')).toHaveClass(/\blenis-smooth\b/);
+  await page.keyboard.press('Enter');
+  const section = page.locator('#poptavka');
+  await expect(section).toBeFocused();
+  await expect(page.locator('#inq-type-sport')).toBeChecked();
+  await expect(page.locator('html')).not.toHaveClass(/\blenis-smooth\b/);
+  const top = await section.evaluate((element) => element.getBoundingClientRect().top);
+  expect(top).toBeGreaterThan(0);
+  expect(top).toBeLessThan(120);
+});
+
+for (const reducedMotion of ['reduce', 'no-preference'] as const) {
+  test(`the same estimate link can prefill again (${reducedMotion})`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion });
+    await page.goto('/');
+    const link = page.locator('.svc a[href="#poptavka?sluzba=sport"]');
+    await link.press('Enter');
+    await expect(page.locator('#inq-type-sport')).toBeChecked();
+    await page.getByRole('radio', { name: 'Portrét' }).check();
+    await link.press('Enter');
+    await expect(page.locator('#inq-type-sport')).toBeChecked();
+    await expect(page.locator('#poptavka')).toBeFocused();
+  });
+}
+
+test('header ignores a tiny scroll reversal and appears immediately on focus', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  const header = page.locator('header.top');
+  await page.evaluate(() => window.scrollTo(0, 450));
+  await expect(header).toHaveClass(/\bis-hidden\b/);
+  await page.evaluate(() => window.scrollTo(0, 447));
+  await page.evaluate(async () => {
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+  });
+  await expect(header).toHaveClass(/\bis-hidden\b/);
+
+  const top = await header.evaluate((element) => {
+    element.querySelector('a')?.focus({ preventScroll: true });
+    return element.getBoundingClientRect().top;
+  });
+  expect(top).toBeCloseTo(0, 1);
 });
 
 test('reduced motion: an anchor jump lands below the header', async ({ page, viewport }) => {
@@ -330,17 +404,15 @@ test('after a jump from the menu, the About section is fully shown (desktop pin)
     .getByRole('link', { name: /^O\smně$/ })
     .click(); // the label has a nbsp
   await expect(page.locator('#o-mne')).toBeFocused({ timeout: 4000 }); // Lenis has landed
-  // every paragraph already past its trigger line (top 88 %, measured without the 32 px start offset) is shown;
-  // one lower down rises in on the next scroll
-  const rise = page.locator('.about [data-rise]');
-  const passed = await rise.evaluateAll((els) =>
-    els.map((el) => el.getBoundingClientRect().top - 32 < innerHeight * 0.85),
-  );
-  expect(passed.filter(Boolean).length).toBeGreaterThanOrEqual(2);
-  for (const [i, inView] of passed.entries())
-    if (inView) await expect(rise.nth(i)).toHaveCSS('opacity', '1');
+  // The story paragraph lands visible; facts lower down rise in on the next scroll.
+  const rise = page.locator('.about p[data-rise]');
+  await expect(rise).toBeInViewport();
+  await expect(rise).toHaveCSS('opacity', '1');
   await page.mouse.wheel(0, 400);
-  for (const p of await rise.all()) await expect(p).toHaveCSS('opacity', '1', { timeout: 4000 });
+  const facts = page.locator('.about [data-stagger] > div');
+  await expect(facts).toHaveCount(2);
+  for (const fact of await facts.all())
+    await expect(fact).toHaveCSS('opacity', '1', { timeout: 4000 });
   // the portrait's dither canvas is fully transparent once the photo has assembled
   await expect
     .poll(
@@ -410,8 +482,8 @@ test('"same day" pins only where it fits, with its heading and photo in view', a
     await expect
       .poll(() => page.locator('.day').evaluate((el) => getComputedStyle(el).position))
       .toBe('fixed');
-    const eyebrow = await page.locator('.day .eyebrow').boundingBox();
-    expect(eyebrow?.y ?? -1, `${width} x ${height} heading`).toBeGreaterThanOrEqual(0);
+    const heading = await page.locator('#day-h').boundingBox();
+    expect(heading?.y ?? -1, `${width} x ${height} heading`).toBeGreaterThanOrEqual(0);
     const photo = await page.locator('.day .dph').boundingBox();
     expect(
       (photo?.y ?? 0) + (photo?.height ?? 0),
@@ -515,28 +587,16 @@ test('split headings keep one-letter words with the next word', async ({ page })
   expect(stranded).toEqual([]);
 });
 
-// The fold number sits in a clipping box and has negative tracking: the last digit must keep its right edge
-test('the fold number is not clipped on the right', async ({ page }) => {
+test('the photo folds keep one photograph each without decorative index or chips', async ({
+  page,
+}) => {
   await page.goto('/');
-  await page.evaluate(() => document.fonts.ready);
-  const overflow = await page.locator('.fold .idx b').evaluateAll((els) =>
-    els.map((b) => {
-      const ctx = document.createElement('canvas').getContext('2d');
-      if (!ctx || !b.textContent) return -1;
-      const cs = getComputedStyle(b);
-      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-      ctx.letterSpacing = cs.letterSpacing;
-      const m = ctx.measureText(b.textContent);
-      // ink right edge from the text start, against the box the clip leaves for the text
-      const ink = m.actualBoundingBoxRight;
-      const box =
-        b.parentElement!.getBoundingClientRect().right -
-        b.getBoundingClientRect().left -
-        parseFloat(cs.paddingLeft);
-      return Math.round(ink - box);
-    }),
-  );
-  for (const o of overflow) expect(o).toBeLessThanOrEqual(0);
+  const folds = page.locator('.fold');
+  await expect(folds).toHaveCount(2);
+  for (const fold of await folds.all()) {
+    await expect(fold.locator('img')).toHaveCount(1);
+    await expect(fold.locator('.idx, .chips')).toHaveCount(0);
+  }
 });
 
 // Fold headings sit at the bottom of a full-screen photo: they must be readable while the fold comes in

@@ -11,8 +11,8 @@ describe('estimate', () => {
       from: 4200,
       to: 5070,
     }));
-  it('match + video adds fixed range', () =>
-    expect(estimate({ service: 'match', addons: ['video'] })).toEqual({ from: 2500, to: 4500 }));
+  it('sport + video adds fixed range', () =>
+    expect(estimate({ service: 'sport', addons: ['video'] })).toEqual({ from: 2500, to: 4500 }));
   it('percent before fixed', () =>
     expect(estimate({ service: 'portrait', addons: ['video', 'sameDay'] })).toEqual({
       from: 2800,
@@ -20,8 +20,8 @@ describe('estimate', () => {
     }));
   it('portrait flat', () =>
     expect(estimate({ service: 'portrait', addons: [] })).toEqual({ from: 1500, to: 1500 }));
-  it('short shoot is flat', () =>
-    expect(estimate({ service: 'short', addons: [] })).toEqual({ from: 1500, to: 1500 }));
+  it('other has no estimate even with add-ons', () =>
+    expect(estimate({ service: 'other', hours: 5, addons: ['sameDay', 'video'] })).toBeNull());
   it('clamps hours', () => {
     expect(estimate({ service: 'event', hours: 0, addons: [] })).toEqual({ from: 1500, to: 1500 });
     expect(estimate({ service: 'event', hours: 99, addons: [] })).toEqual({
@@ -41,7 +41,7 @@ describe('estimate', () => {
       to: 2700,
     }));
   it('ignores hours for flat services', () =>
-    expect(estimate({ service: 'match', hours: 5, addons: [] })).toEqual({ from: 1500, to: 2500 }));
+    expect(estimate({ service: 'sport', hours: 5, addons: [] })).toEqual({ from: 1500, to: 2500 }));
   it('ignores duplicate addons', () =>
     expect(estimate({ service: 'portrait', addons: ['video', 'video'] })).toEqual({
       from: 2500,
@@ -49,7 +49,7 @@ describe('estimate', () => {
     }));
   it('does not mutate the config', () => {
     const before = JSON.stringify(services);
-    estimate({ service: 'match', addons: ['sameDay', 'video'] });
+    estimate({ service: 'sport', addons: ['sameDay', 'video'] });
     expect(JSON.stringify(services)).toBe(before);
   });
   it('throws on an unknown service', () =>
@@ -73,8 +73,7 @@ describe('config matches docs/brief.md', () => {
   });
   it('flat services', () => {
     const flat = (id: string) => services.find((s) => s.id === id)?.pricing;
-    expect(flat('short')).toEqual({ kind: 'flat', price: { from: 1500, to: 1500 }, unit: 'session' });
-    expect(flat('match')).toEqual({ kind: 'flat', price: { from: 1500, to: 2500 }, unit: 'match' });
+    expect(flat('sport')).toEqual({ kind: 'flat', price: { from: 1500, to: 2500 }, unit: 'match' });
     expect(flat('portrait')).toEqual({
       kind: 'flat',
       price: { from: 1500, to: 1500 },
@@ -88,12 +87,7 @@ describe('config matches docs/brief.md', () => {
       perHour: true,
       turnaround: { value: { from: 3, to: 5 }, unit: 'days' },
     });
-    expect(d('short')).toEqual({
-      photos: { from: 15, to: 25 },
-      turnaround: { value: { from: 2, to: 3 }, unit: 'days' },
-      durationMax: 60, // brief.md: "do 1 h", no minimum
-    });
-    expect(d('match')).toEqual({
+    expect(d('sport')).toEqual({
       photos: { from: 30, to: 50 },
       turnaround: { value: { from: 24, to: 24 }, unit: 'hours' },
     });

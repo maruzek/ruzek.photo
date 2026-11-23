@@ -19,8 +19,8 @@ interface Row {
   event_date: string | null;
   guests: number | null;
   addons: string;
-  estimate_from: number;
-  estimate_to: number;
+  estimate_from: number | null;
+  estimate_to: number | null;
   referrer: string | null;
   landing_path: string | null;
   utm_source: string | null;

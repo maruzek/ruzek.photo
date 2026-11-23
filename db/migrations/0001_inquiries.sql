@@ -18,13 +18,13 @@ CREATE TABLE inquiries (
   time_from TEXT,
   time_to TEXT,
   -- kept for statistics (event_date reduced to YYYY-MM on anonymization)
-  service TEXT NOT NULL,
+  service TEXT NOT NULL CHECK (service IN ('event', 'sport', 'portrait', 'other')),
   hours INTEGER,
   event_date TEXT,
   guests INTEGER,
   addons TEXT NOT NULL DEFAULT '[]',
-  estimate_from INTEGER NOT NULL,
-  estimate_to INTEGER NOT NULL,
+  estimate_from INTEGER,
+  estimate_to INTEGER,
   -- source, sanitized on insert (src/server/inquiry/source.ts): referrer host only, landing path only when it
   -- is a known route, UTM values [a-z0-9._-]{1,64}. Anonymization sets anything else to NULL as well.
   referrer TEXT,
@@ -38,7 +38,11 @@ CREATE TABLE inquiries (
   -- set when the row was listed in a successfully sent anonymization preview (risk R11)
   previewed_at INTEGER,
   anonymized_at INTEGER,
-  CHECK (anonymized_at IS NOT NULL OR (name IS NOT NULL AND email IS NOT NULL AND submission_id IS NOT NULL))
+  CHECK (anonymized_at IS NOT NULL OR (name IS NOT NULL AND email IS NOT NULL AND submission_id IS NOT NULL)),
+  CHECK (
+    (service = 'other' AND estimate_from IS NULL AND estimate_to IS NULL)
+    OR (service <> 'other' AND estimate_from IS NOT NULL AND estimate_to IS NOT NULL)
+  )
 -- WITHOUT ROWID: no hidden insertion counter, so an anonymized row does not reveal its place in the order of
 -- arrival (L2-01); rows are stored by the random id
 ) WITHOUT ROWID;

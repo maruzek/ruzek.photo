@@ -95,6 +95,20 @@ describe('d1Store', () => {
     expect(r).toEqual(rec());
   });
 
+  it('reloads an individually quoted inquiry for mail retries', async () => {
+    const other = rec({ service: 'other', estimateFrom: null, estimateTo: null });
+    await store.insert(other);
+    const [r] = await pending();
+    expect(r).toEqual(other);
+  });
+
+  it.each([
+    { service: 'other', estimateFrom: 0, estimateTo: 0 },
+    { service: 'sport', estimateFrom: null, estimateTo: 1 },
+  ] as const)('refuses an invalid estimate for $service', async (values) => {
+    await expect(store.insert(rec(values))).rejects.toThrow(/CHECK/);
+  });
+
   it('round-trips a record without optional fields', async () => {
     const minimal = rec();
     for (const k of ['phone', 'place', 'note', 'timeFrom', 'timeTo', 'hours', 'date', 'guests'] as const)

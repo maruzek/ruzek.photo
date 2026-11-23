@@ -6,8 +6,8 @@ export type InquiryStatus = 'new' | 'won' | 'lost';
 export interface InquiryRecord extends Omit<InquiryInput, 'turnstileToken' | 'website' | 'source'> {
   id: string;
   createdAt: number;
-  estimateFrom: number;
-  estimateTo: number;
+  estimateFrom: number | null;
+  estimateTo: number | null;
   noticeVersion: string;
   status: InquiryStatus;
   referrer: string | null;

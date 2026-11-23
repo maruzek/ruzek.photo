@@ -29,14 +29,19 @@ export function initCursor(gsap: typeof Gsap, root: Document = document): () => 
 
   const cur = root.querySelector<HTMLElement>('.cur');
   if (cur) {
-    const cx = gsap.quickTo(cur, 'x', { duration: 0.35, ease: 'power3.out' });
-    const cy = gsap.quickTo(cur, 'y', { duration: 0.35, ease: 'power3.out' });
+    const cx = gsap.quickTo(cur, 'x', { duration: 0.12, ease: 'power3.out' });
+    const cy = gsap.quickTo(cur, 'y', { duration: 0.12, ease: 'power3.out' });
     on(window, 'pointermove', (e) => {
+      if (!cur.classList.contains('on')) return;
       cx(e.clientX);
       cy(e.clientY);
     });
     for (const el of root.querySelectorAll<HTMLElement>('[data-cursor]')) {
-      on(el, 'pointerenter', () => cur.classList.add('on'));
+      on(el, 'pointerenter', (e) => {
+        cx(e.clientX, e.clientX);
+        cy(e.clientY, e.clientY);
+        cur.classList.add('on');
+      });
       on(el, 'pointerleave', () => cur.classList.remove('on'));
     }
   }

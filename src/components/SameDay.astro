@@ -22,12 +22,9 @@ const last = d.steps.length - 1;
 
 <section class="day" aria-labelledby="day-h">
   <div class="sec-head">
-    <div>
-      <span class="eyebrow mono">{d.eyebrow}</span>
-      <h2 class="h" id="day-h" data-split>
-        <Rich text={d.title} />
-      </h2>
-    </div>
+    <h2 class="h" id="day-h" data-split>
+      <Rich text={d.title} />
+    </h2>
     <p data-rise>{d.lead}</p>
   </div>
   <div class="progress" aria-hidden="true">
@@ -38,15 +35,17 @@ const last = d.steps.length - 1;
       <li class="step is-on">
         <span class="no mono">{step.no}</span>
         <h3>{step.title}</h3>
-        <p>
-          {step.text}
-          {i === last && (
-            <>
-              {' '}
-              <Todo>{d.galleryTodo}</Todo>.
-            </>
-          )}
-        </p>
+        {'text' in step && (
+          <p>
+            {step.text}
+            {i === last && (
+              <>
+                {' '}
+                <Todo>{d.galleryTodo}</Todo>.
+              </>
+            )}
+          </p>
+        )}
         {i === 1 && vertical && (
           <DitherImage photo={vertical} locale={locale} sizes="168px" mode="stay" cover="light">
             {vertical.data.placeholder && <PlaceholderTag locale={locale} />}

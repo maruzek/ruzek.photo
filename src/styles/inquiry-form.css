@@ -6,10 +6,15 @@
   display: grid;
   gap: 6px;
 }
+.inq .est-mobile {
+  display: none;
+  grid-column: 1 / -1;
+}
 .inq .est output {
   font-family: var(--f-text);
   font-weight: 600;
   font-size: clamp(30px, 2.8vw, 44px);
+  line-height: 1.12;
   letter-spacing: -0.025em;
   font-variant-numeric: tabular-nums;
   /* The amounts never break inside (non-breaking spaces from formatRange), but the line may break after the en
@@ -36,10 +41,6 @@
 .inq-form label {
   font-weight: 500;
 }
-.inq-form label .opt {
-  color: var(--light-muted);
-  font-weight: 400;
-}
 .inq-form :is(input, textarea) {
   width: 100%;
   min-height: 52px;
@@ -57,14 +58,10 @@
   resize: vertical;
 }
 .inq-form :is(input, textarea)::placeholder {
-  color: #6b6f77;
+  color: var(--placeholder-ink);
 }
 .inq-form :is(input, textarea):hover {
   border-color: var(--light-ink);
-}
-.inq-form :is(input:not([type='checkbox'], [type='radio']), textarea):focus-visible {
-  outline: none;
-  border-bottom: 2px solid var(--light-ink);
 }
 .inq-form .field.bad :is(input, textarea) {
   border-color: var(--err);
@@ -113,9 +110,12 @@
   outline: 2px solid var(--light-ink);
   outline-offset: 2px;
 }
+.inq-form .tick input:focus-visible {
+  outline: none;
+}
 .inq-form .tick:has(input:checked) {
   border-color: var(--light-ink);
-  background: #fff;
+  background: var(--white);
 }
 .inq-form .tick input {
   width: 20px;
@@ -208,6 +208,9 @@
   padding-top: 0;
   margin-top: 0;
 }
+.inq-form .grp .note {
+  margin-top: 4px;
+}
 /* Hours: − [n] + instead of the native spinner */
 .inq-form .stepper {
   display: grid;
@@ -249,6 +252,12 @@
   font-size: 15px;
 }
 @media (max-width: 900px) {
+  .inq .est-desktop {
+    display: none;
+  }
+  .inq .est-mobile {
+    display: grid;
+  }
   .inq-form,
   .inq-form .ticks {
     grid-template-columns: 1fr;

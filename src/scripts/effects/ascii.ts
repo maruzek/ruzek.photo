@@ -49,8 +49,7 @@ export function initAsciiHero(
   };
   let quality: Quality = initialQuality(nav);
   const probe = createQualityProbe();
-  const fontFamily =
-    getComputedStyle(root.querySelector('.mono') ?? root).fontFamily || 'monospace';
+  const fontFamily = getComputedStyle(root).getPropertyValue('--f-mono').trim() || 'monospace';
 
   let W = 0;
   let H = 0;
@@ -98,10 +97,12 @@ export function initAsciiHero(
     const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
     const sw = W / s;
     const sh = H / s;
+    // CSS positions the covered image with two percentages, depending on the viewport width.
+    const [x = '50%', y = '50%'] = getComputedStyle(img).objectPosition.split(' ');
     sampler.drawImage(
       img,
-      (img.naturalWidth - sw) / 2,
-      (img.naturalHeight - sh) / 2,
+      ((img.naturalWidth - sw) * parseFloat(x)) / 100,
+      ((img.naturalHeight - sh) * parseFloat(y)) / 100,
       sw,
       sh,
       0,

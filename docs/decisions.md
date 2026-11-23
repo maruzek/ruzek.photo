@@ -16,6 +16,16 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 
 ## Rozhodnuto
 
+### 2026-11-22: úpravy po redesignu galerie
+- V O mně zůstává Instagram. V patičce zůstávají sloupce „Fotím“ a „Kde“.
+- Akce i Sport mají dál po jedné celoobrazovkové fotce. Šířka layoutu na 2560 × 1440 Martinovi vyhovuje.
+- Stávající ukazatel kroků „Ještě ten den“ počká na případný redesign sekce. Ke zkoušce je obrazová časová osa od záběru přes ořez pro sítě po hotový výběr.
+- Poptávka má pořadí Akce, Sport, Portrét, Jiné. Krátké focení se vyřazuje. Typ Sport používá identifikátor `sport` a Jiné má individuální cenu. Na mobilu bude souhrn odhadu u odeslání. Při tabulátoru se zvýrazní právě fokusované pole.
+- Serifová kurzíva zůstává jako akcent na méně místech. U nadpisu poptávky smysl nemá. V sekci „Ještě ten den“ pokryje celou frázi „ještě ten den“.
+- Lightbox otevře zvolený snímek celý a bez nutnosti posouvat obsah. Během načítání se nesmí ukázat předchozí snímek.
+- Kosočtvercový přechod vyzkoušet samostatně až po ostatních změnách. Místo a datum se k fotkám doplňovat nebudou. Případové studie přijdou, až bude skutečný obsah.
+- Nápady do budoucna jsou pás s konkrétními momenty z vlastních fotek a plovoucí odhad s výběrem služeb přímo v ceníku.
+
 ### 2026-11-22: vlastní fotky místo zástupných
 - **Výběr:** 16 vlastních fotek nahradilo všech 14 zástupných, přehled a náhradníci jsou v [`photos.md`](photos.md). Rezerva do 30 fotek je připravená pro galerii „kontaktní arch“.
 - **Nezletilí:** na vybraných fotkách nejsou (Martin), všechny mají `minors: false`. Děti se objevují jen v hledišti na fotbale; takové fotky (`IMG_4505-2`, `IMG_4510`) jsou jen v rezervě a před zveřejněním je Martin ručně rozmaže.
