@@ -4,7 +4,7 @@ import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/dither.css';
 import type { Locale } from '../i18n';
 import { COVER, type Cover } from '../lib/palette';
-import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+import { IMAGE_FORMATS, IMAGE_QUALITY, IMAGE_WIDTHS } from '../lib/photos/image';
 
 interface Props {
   photo: PublishedPhoto;
@@ -45,6 +45,7 @@ const {
     alt={alt ?? photo.data.alt[locale]}
     widths={IMAGE_WIDTHS}
     formats={IMAGE_FORMATS}
+    quality={IMAGE_QUALITY}
     sizes={sizes}
     loading={eager ? 'eager' : 'lazy'}
   />

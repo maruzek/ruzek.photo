@@ -5,7 +5,7 @@ import '../styles/sections/hero.css';
 import { MOBILE_PHOTO_POSITION } from '../config/placement';
 import { site } from '../config/site';
 import { t, type Locale } from '../i18n';
-import { HERO_SIZES, IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+import { IMAGE_FORMATS, IMAGE_QUALITY, IMAGE_WIDTHS, heroSizes } from '../lib/photos/image';
 import AsciiHero from './AsciiHero.astro';
 import Button from './Button.astro';
 import PlaceholderTag from './PlaceholderTag.astro';
@@ -32,7 +32,8 @@ const anchor = (key: keyof typeof d.anchors): string => `#${d.anchors[key]}`;
           alt={photo.data.alt[locale]}
           widths={IMAGE_WIDTHS}
           formats={IMAGE_FORMATS}
-          sizes={HERO_SIZES}
+          quality={IMAGE_QUALITY}
+          sizes={heroSizes(photo.data.image)}
           loading="eager"
           fetchpriority="high"
         />

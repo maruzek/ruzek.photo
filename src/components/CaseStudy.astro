@@ -12,7 +12,7 @@ import Header from './Header.astro';
 import PlaceholderTag from './PlaceholderTag.astro';
 import { site } from '../config/site';
 import { getPhoto, type PublishedPhoto } from '../lib/photos/get';
-import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+import { IMAGE_FORMATS, IMAGE_QUALITY, IMAGE_WIDTHS } from '../lib/photos/image';
 import { localePath, t, type Locale } from '../i18n';
 
 interface Props {
@@ -75,6 +75,7 @@ const home = localePath(locale, 'home');
               alt={photo.data.alt[locale]}
               widths={IMAGE_WIDTHS}
               formats={IMAGE_FORMATS}
+              quality={IMAGE_QUALITY}
               sizes="(max-width: 700px) 100vw, 50vw"
               loading={i < 2 ? 'eager' : 'lazy'}
             />

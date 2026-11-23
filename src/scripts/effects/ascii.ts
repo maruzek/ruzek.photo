@@ -33,6 +33,51 @@ export function fadeLoad(from: number, elapsedMs: number, durationMs: number): n
 
 type Lens = 'off' | 'tracking' | 'drift' | 'idle';
 
+/** The URL of the narrowest `w` candidate in a `srcset`, or `null` when it lists none. */
+export function narrowestCandidate(srcset: string): string | null {
+  let best: { url: string; w: number } | null = null;
+  for (const entry of srcset.split(',')) {
+    const [url, descriptor = ''] = entry.trim().split(/\s+/);
+    const w = descriptor.endsWith('w') ? parseInt(descriptor, 10) : NaN;
+    if (url && Number.isFinite(w) && (!best || w < best.w)) best = { url, w };
+  }
+  return best?.url ?? null;
+}
+
+/** A decoded image the sampler draws from, with its pixel size. */
+interface Source {
+  image: CanvasImageSource;
+  width: number;
+  height: number;
+}
+
+/**
+ * What the sampler reads the photo from. It needs about `cols × rows` pixels (≤ 6000 cells), and drawing the full
+ * hero file into a canvas decodes it on the main thread: a 2400 px AVIF cost a 300 ms long task on a mid-range
+ * phone. So it fetches the narrowest file of the format the browser picked (480 px) and decodes it with
+ * `createImageBitmap`, off the main thread. A fetch, unlike `new Image()`, does not hold back the `load` event.
+ * Anything failing falls back to the photo itself.
+ */
+async function samplingSource(img: HTMLImageElement): Promise<Source> {
+  const photo: Source = { image: img, width: img.naturalWidth, height: img.naturalHeight };
+  const current = img.currentSrc;
+  const abs = (url: string): string => new URL(url, document.baseURI).href;
+  const srcsets = [...(img.parentElement?.querySelectorAll('source') ?? []), img].map((el) => el.srcset);
+  const srcset = srcsets.find((set) =>
+    set.split(',').some((entry) => abs(entry.trim().split(/\s+/)[0] ?? '') === current),
+  );
+  const url = srcset && narrowestCandidate(srcset);
+  if (!url || abs(url) === current) return photo;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return photo;
+    const bitmap = await createImageBitmap(await res.blob());
+    return { image: bitmap, width: bitmap.width, height: bitmap.height };
+  } catch {
+    return photo;
+  }
+}
+
 export function initAsciiHero(
   root: HTMLElement,
   opts: { reduce: boolean; fine: boolean },
@@ -81,6 +126,8 @@ export function initAsciiHero(
   let prevBox: [number, number, number, number] | null = null;
   let dirty = true;
   let lastTime = -1;
+  let source: Source = { image: img, width: img.naturalWidth, height: img.naturalHeight };
+  let disposed = false;
 
   const setIntro = (state: 'running' | 'done' | 'skipped' | 'lite'): void => {
     root.dataset['asciiIntro'] = state;
@@ -91,18 +138,18 @@ export function initAsciiHero(
   };
 
   function sample(): void {
-    if (!img || !sampler || !img.naturalWidth || cols === 0) return;
+    if (!img || !sampler || !source.width || cols === 0) return;
     sampler.canvas.width = cols;
     sampler.canvas.height = rows;
-    const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const s = Math.max(W / source.width, H / source.height);
     const sw = W / s;
     const sh = H / s;
     // CSS positions the covered image with two percentages, depending on the viewport width.
     const [x = '50%', y = '50%'] = getComputedStyle(img).objectPosition.split(' ');
     sampler.drawImage(
-      img,
-      ((img.naturalWidth - sw) * parseFloat(x)) / 100,
-      ((img.naturalHeight - sh) * parseFloat(y)) / 100,
+      source.image,
+      ((source.width - sw) * parseFloat(x)) / 100,
+      ((source.height - sh) * parseFloat(y)) / 100,
       sw,
       sh,
       0,
@@ -300,9 +347,17 @@ export function initAsciiHero(
 
   // No dissolve over a photo people may already see (risk R4, HM-03): a photo that is loaded when this module
   // runs, or a page the 3 s fallback has already revealed (a late module, a late photo), skips the intro.
+  // The small sampling file is requested once the photo is in, so it never competes with the photo (the LCP).
   const revealed = (): boolean => document.documentElement.classList.contains('reveal-fallback');
-  const onLoad = (): void => begin(revealed());
-  if (img.complete && img.naturalWidth > 0) begin(true);
+  const start = (skipIntro: boolean): void => {
+    void samplingSource(img).then((s) => {
+      if (disposed) return;
+      source = s;
+      begin(skipIntro);
+    });
+  };
+  const onLoad = (): void => start(revealed());
+  if (img.complete && img.naturalWidth > 0) start(true);
   else img.addEventListener('load', onLoad, { once: true });
 
   if (opts.fine) {
@@ -323,6 +378,8 @@ export function initAsciiHero(
   const remove = scheduler.add({ el: root, tick, progress: () => 0 });
 
   return () => {
+    disposed = true;
+    if (source.image instanceof ImageBitmap) source.image.close();
     remove();
     ro.disconnect();
     clearTimeout(resizeTimer);

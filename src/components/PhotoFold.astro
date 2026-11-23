@@ -3,6 +3,7 @@ import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/sections/fold.css';
 import { MOBILE_PHOTO_POSITION } from '../config/placement';
 import type { Locale } from '../i18n';
+import { coverSizes } from '../lib/photos/image';
 import DitherImage from './DitherImage.astro';
 import PlaceholderTag from './PlaceholderTag.astro';
 
@@ -14,10 +15,11 @@ interface Props {
   id: string;
   title: string;
   text: string;
-  sizes?: string;
 }
 
-const { locale, photo, id, title, text, sizes = '100vw' } = Astro.props;
+const { locale, photo, id, title, text } = Astro.props;
+// fold.css: the fold is one screen high, at least 600 px
+const FOLD_MIN_HEIGHT = 600;
 ---
 
 <section class="fold" aria-labelledby={id}>
@@ -25,7 +27,7 @@ const { locale, photo, id, title, text, sizes = '100vw' } = Astro.props;
     <DitherImage
       photo={photo}
       locale={locale}
-      sizes={sizes}
+      sizes={coverSizes(photo.data.image, FOLD_MIN_HEIGHT)}
       cover="night"
       mobilePosition={MOBILE_PHOTO_POSITION[photo.id]}
     />

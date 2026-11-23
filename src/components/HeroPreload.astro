@@ -1,7 +1,7 @@
 ---
 // Goes into the `head` slot of Base. Preloads the AVIF the browser will pick for the hero <img> (LCP).
 import type { PublishedPhoto } from '../lib/photos/get';
-import { HERO_SIZES, avifSrcset } from '../lib/photos/image';
+import { avifSrcset, heroSizes } from '../lib/photos/image';
 
 interface Props {
   photo: PublishedPhoto;
@@ -16,6 +16,6 @@ const srcset = await avifSrcset(photo.data.image);
   as="image"
   type="image/avif"
   imagesrcset={srcset}
-  imagesizes={HERO_SIZES}
+  imagesizes={heroSizes(photo.data.image)}
   fetchpriority="high"
 />

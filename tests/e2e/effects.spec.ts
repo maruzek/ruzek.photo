@@ -26,9 +26,17 @@ test('the hero ASCII canvas samples the same horizontal crop as the photo', asyn
     const draw = CanvasRenderingContext2D.prototype.drawImage;
     CanvasRenderingContext2D.prototype.drawImage = new Proxy(draw, {
       apply(target, receiver: CanvasRenderingContext2D, args: unknown[]) {
+        // the sampler draws a small copy of the photo (an ImageBitmap), so the crop is compared as a fraction
         const [source, cropX] = args;
-        if (args.length === 9 && source instanceof HTMLImageElement && source.closest('.hero'))
-          source.dataset['sampledCropX'] = String(cropX);
+        const width =
+          source instanceof ImageBitmap
+            ? source.width
+            : source instanceof HTMLImageElement && source.closest('.hero')
+              ? source.naturalWidth
+              : 0;
+        const photo = document.querySelector<HTMLImageElement>('.hero .media img');
+        if (args.length === 9 && width && photo)
+          photo.dataset['sampledCropX'] = String((Number(cropX) / width) * photo.naturalWidth);
         Reflect.apply(target, receiver, args);
       },
     });
@@ -46,7 +54,7 @@ test('the hero ASCII canvas samples the same horizontal crop as the photo', asyn
       faceInCrop: ((img.naturalWidth * 0.69 - Number(img.dataset['sampledCropX'])) * scale) / width,
     };
   });
-  expect(sampled).toBeCloseTo(rendered);
+  expect(sampled).toBeCloseTo(rendered, 0); // within half a photo pixel: the small copy rounds its own size
   if (testInfo.project.name === 'mobile-360') {
     expect(faceInCrop).toBeGreaterThan(0.68);
     expect(faceInCrop).toBeLessThan(0.88);
