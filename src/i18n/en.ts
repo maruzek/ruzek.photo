@@ -38,7 +38,6 @@ export const en = {
   },
   hero: {
     kicker: 'Event and sports photographer',
-    places: 'Prague and Karlovy Vary',
     lead: 'I photograph corporate events, conferences, balls and sport. You get a selection for your social media *the same day.*',
     cta: 'Request a shoot',
     ctaWork: 'See the work',

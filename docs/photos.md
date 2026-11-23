@@ -12,7 +12,7 @@ Postup přidání fotky je v [README](../README.md#jak-přidat-fotku), umístěn
 | Fotka přes obrazovku: akce | `conference-speaker` | `text-remove.jpg` (`IMG_7167`, Martinova retuš bez textu na plátně) | | `IMG_5925`, `IMG_5952` |
 | Fotka přes obrazovku: sport | `football-slide-tackle` | `IMG_4428` | `left=0.06,top=0.2` | `IMG_2211`, `IMG_1068` |
 | Galerie: kontaktní arch | 18 fotek níže, pořadí a výběr v `PLACEMENT.work` | | | |
-| Karta služby: akce | `conference-audience` | `IMG_6139` | | `IMG_8513`, `IMG_5925` |
+| Karta služby: akce | `conference-group-photo` | `IMG_8513` | | `IMG_6139`, `IMG_5925` |
 | Karta služby: sport | `football-duel` | `IMG_0948` | | `IMG_1548`, `IMG_1973` |
 | Karta služby: portrét | `portrait-street-peace` | `IMG_4124` | | `IMG_3828`, `IMG_4028` |
 | Ještě ten den, krok 2 | `football-shoulder-run` | `IMG_4591` | | `IMG_4510`, `IMG_8731` |
@@ -22,7 +22,7 @@ Galerie je kontaktní arch (prototyp 3, větev `proto/gallery-contact-sheet-v2`)
 
 | Políčko | Slug | Zdroj | Zvětšená (slot) |
 |---|---|---|---|
-| 01 | `conference-group-photo` | `IMG_8513` | |
+| 01 | `conference-audience` | `IMG_6139` | |
 | 02 | `talk-speaker-microphone` | `IMG_1202` | s2 |
 | 03 | `football-team-huddle` | `IMG_2211` | |
 | 04 | `football-goalkeeper-dive` | `IMG_4386` | s1 |
@@ -53,7 +53,7 @@ Zbývají `IMG_4505-2` a `IMG_4510`: v hledišti jsou poznatelné děti. Před z
 
 - **`IMG_3724`** čeká na Martinovo ověření. Kdyby nešla použít, v galerii ji nahradí `IMG_7350`.
 
-Mobilní ohniska pro `conference-speaker` (přednášející) a `ball-dance-red` (zaostřená tanečnice) určuje `MOBILE_PHOTO_POSITION` v `src/config/placement.ts`. Úvodní fotka sdílí výřez s ASCII vrstvou. Políčko ukazuje číslo snímku a lightbox zobrazuje číslo, kategorii a případný popisek.
+Mobilní ohniska pro `conference-speaker` (přednášející), `ball-dance-red` (zaostřená tanečnice) a `football-slide-tackle` (souboj) určuje `MOBILE_PHOTO_POSITION` v `src/config/placement.ts`. Úvodní fotka sdílí výřez s ASCII vrstvou. Políčko ukazuje číslo snímku a lightbox zobrazuje číslo, kategorii a případný popisek.
 
 ## Jak vyměnit fotku na místě
 

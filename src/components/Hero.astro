@@ -42,10 +42,6 @@ const anchor = (key: keyof typeof d.anchors): string => `#${d.anchors[key]}`;
   <AsciiHero />
   {photo && <div class:list={['shade', photo.data.shade === 'strong' && 'strong']} aria-hidden="true" />}
   {photo?.data.placeholder && <PlaceholderTag locale={locale} />}
-  <div class="kick label">
-    <span>{d.hero.kicker}</span>
-    <span>{d.hero.places}</span>
-  </div>
   <div class="base">
     <h1 id="name">
       <span>{first}</span> <span>{rest.join(' ')}</span>

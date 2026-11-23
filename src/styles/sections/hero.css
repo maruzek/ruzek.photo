@@ -56,35 +56,8 @@
     color-mix(in srgb, var(--night) 95%, transparent) 100%
   );
 }
-.hero .kick {
-  --kick-top: 112px;
-  position: relative;
-  isolation: isolate; /* keeps the backing below the text and above the photo */
-  align-self: start;
-  padding: var(--kick-top) var(--m) 0;
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  color: var(--ink);
-}
-/* Backing under the label (HM-06): the top of .shade fades out by 22 % of the hero height, too early for a light
-   photo behind the label on a phone (3.0:1 under single glyphs). It starts 48 px above the label, holds 62 % night
-   behind the text and fades out over 48 px below it. tests/e2e/contrast.spec.ts measures the worst pixel. */
-.hero .kick::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 -48px;
-  z-index: -1;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    transparent calc(var(--kick-top) - 48px),
-    color-mix(in srgb, var(--night) 62%, transparent) calc(var(--kick-top) - 8px),
-    color-mix(in srgb, var(--night) 62%, transparent) calc(100% - 48px),
-    transparent 100%
-  );
-}
 .hero .base {
+  grid-row: 2;
   position: relative;
   isolation: isolate; /* keeps the backing below the text and above the photo */
   padding: 0 var(--m) clamp(28px, 3vw, 44px);
@@ -92,8 +65,7 @@
 /* Backing tied to the text block itself (HM-06): however tall the block gets (a narrow phone wraps the name and
    the lead onto many lines), its top edge already sits on 62 % night, and the backing moves with the
    block while the hero scrolls away. It fades in over 72 px and reaches 62 % 48 px above the block to cover
-   accents (Ů, ž) rising above the tightly set name.
-   The .kick backing covers the label at the top. tests/e2e/contrast.spec.ts measures the worst pixel. */
+   accents (Ů, ž) rising above the tightly set name. tests/e2e/contrast.spec.ts measures the worst pixel. */
 .hero .base::before {
   content: '';
   position: absolute;
@@ -176,11 +148,6 @@
   /* Keep the placeholder tag clear of the hero actions. */
   .hero .base {
     padding-bottom: 52px;
-  }
-  .hero .kick {
-    --kick-top: 88px;
-    flex-direction: column;
-    gap: 4px;
   }
 }
 

@@ -222,6 +222,34 @@ test('marquee can be paused', async ({ page }) => {
   await expect(toggle).toHaveAttribute('aria-pressed', 'false');
 });
 
+test('holding the mobile band pauses until release and tapping can pause it persistently', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, 'touch gesture');
+  await page.goto('/');
+  await page.waitForFunction(motionIs, 'on' as const);
+  const band = page.locator('.marquee');
+  const toggle = band.getByRole('button', { name: 'Pozastavit' });
+  const position = () => band.locator('.track').evaluate((el) => getComputedStyle(el).transform);
+  await band.scrollIntoViewIfNeeded();
+  const start = await position();
+  await expect.poll(position).not.toBe(start);
+  const pointer = { pointerId: 1, pointerType: 'touch', isPrimary: true };
+  await toggle.dispatchEvent('pointerdown', pointer);
+  const held = await position();
+  await page.waitForTimeout(350);
+  expect(await position()).toBe(held);
+  await toggle.dispatchEvent('pointerup', pointer);
+  await toggle.dispatchEvent('click', { detail: 1 });
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(position).not.toBe(held);
+  await toggle.tap();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await toggle.tap();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+});
+
 test('reloading with the marquee on screen still starts the motion layer', async ({ page }) => {
   await page.goto('/');
   await page.waitForFunction(motionIs, 'on' as const);

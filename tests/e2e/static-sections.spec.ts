@@ -58,7 +58,6 @@ for (const path of ['/', '/en/']) {
     expect(hero?.height).toBeGreaterThanOrEqual(600);
     const bottom = (hero?.y ?? 0) + (hero?.height ?? 0);
     for (const sel of [
-      '.hero .kick',
       '.hero .row > p',
       '.hero .cta .btn',
       '.hero .cta .lnk',
@@ -79,7 +78,7 @@ for (const path of ['/', '/en/']) {
     const english = path === '/en/';
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(path);
-    await expect(page.locator('main .eyebrow, .hero .scroll-hint, .hero .meta')).toHaveCount(0);
+    await expect(page.locator('main .eyebrow, .hero .scroll-hint, .hero .meta, .hero .kick')).toHaveCount(0);
     await expect(page.locator('.fold .chips, .fold .idx, .svc .lbl')).toHaveCount(0);
     await expect(page.getByRole('region', {
       name: english ? 'Nothing happens twice on the pitch.' : 'Na hřišti se nic neopakuje.',
@@ -88,7 +87,8 @@ for (const path of ['/', '/en/']) {
       name: english ? 'Events and matches as they happened.' : 'Z akcí a zápasů, naostro.',
     });
     await expect(gallery.locator('.work-foot p')).toHaveCount(0);
-    await expect(gallery.locator('.work-foot a')).toHaveAttribute('href', english ? '#inquiry' : '#poptavka');
+    await expect(gallery.locator('.work-foot .btn')).toHaveAttribute('href', english ? '#inquiry' : '#poptavka');
+    await expect(gallery.locator('.work-foot')).toHaveCSS('border-top-width', '0px');
     await expect(page.locator('.day .step').first().locator('p')).toHaveCount(0);
     await expect(page.locator('#day-h em')).toHaveText(english ? 'the same day' : 'ještě ten den');
     await expect(page.locator('#inq-h em')).toHaveCount(0);
@@ -310,7 +310,12 @@ test('marquee keeps its height when the loop starts, and the band never runs und
   expect(new Set(heights).size).toBe(1);
   const toggle = await page.locator('.marquee-toggle').boundingBox();
   const clip = await page.locator('.marquee .viewport').boundingBox();
-  expect((clip?.x ?? 0) + (clip?.width ?? 0)).toBeLessThanOrEqual(toggle?.x ?? 0);
+  if ((page.viewportSize()?.width ?? 0) <= 900) {
+    expect(clip?.width).toBeCloseTo(page.viewportSize()?.width ?? 0);
+    await expect(page.locator('.marquee-toggle span')).toBeHidden();
+  } else {
+    expect((clip?.x ?? 0) + (clip?.width ?? 0)).toBeLessThanOrEqual(toggle?.x ?? 0);
+  }
 });
 
 test('reduced motion: marquee shows every item once, wrapped, with no button', async ({ page }) => {

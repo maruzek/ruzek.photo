@@ -18,7 +18,7 @@ export const PLACEMENT = {
    */
   work: {
     sheet: [
-      'conference-group-photo',
+      'conference-audience',
       'talk-speaker-microphone',
       'football-team-huddle',
       'football-goalkeeper-dive',
@@ -53,7 +53,7 @@ export const PLACEMENT = {
   },
   /** Photo of each service card */
   services: {
-    event: 'conference-audience',
+    event: 'conference-group-photo',
     sport: 'football-duel',
     portrait: 'portrait-street-peace',
   },
@@ -72,8 +72,9 @@ export const PLACEMENT = {
 
 export const TEXT_OVER_PHOTOS: readonly string[] = [PLACEMENT.hero, ...PLACEMENT.folds];
 
-/** Mobile cover positioning for the selected hero and event fold photos. */
+/** Mobile cover positioning for the selected hero and fold photos. */
 export const MOBILE_PHOTO_POSITION: Readonly<Partial<Record<string, string>>> = {
   'ball-dance-red': '66% 50%', // Keep the dancer to the right of the lettering.
   'conference-speaker': '35% 50%',
+  'football-slide-tackle': '45% 50%',
 };

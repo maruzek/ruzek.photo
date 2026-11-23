@@ -77,6 +77,27 @@
   outline-offset: 2px;
 }
 
+/* On narrow screens the whole band is the pause control, with no space reserved beside the text. */
+@media (max-width: 900px) {
+  .marquee-toggle {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    touch-action: pan-y pinch-zoom;
+  }
+  .marquee-toggle span {
+    display: none;
+  }
+  .marquee-toggle:focus-visible {
+    outline-offset: -4px;
+  }
+}
+
 /* The band: one line; with the loop running, two copies side by side */
 @media (prefers-reduced-motion: no-preference) {
   html.motion:not(.reveal-fallback) .marquee .track,

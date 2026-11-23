@@ -35,6 +35,9 @@ const [hero, events, sport] = await Promise.all([
   getPhoto(PLACEMENT.hero),
   ...PLACEMENT.folds.map((id) => getPhoto(id)),
 ]);
+// On a portrait phone the wide sport image covers by height, so its displayed source is wider than the screen.
+const sportAspect = sport ? sport.data.image.width / sport.data.image.height : 1;
+const sportSizes = `(max-width: 700px) max(100vw, ${Math.ceil(sportAspect * 600)}px, ${Math.ceil(sportAspect * 100)}svh), 100vw`;
 ---
 
 <Base locale={locale} route="home" title={d.meta.title} description={d.meta.description}>
@@ -54,7 +57,7 @@ const [hero, events, sport] = await Promise.all([
       )
     }
     <PhotoFold locale={locale} photo={events} id="fold-events" {...d.folds.events} />
-    <PhotoFold locale={locale} photo={sport} id="fold-sport" {...d.folds.sport} />
+    <PhotoFold locale={locale} photo={sport} id="fold-sport" sizes={sportSizes} {...d.folds.sport} />
     <DitherWipe from="night" to="light" />
     <div class="light">
       <ContactSheet locale={locale} />

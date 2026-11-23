@@ -141,6 +141,38 @@ test('motion: dither canvases draw while in view', async ({ page }) => {
   await expect(page.locator('canvas.dwipe').first()).toHaveAttribute('data-painted', 'live');
 });
 
+test('the final transition finishes at the end of a tall desktop page', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'the short footer leaves the trigger out of reach on tall desktop viewports');
+  await page.setViewportSize({ width: 2560, height: 1440 });
+  await page.goto('/');
+  await page.waitForFunction(() => document.documentElement.dataset['motion'] === 'on');
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const wipe = page.locator('canvas.dwipe').last();
+  await expect(wipe).toHaveAttribute('data-painted', 'live');
+  await expect
+    .poll(() =>
+      wipe.evaluate((canvas: HTMLCanvasElement) => {
+        const pixels = canvas
+          .getContext('2d')!
+          .getImageData(0, 0, canvas.width, canvas.height).data;
+        for (let i = 0; i < pixels.length; i += 4) {
+          if (
+            pixels[i] !== 7 ||
+            pixels[i + 1] !== 8 ||
+            pixels[i + 2] !== 11 ||
+            pixels[i + 3] !== 255
+          )
+            return false;
+        }
+        return true;
+      }),
+    )
+    .toBe(true);
+});
+
 test('on touch the lens drifts for 5 s and then stops', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'mobile-360', 'touch only');
   await page.goto('/');

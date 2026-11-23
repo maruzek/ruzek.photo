@@ -50,7 +50,6 @@ export const cs = {
   },
   hero: {
     kicker: 'Fotograf akcí a\u00A0sportu',
-    places: 'Praha a\u00A0Karlovy Vary',
     lead: 'Fotím firemní akce, konference, plesy a\u00A0sport. Výběr na vaše sítě máte *ještě ten den.*',
     cta: 'Poptat focení',
     ctaWork: 'Prohlédnout práci',

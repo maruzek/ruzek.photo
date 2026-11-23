@@ -179,9 +179,12 @@
 .work-foot {
   display: flex;
   justify-content: flex-end;
-  margin-top: clamp(56px, 6vw, 96px);
-  padding-top: 24px;
-  border-top: 1px solid var(--rule-l);
+  margin-top: clamp(36px, 5vw, 72px);
+}
+@media (max-width: 900px) {
+  .work-foot {
+    justify-content: flex-start;
+  }
 }
 /* The "view" cursor over photos (fine pointers with motion only; cursor.ts moves it) */
 .cur {

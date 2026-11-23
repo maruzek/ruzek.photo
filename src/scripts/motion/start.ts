@@ -56,8 +56,8 @@ function canvasEffects(scope: ParentNode, scheduler: Scheduler): () => void {
     });
   }
   for (const cv of scope.querySelectorAll<HTMLCanvasElement>('canvas.dwipe')) {
-    // prototype: edge position = (vh - top) / (0.75 vh), i.e. from entering the viewport until its top hits 25 %
-    const st = ScrollTrigger.create({ trigger: cv, start: 'top bottom', end: 'top 25%' });
+    // A short footer can put the nominal end past the document's last scroll position.
+    const st = ScrollTrigger.create({ trigger: cv, start: 'top bottom', end: 'clamp(top 25%)' });
     const remove = scheduler.add(wipeEffect(cv, () => st.progress));
     removers.push(() => {
       remove();
@@ -74,7 +74,8 @@ function canvasEffects(scope: ParentNode, scheduler: Scheduler): () => void {
 function loaderExit(): Promise<void> {
   const root = document.documentElement;
   // `data-ldr="exit"`: it has already handed over and only the logo is still on its way
-  if (!root.classList.contains('ldr-on') || root.dataset['ldr'] === 'exit') return Promise.resolve();
+  if (!root.classList.contains('ldr-on') || root.dataset['ldr'] === 'exit')
+    return Promise.resolve();
   return new Promise((resolve) => {
     document.addEventListener('ldr:exit', () => resolve(), { once: true });
   });

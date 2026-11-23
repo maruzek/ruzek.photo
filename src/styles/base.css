@@ -310,7 +310,7 @@ em.s {
    .reveal-fallback after 3 s (counted from navigation) and everything shows. The motion layer (task 8) skips
    entrance animations when it finds .reveal-fallback already set. */
 html.motion:not(.motion-ready, .reveal-fallback)
-  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .kick > *, .hero .row > :not(p)) {
+  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .row > :not(p)) {
   opacity: 0;
   /* second safety net (issue E-04): should the inline timer never run, the stylesheet itself reveals at 4 s */
   animation: reveal-safety 0.01s 4s forwards;
@@ -318,7 +318,7 @@ html.motion:not(.motion-ready, .reveal-fallback)
 /* Behind the entry loader the stylesheet's own net starts counting only once the curtain is gone, so it never
    reveals a heading that the motion layer, starting at the hand-over, hides again for its entrance */
 html.motion.ldr-on:not(.motion-ready, .reveal-fallback)
-  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .kick > *, .hero .row > :not(p)) {
+  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .row > :not(p)) {
   animation: none;
 }
 @keyframes reveal-safety {
@@ -328,7 +328,7 @@ html.motion.ldr-on:not(.motion-ready, .reveal-fallback)
 }
 /* Keyboard users must never land on an invisible element: anything focused (or holding focus) shows at once */
 html.motion:not(.motion-ready, .reveal-fallback)
-  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .kick > *, .hero .row > :not(p)):is(
+  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .row > :not(p)):is(
     :focus-within,
     :focus-visible
   ) {

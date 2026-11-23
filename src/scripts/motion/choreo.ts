@@ -41,7 +41,6 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
   const name = root.querySelector<HTMLElement>('#name');
   if (name) {
     const hero = name.closest('.hero');
-    const kicker = hero?.querySelectorAll('.kick > *');
     const actions = hero?.querySelector('.cta');
     let intro: ReturnType<typeof gsap.timeline>;
     SplitText.create(name, {
@@ -56,9 +55,6 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
           { yPercent: 140, duration: 0.78, ease: 'expo.out', stagger: 0.03 },
           0,
         );
-        if (kicker?.length) {
-          intro.from(kicker, { y: 8, opacity: 0, duration: 0.32, ease: 'power3.out' }, 0.08);
-        }
         if (actions) {
           intro.from(actions, { y: 12, opacity: 0, duration: 0.36, ease: 'power3.out' }, 0.18);
         }
@@ -188,6 +184,9 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
     paused: true,
   });
   let paused = false;
+  const narrow = window.matchMedia('(max-width: 900px)');
+  let hold: { id: number; started: number } | null = null;
+  let suppressTap = false;
   const st = ScrollTrigger.create({
     trigger: band,
     start: 'top bottom',
@@ -195,7 +194,7 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
     // create() can fire this before `st` exists (page loaded with the band on screen)
     onToggle: (s) => sync(s.isActive),
     onUpdate: (s) => {
-      if (paused) return;
+      if (paused || hold) return;
       const v = clamp(Math.abs(s.getVelocity()) / 600, 0, 5);
       const dir = s.direction < 0 ? -1 : 1;
       gsap.to(loop, { timeScale: dir * (1 + v), duration: 0.3, overwrite: true });
@@ -203,22 +202,54 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
     },
   });
   function sync(active: boolean): void {
-    if (active && !paused) loop.play();
+    if (active && !paused && !hold) loop.play();
     else loop.pause();
   }
   sync(st.isActive);
   if (!toggle) return noop;
-  const onToggle = (): void => {
+  const onToggle = (event: MouseEvent): void => {
+    if (suppressTap && event.detail > 0) {
+      suppressTap = false;
+      return;
+    }
     paused = !paused;
     toggle.setAttribute('aria-pressed', String(paused));
     gsap.killTweensOf(loop);
     if (!paused) loop.timeScale(1);
     sync(st.isActive);
   };
+  const onPointerDown = (event: PointerEvent): void => {
+    suppressTap = false;
+    if (!narrow.matches || event.pointerType !== 'touch' || !event.isPrimary) return;
+    hold = { id: event.pointerId, started: event.timeStamp };
+    gsap.killTweensOf(loop);
+    sync(st.isActive);
+  };
+  const onPointerEnd = (event: PointerEvent): void => {
+    if (hold?.id !== event.pointerId) return;
+    // Short taps toggle the pause. A longer hold resumes on release without toggling it again.
+    suppressTap = event.type === 'pointerup' && event.timeStamp - hold.started >= 250;
+    hold = null;
+    if (!paused) loop.timeScale(1);
+    sync(st.isActive);
+  };
+  const onContextMenu = (event: MouseEvent): void => {
+    if (hold) event.preventDefault();
+  };
   toggle.hidden = false;
   toggle.addEventListener('click', onToggle);
+  toggle.addEventListener('pointerdown', onPointerDown);
+  toggle.addEventListener('pointerup', onPointerEnd);
+  toggle.addEventListener('pointercancel', onPointerEnd);
+  toggle.addEventListener('lostpointercapture', onPointerEnd);
+  toggle.addEventListener('contextmenu', onContextMenu);
   return () => {
     toggle.removeEventListener('click', onToggle);
+    toggle.removeEventListener('pointerdown', onPointerDown);
+    toggle.removeEventListener('pointerup', onPointerEnd);
+    toggle.removeEventListener('pointercancel', onPointerEnd);
+    toggle.removeEventListener('lostpointercapture', onPointerEnd);
+    toggle.removeEventListener('contextmenu', onContextMenu);
     toggle.hidden = true;
     toggle.setAttribute('aria-pressed', 'false');
   };
