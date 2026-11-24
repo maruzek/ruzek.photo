@@ -1,7 +1,10 @@
 import { getImage } from 'astro:assets';
 
-/** Widths generated for every photo (concept.md, kap. 8). Widths above the source width are skipped by Astro. */
-export const IMAGE_WIDTHS = [480, 768, 1080, 1440, 1920, 2560];
+/**
+ * Widths generated for every photo (concept.md, kap. 8). Widths above the source width are skipped by Astro, so
+ * 2880 (a retina laptop) and 3840 (4K) only exist for the full-screen photos imported with `--max-edge`.
+ */
+export const IMAGE_WIDTHS = [480, 768, 1080, 1440, 1920, 2560, 2880, 3840];
 export const IMAGE_FORMATS: ('avif' | 'webp')[] = ['avif', 'webp'];
 
 /**

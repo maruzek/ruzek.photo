@@ -5,6 +5,7 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { cspHeaders } from './scripts/csp-headers';
 import { publishedPhotos } from './scripts/vite-published-photos';
+import { MOBILE_PHOTO_POSITION } from './src/config/placement';
 import { SITE_URL } from './src/config/site';
 import { alternates } from './src/i18n';
 
@@ -82,7 +83,13 @@ export default defineConfig({
   session: false,
   // only published photos are imported, so a withdrawn photo emits no file (issue E-14)
   vite: {
-    plugins: [publishedPhotos(fileURLToPath(new URL('./src/content/photos', import.meta.url)))],
+    plugins: [
+      publishedPhotos(fileURLToPath(new URL('./src/content/photos', import.meta.url)), {
+        positions: MOBILE_PHOTO_POSITION,
+        // generated build input, kept between builds so Astro's image cache stays valid
+        cacheDir: fileURLToPath(new URL('./node_modules/.cache/mobile-crops', import.meta.url)),
+      }),
+    ],
   },
   // Fonts API with the local provider: the woff2 files come from the pnpm-installed @fontsource/* packages
   // (OFL 1.1, see README), nothing is fetched at build time and nothing from Google

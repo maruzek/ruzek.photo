@@ -1,11 +1,13 @@
 import { getEntry, type CollectionEntry } from 'astro:content';
-import images from 'virtual:published-photos';
+import images, { mobile } from 'virtual:published-photos';
 import type { Photo } from './schema';
 
 /** A published photo with its image resolved for `astro:assets`. */
 export interface PublishedPhoto {
   id: string;
   data: Photo<ImageMetadata>;
+  /** Portrait crop for phones, only for the full-screen photos (src/lib/photos/mobile-crop.ts) */
+  mobile?: ImageMetadata | undefined;
 }
 
 /**
@@ -29,5 +31,5 @@ export async function getPhoto(id: string): Promise<PublishedPhoto | undefined> 
   const image = images[entry.id];
   if (!image)
     throw new Error(`getPhoto: published photo "${id}" has no image in virtual:published-photos`);
-  return { id: entry.id, data: { ...entry.data, image } };
+  return { id: entry.id, data: { ...entry.data, image }, mobile: mobile[entry.id] };
 }

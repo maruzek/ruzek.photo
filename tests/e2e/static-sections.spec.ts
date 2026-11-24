@@ -202,12 +202,39 @@ for (const blend of [false, true]) {
 
 test('hero photo is preloaded with the same AVIF srcset the picture uses', async ({ page }) => {
   await page.goto('/');
-  const preload = await page.locator('link[rel="preload"][as="image"]').getAttribute('imagesrcset');
-  const source = await page
-    .locator('.hero picture source[type="image/avif"]')
-    .getAttribute('srcset');
-  expect(preload).toBeTruthy();
-  expect(preload).toBe(source);
+  // with a phone crop there are two preloads, split by the media query of the matching <source>
+  const pairs = await page.evaluate(() => {
+    const sources = [
+      ...document.querySelectorAll<HTMLSourceElement>('.hero picture source[type="image/avif"]'),
+    ];
+    return [...document.querySelectorAll<HTMLLinkElement>('link[rel="preload"][as="image"]')].map(
+      (link) => {
+        // the crop's preload carries the crop's media query; the full photo's preload negates it or has none
+        const crop = link.media && !link.media.startsWith('not all and ');
+        const source = sources.find((s) => (crop ? s.media === link.media : !s.media));
+        return {
+          preload: link.getAttribute('imagesrcset'),
+          sizes: link.getAttribute('imagesizes'),
+          source: source?.srcset,
+          sourceSizes: source?.sizes,
+          active: link.media ? matchMedia(link.media).matches : true,
+        };
+      },
+    );
+  });
+  expect(pairs.length).toBeGreaterThan(0);
+  for (const pair of pairs) {
+    expect(pair.preload).toBeTruthy();
+    expect(pair.preload).toBe(pair.source);
+    expect(pair.sizes).toBe(pair.sourceSizes);
+  }
+  // exactly one preload applies, and it holds the file the picture shows (no second download)
+  const active = pairs.filter((p) => p.active);
+  expect(active).toHaveLength(1);
+  await page.waitForFunction(() => document.querySelector<HTMLImageElement>('.hero img')?.currentSrc);
+  const current = await page.locator('.hero img').evaluate((el: HTMLImageElement) => el.currentSrc);
+  expect(current.endsWith('.avif')).toBe(true);
+  expect(active[0]?.preload).toContain(new URL(current).pathname);
   const img = page.locator('.hero img');
   await expect(img).toHaveAttribute('fetchpriority', 'high');
   await expect(img).toHaveAttribute('loading', 'eager');

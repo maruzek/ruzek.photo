@@ -28,6 +28,7 @@ const FOLD_MIN_HEIGHT = 600;
       photo={photo}
       locale={locale}
       sizes={coverSizes(photo.data.image, FOLD_MIN_HEIGHT)}
+      mobileSizes={photo.mobile && coverSizes(photo.mobile, FOLD_MIN_HEIGHT)}
       cover="night"
       mobilePosition={MOBILE_PHOTO_POSITION[photo.id]}
     />

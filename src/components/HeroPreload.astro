@@ -1,21 +1,42 @@
 ---
-// Goes into the `head` slot of Base. Preloads the AVIF the browser will pick for the hero <img> (LCP).
+// Goes into the `head` slot of Base. Preloads the AVIF the browser will pick for the hero <img> (LCP). With a
+// portrait crop the page has two hero files, so there are two preloads split by the same media query as the
+// <source> elements (PhotoPicture.astro): each device fetches only its own.
 import type { PublishedPhoto } from '../lib/photos/get';
 import { avifSrcset, heroSizes } from '../lib/photos/image';
+import { MOBILE_CROP_MEDIA, NOT_MOBILE_CROP_MEDIA } from '../lib/photos/mobile-crop';
 
 interface Props {
   photo: PublishedPhoto;
 }
 
 const { photo } = Astro.props;
-const srcset = await avifSrcset(photo.data.image);
+const full = { srcset: await avifSrcset(photo.data.image), sizes: heroSizes(photo.data.image) };
+const crop = photo.mobile && {
+  srcset: await avifSrcset(photo.mobile),
+  sizes: heroSizes(photo.mobile),
+};
 ---
 
+{
+  crop && (
+    <link
+      rel="preload"
+      as="image"
+      type="image/avif"
+      media={MOBILE_CROP_MEDIA}
+      imagesrcset={crop.srcset}
+      imagesizes={crop.sizes}
+      fetchpriority="high"
+    />
+  )
+}
 <link
   rel="preload"
   as="image"
   type="image/avif"
-  imagesrcset={srcset}
-  imagesizes={heroSizes(photo.data.image)}
+  media={crop ? NOT_MOBILE_CROP_MEDIA : undefined}
+  imagesrcset={full.srcset}
+  imagesizes={full.sizes}
   fetchpriority="high"
 />

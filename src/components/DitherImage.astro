@@ -1,16 +1,17 @@
 ---
-import { Picture } from 'astro:assets';
 import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/dither.css';
 import type { Locale } from '../i18n';
 import { COVER, type Cover } from '../lib/palette';
-import { IMAGE_FORMATS, IMAGE_QUALITY, IMAGE_WIDTHS } from '../lib/photos/image';
+import PhotoPicture from './PhotoPicture.astro';
 
 interface Props {
   photo: PublishedPhoto;
   /** The alt text comes from the photo, in this language (the plan's props had no locale) */
   locale: Locale;
   sizes: string;
+  /** `sizes` of the photo's portrait crop: a full-screen placement passes it and phones get the crop */
+  mobileSizes?: string | undefined;
   /** `scroll`: assembles on entry and falls apart on exit; `hover`: reacts to the pointer; `stay`: assembles and stays */
   mode?: 'scroll' | 'hover' | 'stay';
   /** Colour the dither covers the photo with: the surface behind it */
@@ -26,6 +27,7 @@ const {
   photo,
   locale,
   sizes,
+  mobileSizes,
   mode = 'scroll',
   cover,
   eager = false,
@@ -40,13 +42,11 @@ const {
   data-dz-color={COVER[cover]}
   style={mobilePosition && `--mobile-photo-position: ${mobilePosition}`}
 >
-  <Picture
-    src={photo.data.image}
+  <PhotoPicture
+    image={photo.data.image}
     alt={alt ?? photo.data.alt[locale]}
-    widths={IMAGE_WIDTHS}
-    formats={IMAGE_FORMATS}
-    quality={IMAGE_QUALITY}
     sizes={sizes}
+    mobile={photo.mobile && mobileSizes ? { image: photo.mobile, sizes: mobileSizes } : undefined}
     loading={eager ? 'eager' : 'lazy'}
   />
   <canvas class="dz" aria-hidden="true"></canvas>

@@ -1,13 +1,13 @@
 ---
-import { Picture } from 'astro:assets';
 import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/sections/hero.css';
 import { MOBILE_PHOTO_POSITION } from '../config/placement';
 import { site } from '../config/site';
 import { t, type Locale } from '../i18n';
-import { IMAGE_FORMATS, IMAGE_QUALITY, IMAGE_WIDTHS, heroSizes } from '../lib/photos/image';
+import { heroSizes } from '../lib/photos/image';
 import AsciiHero from './AsciiHero.astro';
 import Button from './Button.astro';
+import PhotoPicture from './PhotoPicture.astro';
 import PlaceholderTag from './PlaceholderTag.astro';
 import Rich from './Rich.astro';
 
@@ -27,13 +27,11 @@ const anchor = (key: keyof typeof d.anchors): string => `#${d.anchors[key]}`;
   {
     photo && (
       <div class="media" style={mobilePosition && `--mobile-photo-position: ${mobilePosition}`}>
-        <Picture
-          src={photo.data.image}
+        <PhotoPicture
+          image={photo.data.image}
           alt={photo.data.alt[locale]}
-          widths={IMAGE_WIDTHS}
-          formats={IMAGE_FORMATS}
-          quality={IMAGE_QUALITY}
           sizes={heroSizes(photo.data.image)}
+          mobile={photo.mobile && { image: photo.mobile, sizes: heroSizes(photo.mobile) }}
           loading="eager"
           fetchpriority="high"
         />
