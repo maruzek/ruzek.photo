@@ -89,7 +89,8 @@ for (const path of ['/', '/en/']) {
     await expect(gallery.locator('.work-foot p')).toHaveCount(0);
     await expect(gallery.locator('.work-foot .btn')).toHaveAttribute('href', english ? '#inquiry' : '#poptavka');
     await expect(gallery.locator('.work-foot')).toHaveCSS('border-top-width', '0px');
-    await expect(page.locator('.day .step').first().locator('p')).toHaveCount(0);
+    await expect(page.locator('.day .stop')).toHaveCount(3);
+    await expect(page.locator('.day .ev .tag')).toHaveCount(0);
     await expect(page.locator('#day-h em')).toHaveText(english ? 'the same day' : 'ještě ten den');
     await expect(page.locator('#inq-h em')).toHaveCount(0);
     await expect(page.locator('header nav li').last()).toHaveText(english ? 'Request a shoot' : 'Poptat focení');
@@ -450,7 +451,7 @@ test('no dead band between services and "same day", sections after a wipe start 
   page,
 }, info) => {
   test.skip(info.project.name !== 'desktop', 'measured at 1440 × 900');
-  await page.emulateMedia({ reducedMotion: 'reduce' }); // layout without the pin
+  await page.emulateMedia({ reducedMotion: 'reduce' }); // layout without the scroll run
   await page.goto('/');
   const m = await page.evaluate(() => {
     const top = (s: string): number => document.querySelector(s)!.getBoundingClientRect().top;

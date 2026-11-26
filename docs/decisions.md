@@ -16,6 +16,11 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 
 ## Rozhodnuto
 
+### 2026-11-25: sekce „Ještě ten den“ bude časová osa
+- Ze čtyř prototypů (`private/day-protos/`, jen lokálně) Martin vybral **A „Osa dne“**: hustota fotek na ose ukazuje průběh, hodně záběrů během akce → pár vybraných ještě ten den → dny čekání → celá galerie. Verze s ořezem 9:16 (A2) se nepoužije.
+- Sekce vysvětluje předání: expres (+20–30 %) i celou galerii v ceně, s odkazem do poptávky s předvybraným expresem. Bez konkrétních hodin, jen „ještě ten den“ a „za 3–5 dnů“ (zápasy a turnaje do 24 h).
+- Fotky na ose jsou z jednoho focení (konference). `conference-audience` je z jiné akce a do osy nepatří. Další snímky z konference může Martin dodat, vyřazené záběry už neexistují. Banner na skupinové fotce může zůstat vidět.
+
 ### 2026-11-22: úpravy po redesignu galerie
 - V O mně zůstává Instagram. V patičce zůstávají sloupce „Fotím“ a „Kde“.
 - Akce i Sport mají dál po jedné celoobrazovkové fotce. Šířka layoutu na 2560 × 1440 Martinovi vyhovuje.

@@ -54,7 +54,7 @@ function focusOf(seat: HTMLElement): number {
 }
 
 /** Layout box of `el` relative to `root` (offsets, so transforms on the way are ignored). */
-function boxIn(el: HTMLElement, root: HTMLElement): Box {
+export function boxIn(el: HTMLElement, root: HTMLElement): Box {
   let x = 0;
   let y = 0;
   let node: HTMLElement | null = el;

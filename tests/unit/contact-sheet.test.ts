@@ -67,7 +67,7 @@ describe('PLACEMENT.work', () => {
       PLACEMENT.hero,
       ...PLACEMENT.folds,
       ...Object.values(PLACEMENT.services),
-      PLACEMENT.sameDay,
+      ...PLACEMENT.sameDay.frames.flat().map((f) => f.photo),
       PLACEMENT.about,
     ];
     for (const id of elsewhere) expect(PLACEMENT.work.sheet).not.toContain(id);

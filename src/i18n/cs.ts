@@ -124,26 +124,29 @@ export const cs = {
     },
   },
   day: {
-    title: 'Výběr na sítě *ještě ten den*.',
-    lead: 'Zatímco hosté odcházejí, vybírám fotky. Na sítích jsou dřív, než akce vychladne.',
-    steps: [
-      {
-        no: '01 · Během akce',
-        title: 'Fotím, co se děje',
-      },
-      {
-        no: '02 · Hned po akci',
-        title: 'Vybírám to nejsilnější',
-        text: 'Z\u00A0celého dne vyberu snímky pro sítě. Na přání přidám videa na výšku.',
-      },
-      {
-        no: '03 · Ještě ten den',
-        title: 'Posílám výběr',
-        // Followed by <Todo>{galleryTodo}</Todo> and a full stop.
-        text: 'Celou galerii dodám',
-      },
-    ],
-    galleryTodo: 'termín',
+    title: 'Výběr na\u00A0sítě *ještě\u00A0ten\u00A0den*.',
+    lead: 'Nejsilnější fotky dostanete ještě ten den, celou galerii za\u00A0{range}\u00A0dnů.',
+    // The stops of the time axis. Every number comes in from pricing.ts as `{range}`.
+    event: {
+      when: 'Během akce',
+      title: 'Fotím, co\u00A0se\u00A0děje',
+      text: 'Počítejte zhruba s\u00A0{range}\u00A0fotkami za\u00A0hodinu.',
+    },
+    sameDay: {
+      when: 'Ještě ten den',
+      title: 'Výběr na\u00A0sítě',
+      text: 'Hned po\u00A0akci vyberu nejsilnější snímky a\u00A0pošlu vám je, dokud se o\u00A0akci mluví.',
+      tag: 'Expres, +{range} k\u00A0ceně',
+    },
+    gallery: {
+      when: 'Za\u00A0{range}\u00A0dnů',
+      title: 'Celá galerie',
+      text: 'Všechny upravené fotky v\u00A0online galerii. Zápasy a\u00A0turnaje do\u00A0{range}\u00A0hodin.',
+      tag: 'V\u00A0ceně',
+    },
+    // Day marks on the axis: the plural of 1, of 2–4 and of 5 and more
+    marks: { one: '{n}\u00A0den', few: '{n}\u00A0dny', many: '{n}\u00A0dnů' },
+    cta: 'Chci výběr ještě ten den',
   },
   about: {
     title: 'Jsem Martin. Fotím *lidi v\u00A0pohybu*.',

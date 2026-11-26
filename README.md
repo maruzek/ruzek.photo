@@ -96,7 +96,7 @@ Fotky jsou v repozitáři: soubor v `src/assets/photos/`, popis v `src/content/p
    | `placeholder`, `credit` | jen pro zástupné fotky. Zástupná fotka nikdy nepatří na veřejný web |
 
    Build selže, když zveřejněná fotka nemá `minors` nebo skutečný `alt`, nebo když má `minors: true` bez `parentalConsent: true`.
-4. **Umístění.** Která fotka je v úvodu, v sekcích a v kontaktním archu prací (pořadí políček `work.sheet`, zvětšené fotky `work.picks`), říká `src/config/placement.ts`. Přehled současného výběru a náhradníků je v [`docs/photos.md`](docs/photos.md). Mění-li se fotka pod textem, spusťte `pnpm check:contrast` (ověří čitelnost) a případně upravte `TEXT_OVER_PHOTOS` a `SHADE_OPACITY` ve `scripts/check-contrast.ts`.
+4. **Umístění.** Která fotka je v úvodu, v sekcích a v kontaktním archu prací (pořadí políček `work.sheet`, zvětšené fotky `work.picks`) a na časové ose „Ještě ten den“ (`sameDay`), říká `src/config/placement.ts`. Přehled současného výběru a náhradníků je v [`docs/photos.md`](docs/photos.md). Mění-li se fotka pod textem, spusťte `pnpm check:contrast` (ověří čitelnost) a případně upravte `TEXT_OVER_PHOTOS` a `SHADE_OPACITY` ve `scripts/check-contrast.ts`.
 5. `pnpm check` a nasaďte.
 
 Pro případovou studii je vzor v `src/content/case-studies/example.md`. Koncept (`draft: true`) nemá stránku ani záznam v sitemapě.
@@ -209,7 +209,7 @@ Všechny názvy s komentářem jsou v [`.env.example`](.env.example). Soubor `.e
 **TODO (Martin):** zkušební zařízení v automatickém testu nemáme. Před spuštěním projděte web na skutečném levném telefonu s Androidem a zapište výsledek sem:
 - plynulost úvodu (ASCII, jméno, přechod do prvního řezu);
 - lupa v sekci s fotkou;
-- pin a linka průběhu v sekci „Týž den“ (na telefonu je bez pinu, ověřit, že obsah je celý);
+- časová osa „Ještě ten den“: na počítači stojí na místě a hraje podle scrollu (fotky přibývají, výběr vyletí z grafu, zaplní se galerie), v nízkém okně a na telefonu jen plyne; po přepnutí na omezený pohyb musí být celá;
 - lightbox (otevření, listování, zavření, návrat fokusu).
 
 Automaticky hlídá snímkovou frekvenci jen `pnpm test:perf` (zpomalený procesor v Chromiu, ne skutečné zařízení).

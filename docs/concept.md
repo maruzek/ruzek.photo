@@ -123,7 +123,7 @@ Každá sekce prototypu je jedna komponenta `.astro`. Kromě formuláře není n
 | 5. Přechody | `DitherWipe.astro` | `effects/wipe.ts` | Props `from`, `to`. Bez JS jen pevný předěl |
 | 6. Vybraná práce | `WorkGrid.astro`, `Shot.astro`, `Lightbox.astro` | `lightbox.ts`, `cursor.ts`, parallax | Rozložení `w1`–`w8` jako v prototypu, fotky z kolekce |
 | 7. Služby a ceny | `Services.astro`, `ServiceCard.astro`, `Addon.astro` | `dither.ts` (režim hover) | Všechna čísla z `pricing.ts`. Odkaz „Spočítat cenu“ předvyplní formulář |
-| 8. Týž den | `SameDay.astro` | `choreo.ts` (pin jen na desktopu) | Na mobilu bez pinu |
+| 8. Ještě ten den | `SameDay.astro`, `DayCell.astro` | `motion/day.ts` (scrub, `position: sticky` jen na desktopu, bez pinu) | Časová osa, fotky z `PLACEMENT.sameDay`, čísla z `pricing.ts`. Na mobilu svislá osa |
 | 9. O mně | `About.astro` | `dither.ts`, SplitText | Text jen z `brief.md`, příběh je `TODO` |
 | 10. Poptávka | `Inquiry.astro` + `islands/InquiryForm.tsx` | React, `client:visible` | Kap. 11 |
 | 11. Patička | `Footer.astro` | SplitText | E-mail `foto@martinruzek.cz`, IČO a sídlo jako `TODO` ze `site.ts` |
@@ -152,7 +152,7 @@ Každá sekce prototypu je jedna komponenta `.astro`. Kromě formuláře není n
 | Titulky, jméno | SplitText v masce | hned viditelné | viditelné |
 | Fotografické sekce | scrub 1,16 → 1 | statické | statické |
 | Pás typů akcí | smyčka podle rychlosti scrollu, pauza | stojí | stojí |
-| Týž den | pin a linka průběhu (desktop) | všechny kroky aktivní | všechny kroky aktivní |
+| Ještě ten den | časová osa podle scrollu, na desktopu `sticky` | hotová osa | hotová osa |
 | Lenis | zapnutý (dotyk nativně) | vypnutý | — |
 | Magnetická tlačítka, kurzor | jen `pointer: fine` | ne | ne |
 | Lightbox | `<dialog>` | `<dialog>` | odkaz na plnou fotku |
@@ -338,7 +338,7 @@ Dva nástroje, každý na něco jiného. Oba jsou bez cookies, takže web **nem�
 | # | Riziko | Opatření | Jak se ověří |
 |---|---|---|---|
 | **R1** | **Výkon canvasů na slabších telefonech.** ASCII kreslí až ~10 000 znaků na snímek | 1) Na mobilu buňka 10 px místo 8 px (o ~35 % méně znaků) a strop 6 000 buněk. 2) Znaky se nekreslí přes `fillText`, ale kopírují z předem vykresleného atlasu glyfů (`drawImage`), což je řádově levnější. 3) Kreslí se jen při změně (rozpouštění, lupa, odjezd), jinak canvas stojí. Náhodné „blikání“ znaků poběží jen na desktopu. 4) **Adaptivní kvalita:** během prvních 30 snímků se měří čas snímku. Při průměru nad 24 ms se ASCII přeskočí a fotka se jen prolne. Totéž hned při `deviceMemory ≤ 2` nebo `Save-Data`. 5) DPR max. 1,5, plánovač zastaví vše mimo viewport | Playwright trace se 4× zpomaleným CPU: medián snímku ≤ 16 ms, nejhorší úvod ≤ 50 ms. Ruční test na levném Androidu před spuštěním |
-| **R2** | **Lenis spolu s pinem a lightboxem** | Lenis napojený na `gsap.ticker` a `lenis.on('scroll', ScrollTrigger.update)`, `lagSmoothing(0)`. Pin jen na desktopu přes `gsap.matchMedia`. Při otevření `<dialog>` `lenis.stop()` a `overflow: hidden` na `<html>`, při zavření `lenis.start()` a návrat fokusu. `data-lenis-prevent` na dialogu a `<textarea>`. Kotvy přes `lenis.scrollTo` s posunem o header a přesunem fokusu na cílovou sekci. Na dotyku Lenis nechá nativní scroll (`syncTouch: false`). `ScrollTrigger.refresh()` po načtení písem a obrázků | E2e: otevřený lightbox nescrolluje stránku kolečkem ani klávesami, po zavření je fokus na fotce. Kotva doskočí a sekce má fokus. Pin nepřekrývá další sekci na šířkách 901, 1280 a 1920 px |
+| **R2** | **Lenis spolu s pinem a lightboxem** | Lenis napojený na `gsap.ticker` a `lenis.on('scroll', ScrollTrigger.update)`, `lagSmoothing(0)`. Místo pinu jen `position: sticky` v CSS (časová osa „Ještě ten den“ na desktopu). Při otevření `<dialog>` `lenis.stop()` a `overflow: hidden` na `<html>`, při zavření `lenis.start()` a návrat fokusu. `data-lenis-prevent` na dialogu a `<textarea>`. Kotvy přes `lenis.scrollTo` s posunem o header a přesunem fokusu na cílovou sekci. Na dotyku Lenis nechá nativní scroll (`syncTouch: false`). `ScrollTrigger.refresh()` po načtení písem a obrázků | E2e: otevřený lightbox nescrolluje stránku kolečkem ani klávesami, po zavření je fokus na fotce. Kotva doskočí a sekce má fokus. Přilepená osa se vejde do okna a nic pod ní se neposune |
 | **R3** | **Kontrast textu přes fotky** závisí na skutečných fotkách | `shade` u každé fotky (`normal` / `strong`) mění gradient pod textem. Skript `check:contrast` při buildu změří jas oblasti pod textem (spodních ~35 % výřezu přes sharp) a spočítá kontrast s `--ink`. Pod 4,5 : 1 zahlásí fotku a navrhne `strong` | Test skriptu na světlé a tmavé testovací fotce. Ruční kontrola na Martinových fotkách |
 
 ### Další rizika, která koncept odhalil

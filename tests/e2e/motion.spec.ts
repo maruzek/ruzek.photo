@@ -18,7 +18,7 @@ test('reduced motion: no GSAP/Lenis downloaded, everything visible', async ({ pa
   await page.waitForFunction(motionIs, 'off' as const);
   await expect(page.locator('canvas.dwipe').last()).toHaveAttribute('data-painted', 'static');
   expect(scripts.some((u) => /gsap|lenis|start|choreo/i.test(u))).toBe(false);
-  for (const el of await page.locator('[data-split], [data-rise], .step').all())
+  for (const el of await page.locator('[data-split], [data-rise], .day .txt').all())
     await expect(el).toBeVisible();
   await expect(page.locator('canvas.ascii')).toBeHidden();
 });
@@ -37,7 +37,7 @@ test('switching to reduced motion at runtime settles the page', async ({ page })
   await page.waitForFunction(motionIs, 'off' as const);
   await expect(page.locator('html')).not.toHaveClass(/lenis-smooth/);
   await expect(page.locator('html')).not.toHaveClass(/\bmotion\b/);
-  for (const el of await page.locator('[data-split], [data-rise], .step, #name').all()) {
+  for (const el of await page.locator('[data-split], [data-rise], .day .tl img, #name').all()) {
     await expect(el).toHaveCSS('opacity', '1');
   }
   await expect(page.locator('.marquee .track')).toHaveCSS('transform', 'none');
@@ -63,8 +63,13 @@ test('a late motion layer skips entrance animations', async ({ page }) => {
   expect(nameTransforms).toEqual([]);
   for (const el of await page.locator('[data-split], [data-rise]').all())
     await expect(el).toHaveCSS('opacity', '1');
-  // no "same day" pin either, so its scroll run is not added back and nothing below moves
-  await expect(page.locator('.light:has(.day)')).toHaveCSS('padding-bottom', '0px');
+  // no scroll run of "same day" either: it is not added back, nothing below moves, the timeline stays finished
+  await expect(page.locator('.day')).not.toHaveClass(/\bis-live\b/);
+  expect(
+    await page.locator('.day').evaluate((el: HTMLElement) => el.offsetHeight > innerHeight * 1.5 && innerWidth > 960),
+  ).toBe(false);
+  for (const photo of await page.locator('.day .tl img').all())
+    await expect(photo).toHaveCSS('opacity', '1');
 });
 
 test('open lightbox blocks page scroll (wheel, space, arrows)', async ({ page }) => {
@@ -366,17 +371,21 @@ test('switching to reduced motion stops every frame loop', async ({ page }) => {
   expect(b - a).toBeLessThan(5);
 });
 
-// HM-05: steps that are not reached yet keep full text contrast; the marker and the line show progress
-test('pinned same-day steps keep full contrast before they light up', async ({ page }) => {
+// HM-05: the stops of the time axis that are not reached yet keep full text contrast; the line and the photos show
+// the progress
+test('the stops of "same day" keep full contrast before the axis reaches them', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.waitForFunction(motionIs, 'on' as const);
   await page.evaluate(() => {
     const day = document.querySelector('.day') as HTMLElement;
     window.scrollTo(0, day.getBoundingClientRect().top + scrollY + 10);
   });
-  await expect(page.locator('.step:not(.is-on)').first()).toBeAttached();
-  for (const step of await page.locator('.step').all())
-    await expect(step).toHaveCSS('opacity', '1');
+  // mid-run: the gallery is still empty
+  await expect(page.locator('.day .wall img').last()).toHaveCSS('opacity', '0');
+  for (const el of await page.locator('.day .txt, .day .txt *, .day .tag, .day .btn').all())
+    await expect(el).toHaveCSS('opacity', '1');
 });
 
 // HM-08: a scroll key during wheel inertia wins over the rest of the smooth scroll
@@ -394,37 +403,48 @@ test('a scroll key during wheel inertia is not overridden by Lenis', async ({ pa
   expect(await page.evaluate(() => scrollY)).toBeLessThan(50);
 });
 
-// HM-10: a narrow photo between the sample points still turns the blend off (the "same day" portrait)
+// HM-10: a narrow photo between the sample points still turns the blend off
 test('header does not blend over a narrow photo', async ({ page, viewport }) => {
   test.skip(
     (viewport?.width ?? 0) < 1200,
-    'the portrait sits between sample points at desktop width',
+    'the photo sits between sample points at desktop width',
   );
   await page.goto('/');
   await page.waitForFunction(motionIs, 'on' as const);
   const header = page.locator('header.top');
+  // only one photo of "same day" stays, 60 px wide between the sample points at 25 % and 50 %; no scroll run
+  await page.evaluate(() => {
+    const day = document.querySelector('.day') as HTMLElement;
+    day.classList.remove('is-live');
+    document.documentElement.classList.add('reveal-fallback');
+    const [photo, ...others] = day.querySelectorAll<HTMLElement>('.slot');
+    for (const el of [...others, ...day.querySelectorAll<HTMLElement>('.hist, .wall')])
+      el.style.display = 'none';
+    Object.assign(photo!.style, { position: 'relative', width: '60px', height: '300px' });
+    photo!.style.left = `${innerWidth * 0.35 - photo!.getBoundingClientRect().left}px`;
+  });
   for (let i = 0; i < 4; i++) {
     await page.evaluate(() => {
-      const ph = document.querySelector('.day .dph') as HTMLElement;
+      const ph = document.querySelector('.day .slot') as HTMLElement;
       const h = document.querySelector<HTMLElement>('header.top')!.offsetHeight;
       window.scrollTo(0, scrollY + ph.getBoundingClientRect().top - h / 2);
     });
     await page.waitForTimeout(250);
   }
   const overlaps = await page.evaluate(() => {
-    const r = document.querySelector('.day .dph')!.getBoundingClientRect();
+    const r = document.querySelector('.day .slot')!.getBoundingClientRect();
     const h = document.querySelector<HTMLElement>('header.top')!.offsetHeight;
-    return r.top < h && r.bottom > 0;
+    return r.top < h && r.bottom > 0 && r.left > innerWidth * 0.25 && r.right < innerWidth * 0.5;
   });
   expect(overlaps).toBe(true);
   await expect(header).not.toHaveClass(/\bblend\b/);
 });
 
-// Review Focus 1: triggers below the pinned "same day" section must include the pin's spacing
-test('after a jump from the menu, the About section is fully shown (desktop pin)', async ({
+// Review Focus 1: triggers below the "same day" section must include its scroll run
+test('after a jump from the menu, the About section is fully shown (below the sticky stage)', async ({
   page,
 }, info) => {
-  test.skip(info.project.name !== 'desktop', 'the "same day" pin is desktop only');
+  test.skip(info.project.name !== 'desktop', 'the "same day" stage is sticky on desktop only');
   await page.goto('/');
   await page.waitForFunction(motionIs, 'on' as const);
   await page
@@ -481,54 +501,6 @@ for (const hash of ['#o-mne', '#poptavka']) {
     expect(await page.evaluate(() => (window as unknown as { __shift: number }).__shift)).toBe(0);
   });
 }
-
-// Review Focus 2 and the short-laptop finding: the pin holds the whole section, heading to the step 2 photo, so
-// it pins only where all of it fits (day.css, start.ts DAY_PIN); on a shorter screen the section scrolls through
-test('"same day" pins only where it fits, with its heading and photo in view', async ({
-  page,
-}, info) => {
-  test.skip(info.project.name !== 'desktop', 'the "same day" pin is desktop only');
-  for (const [width, height, pins] of [
-    [1440, 900, true],
-    [1280, 840, true],
-    [1280, 640, false],
-    [1440, 560, false],
-  ] as const) {
-    await page.setViewportSize({ width, height });
-    await page.goto('/');
-    await page.waitForFunction(motionIs, 'on' as const);
-    const pinned = await page.evaluate(() =>
-      document.querySelector('.day')?.parentElement?.classList.contains('pin-spacer'),
-    );
-    expect(pinned, `${width} x ${height}`).toBe(pins);
-    if (!pinned) continue;
-    // half-way through the pin
-    await page.evaluate(() => {
-      const spacer = document.querySelector('.day')?.parentElement as HTMLElement;
-      window.scrollTo(0, spacer.getBoundingClientRect().top + scrollY + innerHeight * 0.5);
-    });
-    await expect
-      .poll(() => page.locator('.day').evaluate((el) => getComputedStyle(el).position))
-      .toBe('fixed');
-    const heading = await page.locator('#day-h').boundingBox();
-    expect(heading?.y ?? -1, `${width} x ${height} heading`).toBeGreaterThanOrEqual(0);
-    const photo = await page.locator('.day .dph').boundingBox();
-    expect(
-      (photo?.y ?? 0) + (photo?.height ?? 0),
-      `${width} x ${height} photo`,
-    ).toBeLessThanOrEqual(height);
-  }
-});
-
-test('the "same day" run stays reserved after the safety net when the motion layer was on time', async ({
-  page,
-}, info) => {
-  test.skip(info.project.name !== 'desktop', 'the "same day" pin is desktop only');
-  await page.goto('/');
-  await page.waitForFunction(motionIs, 'on' as const);
-  await expect(page.locator('html')).toHaveClass(/\breveal-fallback\b/, { timeout: 5000 });
-  await expect(page.locator('.light:has(.day)')).toHaveCSS('padding-bottom', '990px');
-});
 
 // Under 900 px the footer name is two lines, first and last name, never broken inside a word ("Rů / žek")
 test('the footer name keeps its words whole', async ({ page, viewport }) => {

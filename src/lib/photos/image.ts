@@ -38,3 +38,59 @@ export async function avifSrcset(src: ImageMetadata): Promise<string> {
   const image = await getImage({ src, format: 'avif', widths: IMAGE_WIDTHS, quality: IMAGE_QUALITY });
   return image.srcSet.attribute;
 }
+
+/** Widths of the thumbnails on the "same day" time axis: the phone and the retina laptop both get the larger one */
+const THUMB_WIDTHS = [160, 320];
+/**
+ * Rendered width of a thumbnail: 5 in a row on a phone (8 on a tablet), about 5 % of a desktop screen, and up to
+ * twice that where the crop zooms in. One value for every cell, so a photo is downloaded once for all of them.
+ */
+const THUMB_SIZES = '(max-width: 599px) 25vw, (max-width: 960px) 14vw, 8vw';
+
+export interface DayThumb {
+  srcset: string;
+  sizes: string;
+  src: string;
+  width: number;
+  height: number;
+}
+
+/** One thumbnail of the time axis, shared by every cell that shows the photo (DayCell.astro). */
+export async function dayThumb(image: ImageMetadata): Promise<DayThumb> {
+  const [avif, webp] = await Promise.all([
+    getImage({ src: image, format: 'avif', widths: THUMB_WIDTHS, quality: IMAGE_QUALITY }),
+    getImage({ src: image, format: 'webp', width: THUMB_WIDTHS.at(-1), quality: IMAGE_QUALITY }),
+  ]);
+  const width = THUMB_WIDTHS[0] ?? 160;
+  return {
+    srcset: avif.srcSet.attribute,
+    sizes: THUMB_SIZES,
+    src: webp.src,
+    width,
+    height: Math.round((width * image.height) / image.width),
+  };
+}
+
+/** Slots of the large photos on the time axis: two upright ones and a wide one, or all wide when a pick is missing */
+export type DaySlot = 'tall' | 'wide' | 'half' | 'only';
+
+/**
+ * `sizes` of a large photo on the time axis (day.css). The boxes crop the photo (`object-fit: cover`), so where a box
+ * is taller than the photo's proportions the photo is rendered wider than the box.
+ */
+export function daySizes(image: ImageMetadata, slot: DaySlot, zoom: number): string {
+  const aspect = image.width / image.height;
+  const times = (v: number): string => (v * aspect * zoom).toFixed(2);
+  const z = (v: number): number => Math.ceil(v * zoom);
+  // box widths in vw (desktop, tablet, phone) and height shares of the picture area (desktop) or of the box width
+  const box = {
+    tall: { desk: 11, share: 0.62, tab: 22, tabShare: 1, phone: 43, tall: 14 / 9 },
+    wide: { desk: 22, share: 0.38, tab: 50, tabShare: 1, phone: 86, tall: 9 / 16 },
+    half: { desk: 22, share: 0.5, tab: 47, tabShare: 1, phone: 86, tall: 9 / 16 },
+    only: { desk: 22, share: 1, tab: 94, tabShare: 1, phone: 86, tall: 5 / 4 },
+  }[slot];
+  const phone = `${Math.ceil(Math.max(box.phone, box.phone * box.tall * aspect) * zoom)}vw`;
+  const tablet = `max(${z(box.tab)}vw, ${times(box.tabShare)} * clamp(230px, 40vw, 360px))`;
+  const desktop = `max(${z(box.desk)}vw, ${times(box.share)} * clamp(250px, 100vh - 480px, 640px))`;
+  return `(max-width: 599px) ${phone}, (max-width: 960px) ${tablet}, ${desktop}`;
+}

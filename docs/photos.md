@@ -15,7 +15,7 @@ Postup přidání fotky je v [README](../README.md#jak-přidat-fotku), umístěn
 | Karta služby: akce | `conference-group-photo` | `IMG_8513` | | `IMG_6139`, `IMG_5925` |
 | Karta služby: sport | `football-duel` | `IMG_0948` | | `IMG_1548`, `IMG_1973` |
 | Karta služby: portrét | `portrait-street-peace` | `IMG_4124` | | `IMG_3828`, `IMG_4028` |
-| Ještě ten den, krok 2 | `football-shoulder-run` | `IMG_4591` | | `IMG_4510`, `IMG_8731` |
+| Ještě ten den (časová osa) | 19 fotek jedné konference, viz [níže](#časová-osa-ještě-ten-den) | | | |
 | O mně | `martin-ruzek-portrait` | `profile/IMG_9844-Edit-2` | | `profile/IMG_3866-2`, `profile/IMG_4151` |
 
 Galerie je kontaktní arch (prototyp 3, větev `proto/gallery-contact-sheet-v2`). `PLACEMENT.work.sheet` určuje pořadí políček v archu, čísla snímků 01, 02, … z něj berou pořadí (počítají se jen zveřejněné fotky). `PLACEMENT.work.picks` vybírá 8 fotek, které se zvětší do rozvržení pod archem, každou do vlastního slotu `s1`–`s8`. Slot patří fotce: když se fotka stáhne (`published: false`), její slot zůstane prázdný a ostatní si drží svůj.
@@ -43,7 +43,45 @@ Galerie je kontaktní arch (prototyp 3, větev `proto/gallery-contact-sheet-v2`)
 
 Pořadí jde po focení jako na skutečném filmu: diskuse, zápas, ples, zápas, večírek, florbal, ulice, zápas. Vybrané snímky tak v archu leží nepravidelně. Rozvržení začíná zápasem vedle diskuse (nadpis slibuje „akce a zápasy“) a dál se střídá. 18 políček vyplní celé řady při 9, 6 i 3 sloupcích. Snímky na výšku stojí v archu rovně, oříznuté na políčko 3:2 (výřez sedí na 40 % výšky, u jednotlivé fotky jde posunout přes `--cs-focus`). Když vybraný snímek odlétá, výřez se rozbalí na celou fotku.
 
+## Časová osa „Ještě ten den“
+
+Fotky v sekci určuje `PLACEMENT.sameDay`. Všechny patří k **jedné akci**. `conference-audience` je z jiné akce, na osu nesmí.
+
+| Slug | Zdroj | Na ose |
+|---|---|---|
+| `conference-thumbs-up` | `IMG_7152` | záběr |
+| `conference-speaker` | `IMG_7167` (Martinova retuš) | záběr a výběr |
+| `conference-listening` | `IMG_7173` | záběr |
+| `conference-row` | `IMG_7178` | záběr |
+| `conference-attentive-profile` | `IMG_7200` | záběr |
+| `conference-street-conversation` | `IMG_7268` | záběr |
+| `conference-table-talk` | `IMG_7332` | záběr |
+| `conference-discussion` | `IMG_7350` | záběr a výběr |
+| `conference-focused-discussion` | `IMG_7379` | záběr |
+| `conference-table-smile` | `IMG_7399` | záběr |
+| `conference-blue-suit` | `IMG_7647` | záběr |
+| `conference-clasped-hands` | `IMG_7725` | záběr |
+| `conference-banner-speech` | `IMG_7758` | záběr |
+| `conference-lectern-laugh` | `IMG_8057` | záběr |
+| `conference-laughing-glasses` | `IMG_8121` | záběr |
+| `conference-chin-rest` | `IMG_8145` | záběr |
+| `conference-bearded-laugh` | `IMG_8158` | záběr |
+| `conference-slat-wall-portrait` | `IMG_8387` | záběr |
+| `conference-group-photo` | `IMG_8513` | záběr a výběr |
+
+Tabulka jde podle času pořízení (11.–12. 4. 2026), stejně jako chvíle ve `frames`. Nové fotky z 26. 11. 2026 mají zdroj v `private/photos-inbox/same-day/`.
+
+Výměna fotek:
+
+1. Importujte fotky a doplňte YAML jako u každé jiné (postup dole).
+2. V `frames` je šest chvil akce zleva doprava, do každé se vejde 5, 7, 5, 9, 6 a 8 fotek. Každou fotku napište do chvíle, kdy vznikla. `focus` je místo obličeje (stejné hodnoty jako `object-position`), `zoom` výřez přiblíží.
+3. V `picks` jsou nejvýš tři fotky pro velký výběr: dvě na výšku, třetí na šířku. Musí být i ve `frames`, tam dostanou korálový rámeček.
+
+Osa drží tvar se 6 až 40 fotkami, chybějící políčka doplní jiné výřezy stejných fotek. **Ideál je 16–20 různých fotek**: každá se objeví jen párkrát a stahování zůstane malé (miniatura má zhruba 4–12 kB a stáhne se jen jednou pro graf i zeď). Víc fotek už je vidět málo. Zeď s celou galerií se skládá ze stejných fotek sama. Stažená fotka (`published: false`) z osy zmizí, zbytek se přerovná. Banner na skupinové fotce může zůstat vidět.
+
 ## Rezerva
+
+`football-shoulder-run` (`IMG_4591`) je zveřejněná, ale teď není na žádném místě (dřív krok 2 v „Ještě ten den“). Náhradníci na stejné místo: `IMG_4510`, `IMG_8731`.
 
 `football-assistant-referee` (`IMG_1978`) je zveřejněná, ale arch ji teď vynechává (`PLACEMENT.work.reserve`), aby řady vyšly celé. Vrátí se, až budou hotové `IMG_4505-2` a `IMG_4510` (20 políček vyplní 10, 5 i 4 sloupce, jen se upraví počty sloupců ve `work.css`). Na výšku jsou 3 z 18: `talk-speaker-microphone`, `floorball-faceoff`, `floorball-goalkeeper-kneel`.
 
@@ -51,7 +89,8 @@ Zbývají `IMG_4505-2` a `IMG_4510`: v hledišti jsou poznatelné děti. Před z
 
 ## Otevřené body
 
-- **`IMG_3724`** čeká na Martinovo ověření. Kdyby nešla použít, v galerii ji nahradí `IMG_7350`.
+- **`IMG_7639`** (podpis listiny delegátů, `private/photos-inbox/same-day/`) není importovaná: na listině jsou čitelná jména a podpisy. Před zveřejněním je potřeba je rozmazat, pak patří do čtvrté chvíle před `conference-blue-suit`.
+- **`IMG_3724`** čeká na Martinovo ověření. Náhradník `IMG_7350` už je na časové ose „Ještě ten den“ (`conference-discussion`), takže kdyby nešla použít, je potřeba vybrat jiný.
 
 Mobilní ohniska pro `conference-speaker` (přednášející), `ball-dance-red` (zaostřená tanečnice) a `football-slide-tackle` (souboj) určuje `MOBILE_PHOTO_POSITION` v `src/config/placement.ts`. Úvodní fotka sdílí výřez s ASCII vrstvou. Políčko ukazuje číslo snímku a lightbox zobrazuje číslo, kategorii a případný popisek.
 

@@ -109,26 +109,27 @@ export const en = {
     },
   },
   day: {
-    title: 'Photos for your social media *the same day*.',
-    lead: 'While the guests are leaving, I am choosing photos. They are on your social media before the event cools down.',
-    steps: [
-      {
-        no: '01 · During the event',
-        title: 'I shoot what happens',
-      },
-      {
-        no: '02 · Right after the event',
-        title: 'I pick the strongest',
-        text: 'From the whole day I pick shots for social media. On request I add vertical videos.',
-      },
-      {
-        no: '03 · Same day',
-        title: 'I send the selection',
-        // Followed by <Todo>{galleryTodo}</Todo> and a full stop.
-        text: 'I will deliver the full gallery',
-      },
-    ],
-    galleryTodo: 'deadline',
+    title: 'Social picks *the\u00A0same\u00A0day*.',
+    lead: 'The strongest photos reach you the same day, the full gallery in {range}\u00A0days.',
+    event: {
+      when: 'During the event',
+      title: 'I photograph what happens',
+      text: 'Expect roughly {range}\u00A0photos per hour.',
+    },
+    sameDay: {
+      when: 'The same day',
+      title: 'Social media picks',
+      text: 'I send you the strongest shots right away, while people talk about the event.',
+      tag: 'Express, +{range} on top',
+    },
+    gallery: {
+      when: 'In\u00A0{range}\u00A0days',
+      title: 'The full gallery',
+      text: 'All the edited photos in an online gallery. Matches and tournaments within {range}\u00A0hours.',
+      tag: 'Included',
+    },
+    marks: { one: '{n}\u00A0day', few: '{n}\u00A0days', many: '{n}\u00A0days' },
+    cta: 'I want same-day photos',
   },
   about: {
     title: 'I’m Martin. I photograph *people in motion*.',

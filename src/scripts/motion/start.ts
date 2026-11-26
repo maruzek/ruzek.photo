@@ -15,9 +15,9 @@ import {
   headerHide,
   heroLeave,
   marquee,
-  sameDay,
   type Libs,
 } from './choreo';
+import { sameDay } from './day';
 import { startLenis } from './lenis';
 import { contactSheet } from './sheet';
 
@@ -26,8 +26,8 @@ const FONT_WAIT_MS = 1200;
 
 const MOTION = '(prefers-reduced-motion: no-preference)';
 const REDUCE = '(prefers-reduced-motion: reduce)';
-/** Room for the whole pinned "Same day" section content; the same query as day.css, which reserves the pin run */
-const DAY_PIN = '(min-width: 901px) and (min-height: 840px)';
+/** The "same day" axis is horizontal from here, vertical below (day.css) */
+const DAY_WIDE = '(min-width: 961px)';
 const FINE = '(hover: hover) and (pointer: fine)';
 /** The contact sheet changes from 4 to 7–10 columns here (work.css): its fit is built again */
 const WIDE = '(min-width: 901px)';
@@ -146,10 +146,10 @@ export async function start(): Promise<() => void> {
       }
       return run;
     });
-    mm.add({ motion: MOTION, pin: DAY_PIN }, (ctx) => {
-      if (!ctx.conditions?.['motion']) return;
-      // a late start keeps the static layout the safety net showed: no pin, so no run to reserve (day.css)
-      return sameDay(libs, document, withEntrances && ctx.conditions['pin'] === true);
+    mm.add({ motion: MOTION, wide: DAY_WIDE }, (ctx) => {
+      // a late start keeps the finished timeline the safety net showed: no sticky stage, so no run (day.css)
+      if (!ctx.conditions?.['motion'] || !withEntrances) return;
+      return sameDay(libs, document, ctx.conditions['wide'] === true);
     });
     mm.add({ motion: MOTION, wide: WIDE }, (ctx) => {
       if (!ctx.conditions?.['motion']) return;

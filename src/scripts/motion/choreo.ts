@@ -255,66 +255,6 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
   };
 }
 
-/** Scroll run of the "Same day" pin, in viewport heights; day.css reserves the same run below the section */
-const DAY_PIN_RUN = 1.1;
-/** Gap between the bottom of the pinned steps and the bottom of the screen (px) */
-const DAY_PIN_INSET = 24;
-
-/**
- * "Same day": the progress line fills and the steps light up. Pinned only on a desktop tall enough for the whole
- * section content, heading to steps (start.ts, the same media query as day.css): a shorter pin either cut off the
- * heading or held the vertical photo of step 2 below the screen. The pin's scroll run is reserved by the CSS from
- * the first paint and the pin adds no spacing of its own, so nothing below moves when it starts.
- */
-export function sameDay({ gsap }: Libs, root: ParentNode, pin: boolean): Cleanup {
-  const day = root.querySelector<HTMLElement>('.day');
-  const line = day?.querySelector('.progress i');
-  const stage = day?.querySelector<HTMLElement>('.steps');
-  if (!day || !line || !stage) return noop;
-  const steps = [...day.querySelectorAll('.step')];
-  // holds the reserved run (day.css) for as long as the pin exists, also after the 3 s safety net
-  const html = document.documentElement;
-  html.classList.toggle('day-pin', pin);
-  // in the middle of the screen while the section fits; when it is taller, the bottom of the steps stops just
-  // above the bottom of the screen; should the content still not fit (a large text size), the heading stays
-  // at the top of the screen
-  const pinStart = (): string => {
-    if (day.offsetHeight < innerHeight) return 'center center';
-    const top = day.getBoundingClientRect().top;
-    const contentTop = Math.round(parseFloat(getComputedStyle(day).paddingTop));
-    const stepsBottom = Math.round(stage.getBoundingClientRect().bottom - top);
-    return stepsBottom - contentTop + DAY_PIN_INSET <= innerHeight
-      ? `top+=${stepsBottom} bottom-=${DAY_PIN_INSET}`
-      : `top+=${contentTop} top`;
-  };
-  gsap.fromTo(
-    line,
-    { scaleX: 0 },
-    {
-      scaleX: 1,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: day,
-        start: pin ? pinStart : 'top 70%',
-        end: pin ? `+=${DAY_PIN_RUN * 100}%` : 'bottom 60%',
-        scrub: true,
-        pin,
-        pinSpacing: false,
-        // created after the triggers below it (start.ts): refreshing first keeps the order of the triggers
-        refreshPriority: 1,
-        onUpdate: (s) =>
-          steps.forEach((el, i) =>
-            el.classList.toggle('is-on', s.progress >= i / steps.length + 0.02),
-          ),
-      },
-    },
-  );
-  return () => {
-    html.classList.remove('day-pin');
-    steps.forEach((el) => el.classList.add('is-on'));
-  };
-}
-
 /** The header hides while scrolling down (never while it holds keyboard focus). */
 export function headerHide({ ScrollTrigger }: Libs, root: ParentNode): Cleanup {
   const top = root.querySelector<HTMLElement>('header.top');
