@@ -284,32 +284,56 @@ async function fontFilesAboveTheFold(page: Page): Promise<string[]> {
   });
 }
 
-test('font files used above the fold on a phone fit the 70 kB budget', async ({ browser }) => {
-  const context = await browser.newContext({
-    viewport: { width: 360, height: 780 },
-    reducedMotion: 'reduce',
+for (const path of PATHS) {
+  test(`font files used above the fold on a phone fit the 70 kB budget (${path})`, async ({ browser }) => {
+    const context = await browser.newContext({
+      viewport: { width: 360, height: 780 },
+      reducedMotion: 'reduce',
+    });
+    await skipLoader(context);
+    const page = await context.newPage();
+    await page.goto(path, { waitUntil: 'load' });
+    await page.evaluate(() => document.fonts.ready);
+    const files = await fontFilesAboveTheFold(page);
+    // Cross-check that the browser downloaded every file the visible text uses.
+    const downloaded = await page.evaluate(() =>
+      performance
+        .getEntriesByType('resource')
+        .map((e) => new URL(e.name).pathname)
+        .filter((n) => n.endsWith('.woff2')),
+    );
+    expect(files.length).toBeGreaterThan(0);
+    expect(downloaded).toEqual(expect.arrayContaining(files));
+    const sizes = await Promise.all(files.map(async (file) => (await (await page.request.get(file)).body()).length));
+    const bytes = sizes.reduce((total, size) => total + size, 0);
+    console.log(`fonts above the fold: ${files.length} files, ${(bytes / 1024).toFixed(1)} KiB`);
+    expect(bytes, `${files.length} font files`).toBeLessThanOrEqual(FONT_ABOVE_FOLD_BUDGET);
+    await context.close();
   });
-  await skipLoader(context);
-  const page = await context.newPage();
-  await page.goto('/', { waitUntil: 'load' });
-  await page.evaluate(() => document.fonts.ready);
-  const files = await fontFilesAboveTheFold(page);
-  // cross-check with what the browser downloaded without any scrolling: every used file must be among them
-  const downloaded = await page.evaluate(() =>
-    performance
-      .getEntriesByType('resource')
-      .map((e) => new URL(e.name).pathname)
-      .filter((n) => n.endsWith('.woff2')),
-  );
-  expect(files.length).toBeGreaterThan(0);
-  expect(downloaded).toEqual(expect.arrayContaining(files));
-  const sizes: Record<string, number> = {};
-  for (const file of files) sizes[file] = (await (await page.request.get(file)).body()).length;
-  const bytes = Object.values(sizes).reduce((a, b) => a + b, 0);
-  console.log(
-    `fonts above the fold: ${files.length} files, ${(bytes / 1024).toFixed(1)} kB (downloaded by the page in total: ${new Set(downloaded).size} files)`,
-    JSON.stringify(sizes),
-  );
-  expect(bytes, `${files.length} font files`).toBeLessThanOrEqual(FONT_ABOVE_FOLD_BUDGET);
-  await context.close();
+}
+
+test('additional Latin and Latin Extended glyphs still use Stack Sans Text', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(async () => {
+    const sample = document.createElement('span');
+    sample.id = 'font-coverage-sample';
+    sample.textContent = 'ÅŁ';
+    document.body.insertBefore(sample, document.body.firstChild);
+    const [family] = getComputedStyle(sample).fontFamily.split(',');
+    await document.fonts.load(`400 16px ${family}`, sample.textContent);
+  });
+
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send('DOM.enable');
+  await cdp.send('CSS.enable');
+  const { root } = await cdp.send('DOM.getDocument');
+  const { nodeId } = await cdp.send('DOM.querySelector', {
+    nodeId: root.nodeId,
+    selector: '#font-coverage-sample',
+  });
+  const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId });
+  expect(fonts.reduce((total, font) => total + font.glyphCount, 0)).toBe(2);
+  for (const font of fonts) {
+    expect(font).toMatchObject({ familyName: expect.stringMatching(/^Stack Sans Text\b/), isCustomFont: true });
+  }
 });

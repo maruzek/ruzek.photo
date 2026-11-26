@@ -16,6 +16,10 @@ Uzavřená rozhodnutí se znovu neotevírají, pokud to Martin sám nenavrhne. N
 
 ## Rozhodnuto
 
+### 2026-11-26: menší soubory písem pro češtinu a angličtinu
+- Build zmenšuje WOFF2 pro běžné znaky v češtině a angličtině. Ostatní znaky se načítají z původních souborů podle potřeby. Přednačítají se menší soubory pro Notch 700 a Text 400, dohromady 28,9 KiB místo 52,2 KiB.
+- Na první obrazovce v Chromiu při 360 × 780 px klesl objem použitých písem v češtině ze 104,0 na 62,8 KiB a v angličtině z 91,8 na 57,0 KiB. Limit je 70 KiB. Snímky první obrazovky před úpravou a po ní byly v obou jazycích pixelově shodné. [Test rozpočtu a doplňkových znaků](../tests/e2e/font-swap.spec.ts).
+
 ### 2026-11-25: sekce „Ještě ten den“ bude časová osa
 - Ze čtyř prototypů (`private/day-protos/`, jen lokálně) Martin vybral **A „Osa dne“**: hustota fotek na ose ukazuje průběh, hodně záběrů během akce → pár vybraných ještě ten den → dny čekání → celá galerie. Verze s ořezem 9:16 (A2) se nepoužije.
 - Sekce vysvětluje předání: expres (+20–30 %) i celou galerii v ceně, s odkazem do poptávky s předvybraným expresem. Bez konkrétních hodin, jen „ještě ten den“ a „za 3–5 dnů“ (zápasy a turnaje do 24 h).

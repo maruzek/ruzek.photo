@@ -36,9 +36,9 @@ const paths =
 const noindex = props.noindex ?? props.route === null;
 // No measurement on a page without a fixed address (404): its path is whatever was typed, an e-mail included (ST-10)
 const measure = props.route !== null && Boolean(analytics.umami || analytics.cfBeaconToken);
-// Only the two faces above the fold are preloaded (Notch 700 for the name, Text 400 for body copy)
-const aboveTheFold = [{ weight: 700, style: 'normal' as const }];
-const bodyFace = [{ weight: 400, style: 'normal' as const }];
+// Preload the compact files for the name and body copy. Other characters load on demand.
+const aboveTheFold = [{ weight: 700, subset: 'core' }];
+const bodyFace = [{ weight: 400, subset: 'core' }];
 ---
 
 <html lang={locale}>

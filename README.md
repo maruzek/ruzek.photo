@@ -243,7 +243,7 @@ Písma se hostují lokálně z balíčků `@fontsource/*` (pnpm). U každého ba
 | Instrument Serif (kurzíva, akcent) | `@fontsource/instrument-serif` | 400 italic | OFL 1.1 |
 | Geist Mono | `@fontsource/geist-mono` | 400, 500 | OFL 1.1 |
 
-Sady `latin` a `latin-ext` (čeština), WOFF2. Písma načítá Fonts API Astra (`fonts` v `astro.config.ts`, lokální provider nad soubory z balíčků): generuje `@font-face`, záložní písma s upravenými metrikami a `preload` pro Notch 700 a Text 400. Žádný požadavek na Google Fonts ani jiné CDN.
+Při buildu vznikají menší soubory WOFF2 pro běžné české a anglické znaky v řezech Stack Sans a Instrument Serif. Ostatní znaky si prohlížeč načte z původních sad `latin` a `latin-ext` podle `unicode-range`. Fonts API Astra generuje `@font-face` a záložní písma s upravenými metrikami. Pro Notch 700 a Text 400 se přednačítají menší soubory.
 
 ## Dokumentace
 | Soubor | Obsah |
