@@ -13,7 +13,7 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { findMetadataViolations, hasJpegComment, hasPngText } from '../../scripts/check-exif';
-import { MAX_EDGE, importPhoto, parseArgs, parseCrop } from '../../scripts/photos-import';
+import { MAX_EDGE, MAX_EDGE_LIMIT, importPhoto, parseArgs, parseCrop } from '../../scripts/photos-import';
 
 // Obviously fake coordinates (0° N, 0° E, "Null Island"), written to the GPS IFD (IFD3 in sharp).
 // Fixtures are generated here in a temp dir, never committed.
@@ -228,6 +228,24 @@ describe('importPhoto', () => {
     expect(() => parseArgs(['a.jpg', '--size', '3'])).toThrow(/Unknown option/);
     expect(() => parseCrop('left=1.2')).toThrow(/Bad --crop/);
     expect(() => parseCrop('left=0.6,right=0.5')).toThrow(/leaves nothing/);
+    expect(parseArgs(['a.jpg', '--max-edge', '3840'])).toEqual({ files: ['a.jpg'], maxEdge: 3840 });
+    expect(() => parseArgs(['a.jpg', '--max-edge', '5000'])).toThrow(/Bad --max-edge/);
+    expect(() => parseArgs(['a.jpg', '--max-edge=2000'])).toThrow(/Bad --max-edge/);
+    expect(() => parseArgs(['a.jpg', 'b.jpg', '--max-edge', '3840'])).toThrow(/exactly one photo/);
+  });
+
+  it('keeps a full-screen photo larger with maxEdge', async () => {
+    const big = join(root, 'big-max.jpg');
+    await sharp({ create: { width: 6000, height: 4000, channels: 3, background: '#333333' } })
+      .jpeg()
+      .toFile(big);
+    const { imagePath } = await importPhoto(big, {
+      outDir: join(root, 'max-out'),
+      yamlDir: yamlDir(),
+      maxEdge: MAX_EDGE_LIMIT,
+    });
+    const meta = await sharp(imagePath).metadata();
+    expect([meta.width, meta.height]).toEqual([MAX_EDGE_LIMIT, (MAX_EDGE_LIMIT * 2) / 3]);
   });
 
   it('never enlarges a small photo', async () => {

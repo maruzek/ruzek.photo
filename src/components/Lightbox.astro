@@ -10,16 +10,24 @@ const d = t(Astro.props.locale).lightbox;
 const placeholder = t(Astro.props.locale).common.placeholderPhoto;
 ---
 
-<dialog class="lb" id="lb" aria-label={d.label} data-counter={d.counter}>
+<dialog
+  class="lb"
+  id="lb"
+  aria-label={d.label}
+  data-counter={d.counter}
+  data-loading={d.loading}
+  data-unavailable={d.unavailable}
+>
   <div class="lb-in">
-    <div class="lb-bar mono">
-      <span class="lb-no"></span>
+    <div class="lb-bar">
+      <span class="lb-no mono"></span>
       <button class="lb-btn lb-close" type="button">
         {d.close}
       </button>
     </div>
     <div class="lb-stage">
-      <img alt="" />
+      <div class="lb-photo"></div>
+      <span class="lb-status label" role="status"></span>
       <!-- shown by lightbox.ts for a photo whose link carries data-placeholder (HM-12) -->
       <span class="ph-tag lb-ph" hidden>
         {placeholder}
@@ -29,7 +37,9 @@ const placeholder = t(Astro.props.locale).common.placeholderPhoto;
       <button class="lb-btn lb-prev" type="button" aria-label={d.prev}>
         ←
       </button>
-      <span class="lb-cap mono"></span>
+      <span class="lb-cap label">
+        <span class="lb-frame mono"></span> · <span class="lb-description"></span>
+      </span>
       <button class="lb-btn lb-next" type="button" aria-label={d.next}>
         →
       </button>

@@ -1,13 +1,12 @@
 ---
 // One frame of the work gallery: a thumbnail left on the contact sheet (cropped to 3:2 when vertical), or a pick
 // enlarged in the spread. The link opens the full image without JavaScript; lightbox.ts turns it into the <dialog>.
-// `data-full` is the large file the lightbox shows, `data-lb` its caption: frame number, category and place (the
-// tile itself shows the number).
+// `data-full` is the large image, `data-frame` identifies the print, and `data-lb` holds its localized caption.
 import { Picture, getImage } from 'astro:assets';
 import { t, type Locale } from '../i18n';
 import { frameBox, type Frame } from '../lib/photos/contact-sheet';
 import type { PublishedPhoto } from '../lib/photos/get';
-import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+import { IMAGE_FORMATS, IMAGE_QUALITY, IMAGE_WIDTHS } from '../lib/photos/image';
 import PlaceholderTag from './PlaceholderTag.astro';
 
 /** Width of the file the lightbox opens (never larger than the source) */
@@ -27,16 +26,19 @@ const full = await getImage({
   width: Math.min(FULL_WIDTH, image.width),
   format: 'webp',
 });
-const place = caption?.[locale] ?? `TODO: ${d.captionTodo}`;
-const label = `${frame.no} · ${d.categories[category]} · ${place}`;
+const label = [d.categories[category], caption?.[locale]].filter(Boolean).join(' · ');
 // a vertical thumbnail is cropped to the sheet's 3:2 cell; an enlarged pick shows the whole photo
 const box = frameBox(image);
 ---
 
 <a
-  class:list={['cs-print', frame.slot ? ['cs-pick', frame.slot] : ['cs-thumb', { 'cs-tall': box.vertical }]]}
+  class:list={[
+    'cs-print',
+    frame.slot ? ['cs-pick', frame.slot] : ['cs-thumb', { 'cs-tall': box.vertical }],
+  ]}
   href={full.src}
   data-lb={label}
+  data-frame={frame.no}
   data-full={full.src}
   data-cursor
   data-placeholder={placeholder ? '' : undefined}
@@ -51,12 +53,15 @@ const box = frameBox(image);
           alt={alt[locale]}
           widths={IMAGE_WIDTHS}
           formats={IMAGE_FORMATS}
+          quality={IMAGE_QUALITY}
           sizes={sizes}
           loading="lazy"
         />
         {placeholder && <PlaceholderTag locale={locale} />}
       </span>
     </span>
-    <span class="cs-no mono" aria-hidden="true">{frame.no}</span>
+    <span class="cs-no mono" aria-hidden="true">
+      {frame.no}
+    </span>
   </span>
 </a>

@@ -40,32 +40,29 @@ export function entrances({ gsap, SplitText }: Libs, root: ParentNode): Cleanup 
   };
   const name = root.querySelector<HTMLElement>('#name');
   if (name) {
+    const hero = name.closest('.hero');
+    const actions = hero?.querySelector('.cta');
+    let intro: ReturnType<typeof gsap.timeline>;
     SplitText.create(name, {
       type: 'chars',
       mask: 'chars',
       charsClass: 'nm-ch', // the mask gets `nm-ch-mask` (hero.css gives it headroom for accents)
       autoSplit: true,
-      onSplit: (self) =>
-        gsap.from(self.chars, {
-          yPercent: 140, // below the mask's extra headroom, so no accent peeks out at the start
-          duration: 1.25,
-          ease: 'expo.out',
-          stagger: 0.045,
-          delay: 0.55,
-        }),
+      onSplit: (self) => {
+        intro = gsap.timeline();
+        intro.from(
+          self.chars,
+          { yPercent: 140, duration: 0.78, ease: 'expo.out', stagger: 0.03 },
+          0,
+        );
+        if (actions) {
+          intro.from(actions, { y: 12, opacity: 0, duration: 0.36, ease: 'power3.out' }, 0.18);
+        }
+        if (hero?.matches(':focus-within')) intro.progress(1);
+        return intro;
+      },
     });
-  }
-  const heroBits = root.querySelectorAll('.hero .kick > *, .hero .row > :not(p)');
-  if (heroBits.length > 0) {
-    const tween = gsap.from(heroBits, {
-      y: 24,
-      opacity: 0,
-      duration: 0.9,
-      ease: 'power3.out',
-      stagger: 0.08,
-      delay: 1.1,
-    });
-    finishOnFocus(root.querySelector('.hero'), tween);
+    finishOnFocus(hero, { progress: (value) => intro.progress(value) });
   }
   for (const el of root.querySelectorAll<HTMLElement>('[data-split]')) {
     SplitText.create(el, {
@@ -166,16 +163,6 @@ export function folds({ gsap }: Libs, root: ParentNode): Cleanup {
         },
       );
     }
-    const idx = fold.querySelector('.idx b');
-    if (idx) {
-      gsap.from(idx, {
-        yPercent: 60,
-        opacity: 0,
-        ease: 'none',
-        // the caption sticks to the bottom of the screen while the fold comes in (fold.css), so the number does too
-        scrollTrigger: { trigger: fold, start: 'top bottom-=120', end: 'top 45%', scrub: true },
-      });
-    }
   }
   return noop;
 }
@@ -197,6 +184,9 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
     paused: true,
   });
   let paused = false;
+  const narrow = window.matchMedia('(max-width: 900px)');
+  let hold: { id: number; started: number } | null = null;
+  let suppressTap = false;
   const st = ScrollTrigger.create({
     trigger: band,
     start: 'top bottom',
@@ -204,7 +194,7 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
     // create() can fire this before `st` exists (page loaded with the band on screen)
     onToggle: (s) => sync(s.isActive),
     onUpdate: (s) => {
-      if (paused) return;
+      if (paused || hold) return;
       const v = clamp(Math.abs(s.getVelocity()) / 600, 0, 5);
       const dir = s.direction < 0 ? -1 : 1;
       gsap.to(loop, { timeScale: dir * (1 + v), duration: 0.3, overwrite: true });
@@ -212,84 +202,56 @@ export function marquee({ gsap, ScrollTrigger }: Libs, root: ParentNode): Cleanu
     },
   });
   function sync(active: boolean): void {
-    if (active && !paused) loop.play();
+    if (active && !paused && !hold) loop.play();
     else loop.pause();
   }
   sync(st.isActive);
   if (!toggle) return noop;
-  const onToggle = (): void => {
+  const onToggle = (event: MouseEvent): void => {
+    if (suppressTap && event.detail > 0) {
+      suppressTap = false;
+      return;
+    }
     paused = !paused;
     toggle.setAttribute('aria-pressed', String(paused));
     gsap.killTweensOf(loop);
     if (!paused) loop.timeScale(1);
     sync(st.isActive);
   };
+  const onPointerDown = (event: PointerEvent): void => {
+    suppressTap = false;
+    if (!narrow.matches || event.pointerType !== 'touch' || !event.isPrimary) return;
+    hold = { id: event.pointerId, started: event.timeStamp };
+    gsap.killTweensOf(loop);
+    sync(st.isActive);
+  };
+  const onPointerEnd = (event: PointerEvent): void => {
+    if (hold?.id !== event.pointerId) return;
+    // Short taps toggle the pause. A longer hold resumes on release without toggling it again.
+    suppressTap = event.type === 'pointerup' && event.timeStamp - hold.started >= 250;
+    hold = null;
+    if (!paused) loop.timeScale(1);
+    sync(st.isActive);
+  };
+  const onContextMenu = (event: MouseEvent): void => {
+    if (hold) event.preventDefault();
+  };
   toggle.hidden = false;
   toggle.addEventListener('click', onToggle);
+  toggle.addEventListener('pointerdown', onPointerDown);
+  toggle.addEventListener('pointerup', onPointerEnd);
+  toggle.addEventListener('pointercancel', onPointerEnd);
+  toggle.addEventListener('lostpointercapture', onPointerEnd);
+  toggle.addEventListener('contextmenu', onContextMenu);
   return () => {
     toggle.removeEventListener('click', onToggle);
+    toggle.removeEventListener('pointerdown', onPointerDown);
+    toggle.removeEventListener('pointerup', onPointerEnd);
+    toggle.removeEventListener('pointercancel', onPointerEnd);
+    toggle.removeEventListener('lostpointercapture', onPointerEnd);
+    toggle.removeEventListener('contextmenu', onContextMenu);
     toggle.hidden = true;
     toggle.setAttribute('aria-pressed', 'false');
-  };
-}
-
-/** Scroll run of the "Same day" pin, in viewport heights; day.css reserves the same run below the section */
-const DAY_PIN_RUN = 1.1;
-/** Gap between the bottom of the pinned steps and the bottom of the screen (px) */
-const DAY_PIN_INSET = 24;
-
-/**
- * "Same day": the progress line fills and the steps light up. Pinned only on a desktop tall enough for the whole
- * section content, heading to steps (start.ts, the same media query as day.css): a shorter pin either cut off the
- * heading or held the vertical photo of step 2 below the screen. The pin's scroll run is reserved by the CSS from
- * the first paint and the pin adds no spacing of its own, so nothing below moves when it starts.
- */
-export function sameDay({ gsap }: Libs, root: ParentNode, pin: boolean): Cleanup {
-  const day = root.querySelector<HTMLElement>('.day');
-  const line = day?.querySelector('.progress i');
-  const stage = day?.querySelector<HTMLElement>('.steps');
-  if (!day || !line || !stage) return noop;
-  const steps = [...day.querySelectorAll('.step')];
-  // holds the reserved run (day.css) for as long as the pin exists, also after the 3 s safety net
-  const html = document.documentElement;
-  html.classList.toggle('day-pin', pin);
-  // in the middle of the screen while the section fits; when it is taller, the bottom of the steps stops just
-  // above the bottom of the screen; should the content still not fit (a large text size), the heading stays
-  // at the top of the screen
-  const pinStart = (): string => {
-    if (day.offsetHeight < innerHeight) return 'center center';
-    const top = day.getBoundingClientRect().top;
-    const contentTop = Math.round(parseFloat(getComputedStyle(day).paddingTop));
-    const stepsBottom = Math.round(stage.getBoundingClientRect().bottom - top);
-    return stepsBottom - contentTop + DAY_PIN_INSET <= innerHeight
-      ? `top+=${stepsBottom} bottom-=${DAY_PIN_INSET}`
-      : `top+=${contentTop} top`;
-  };
-  gsap.fromTo(
-    line,
-    { scaleX: 0 },
-    {
-      scaleX: 1,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: day,
-        start: pin ? pinStart : 'top 70%',
-        end: pin ? `+=${DAY_PIN_RUN * 100}%` : 'bottom 60%',
-        scrub: true,
-        pin,
-        pinSpacing: false,
-        // created after the triggers below it (start.ts): refreshing first keeps the order of the triggers
-        refreshPriority: 1,
-        onUpdate: (s) =>
-          steps.forEach((el, i) =>
-            el.classList.toggle('is-on', s.progress >= i / steps.length + 0.02),
-          ),
-      },
-    },
-  );
-  return () => {
-    html.classList.remove('day-pin');
-    steps.forEach((el) => el.classList.add('is-on'));
   };
 }
 
@@ -297,16 +259,30 @@ export function sameDay({ gsap }: Libs, root: ParentNode, pin: boolean): Cleanup
 export function headerHide({ ScrollTrigger }: Libs, root: ParentNode): Cleanup {
   const top = root.querySelector<HTMLElement>('header.top');
   if (!top) return noop;
+  let previous = window.scrollY;
+  let travel = 0;
   ScrollTrigger.create({
-    start: 120,
+    start: 0,
     end: 'max',
-    onUpdate: (s) =>
-      top.classList.toggle(
-        'is-hidden',
-        s.direction === 1 && s.scroll() > 200 && !top.matches(':focus-within'),
-      ),
+    onUpdate: (trigger) => {
+      const position = trigger.scroll();
+      const delta = position - previous;
+      previous = position;
+      if (position <= 200 || top.matches(':focus-within')) {
+        travel = 0;
+        top.classList.remove('is-hidden');
+        return;
+      }
+      if (delta === 0) return;
+      travel = Math.sign(delta) === Math.sign(travel) ? travel + delta : delta;
+      if (travel >= 18) top.classList.add('is-hidden');
+      if (travel <= -12) top.classList.remove('is-hidden');
+    },
   });
-  const onFocus = (): void => top.classList.remove('is-hidden');
+  const onFocus = (): void => {
+    travel = 0;
+    top.classList.remove('is-hidden');
+  };
   top.addEventListener('focusin', onFocus);
   return () => {
     top.removeEventListener('focusin', onFocus);
@@ -329,7 +305,7 @@ export function headerBlend(root: Document): Cleanup {
   if (!top) return noop;
   const overFlat = (): boolean => {
     const h = top.offsetHeight;
-    const w = innerWidth;
+    const w = root.documentElement.clientWidth;
     // any photo box in the header band, however narrow, rules the blend out; the sample points below only
     // confirm the flat surface (HM-10)
     for (const el of root.querySelectorAll(PHOTO)) {

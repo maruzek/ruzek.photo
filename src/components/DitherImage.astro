@@ -1,35 +1,52 @@
 ---
-import { Picture } from 'astro:assets';
 import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/dither.css';
 import type { Locale } from '../i18n';
 import { COVER, type Cover } from '../lib/palette';
-import { IMAGE_FORMATS, IMAGE_WIDTHS } from '../lib/photos/image';
+import PhotoPicture from './PhotoPicture.astro';
 
 interface Props {
   photo: PublishedPhoto;
   /** The alt text comes from the photo, in this language (the plan's props had no locale) */
   locale: Locale;
   sizes: string;
+  /** `sizes` of the photo's portrait crop: a full-screen placement passes it and phones get the crop */
+  mobileSizes?: string | undefined;
   /** `scroll`: assembles on entry and falls apart on exit; `hover`: reacts to the pointer; `stay`: assembles and stays */
   mode?: 'scroll' | 'hover' | 'stay';
   /** Colour the dither covers the photo with: the surface behind it */
   cover: Cover;
   eager?: boolean;
+  /** Mobile object position for a specific placement. */
+  mobilePosition?: string | undefined;
   /** Replaces the photo's own alt text where the section gives the photo another role (the placeholder portrait) */
   alt?: string;
 }
 
-const { photo, locale, sizes, mode = 'scroll', cover, eager = false, alt } = Astro.props;
+const {
+  photo,
+  locale,
+  sizes,
+  mobileSizes,
+  mode = 'scroll',
+  cover,
+  eager = false,
+  mobilePosition,
+  alt,
+} = Astro.props;
 ---
 
-<div class="dph" data-dz={mode} data-dz-color={COVER[cover]}>
-  <Picture
-    src={photo.data.image}
+<div
+  class="dph"
+  data-dz={mode}
+  data-dz-color={COVER[cover]}
+  style={mobilePosition && `--mobile-photo-position: ${mobilePosition}`}
+>
+  <PhotoPicture
+    image={photo.data.image}
     alt={alt ?? photo.data.alt[locale]}
-    widths={IMAGE_WIDTHS}
-    formats={IMAGE_FORMATS}
     sizes={sizes}
+    mobile={photo.mobile && mobileSizes ? { image: photo.mobile, sizes: mobileSizes } : undefined}
     loading={eager ? 'eager' : 'lazy'}
   />
   <canvas class="dz" aria-hidden="true"></canvas>

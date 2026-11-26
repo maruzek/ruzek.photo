@@ -9,7 +9,9 @@ const css = (file: string): string => readFileSync(`src/styles/${file}`, 'utf8')
 function gradientOf(source: string, selector: string): [number, number][] {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const rule = new RegExp(`${escaped}\\s*\\{([^}]*)\\}`).exec(source)?.[1] ?? '';
-  const stops = [...rule.matchAll(/rgb\(7 8 11 \/ (\d+)%\)\s+(\d+)%/g)];
+  const stops = [
+    ...rule.matchAll(/color-mix\(in srgb, var\(--night\) (\d+)%, transparent\)\s+(\d+)%/g),
+  ];
   expect(stops.length, `no gradient found for ${selector}`).toBeGreaterThan(1);
   return stops.map((m) => [Number(m[2]) / 100, Number(m[1]) / 100]);
 }
@@ -30,16 +32,14 @@ function weakestInStrip(stops: [number, number][]): number {
 }
 
 describe('contrast check constants follow the real shade gradients', () => {
-  const fold = css('sections/fold.css');
-  const hero = css('sections/hero.css');
   const cases: [keyof typeof SHADE_OPACITY, string, string][] = [
-    ['normal', fold, '.fold .shade'],
-    ['strong', fold, '.fold .shade.strong'],
-    ['hero', hero, '.hero .shade'],
-    ['strong', hero, '.hero .shade.strong'],
+    ['normal', 'sections/fold.css', '.fold .shade'],
+    ['strong', 'sections/fold.css', '.fold .shade.strong'],
+    ['hero', 'sections/hero.css', '.hero .shade'],
+    ['strong', 'sections/hero.css', '.hero .shade.strong'],
   ];
-  it.each(cases)('SHADE_OPACITY.%s matches %s %s', (name, source, selector) => {
-    const actual = weakestInStrip(gradientOf(source, selector));
+  it.each(cases)('SHADE_OPACITY.%s matches %s %s', (name, file, selector) => {
+    const actual = weakestInStrip(gradientOf(css(file), selector));
     // the constant may be a little lower (conservative), never higher
     expect(SHADE_OPACITY[name]).toBeLessThanOrEqual(actual + 0.001);
     expect(actual - SHADE_OPACITY[name]).toBeLessThan(0.03);

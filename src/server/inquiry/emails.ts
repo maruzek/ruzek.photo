@@ -37,6 +37,12 @@ const lines = (rows: readonly (readonly [string, string | number | undefined | n
     value === undefined || value === null || value === '' ? (empty ? [`${label}: ${empty}`] : []) : [`${label}: ${value}`],
   );
 
+function estimateSummary(r: InquiryRecord, locale: Locale): string {
+  const d = t(locale).inquiry;
+  if (r.estimateFrom === null || r.estimateTo === null) return d.estimate.individual;
+  return `${d.mail.owner.estimate}: ${formatRange({ from: r.estimateFrom, to: r.estimateTo }, locale)}`;
+}
+
 /** The whole inquiry for Martin, always in Czech. Reply-To is the client. */
 export function ownerEmail(r: InquiryRecord): MailText {
   const d = t('cs');
@@ -61,10 +67,10 @@ export function ownerEmail(r: InquiryRecord): MailText {
         [f.place.label, r.place],
         [d.inquiry.fields.guests.label, r.guests],
         [d.inquiry.fields.addons.legend, addonList(r, 'cs')],
-        [m.estimate, formatRange({ from: r.estimateFrom, to: r.estimateTo }, 'cs')],
       ],
       m.empty,
     ),
+    estimateSummary(r, 'cs'),
     '',
     `${f.note.label}:`,
     r.note ?? m.empty,
@@ -100,9 +106,9 @@ export function clientConfirmation(r: InquiryRecord): MailText {
       [f.hours.label, isHourly(r) ? r.hours : undefined],
       [f.date.label, r.date && formatDate(r.date, r.locale)],
       [d.inquiry.fields.addons.legend, addonList(r, r.locale)],
-      [d.inquiry.mail.owner.estimate, formatRange({ from: r.estimateFrom, to: r.estimateTo }, r.locale)],
     ]),
-    m.estimateNote,
+    estimateSummary(r, r.locale),
+    ...(r.service === 'other' ? [] : [m.estimateNote]),
     '',
     m.reply,
     m.notYou,

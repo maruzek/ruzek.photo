@@ -1,0 +1,18 @@
+---
+// One small photo of the time axis (SameDay.astro). Decorative: the parts that use it are aria-hidden. There are 80
+// of them, so the markup is short: AVIF in two widths, one WebP for older browsers, and the same `sizes` everywhere,
+// so the chart and the wall share one download per photo.
+import type { DayThumb } from '../lib/photos/image';
+
+interface Props {
+  thumb: DayThumb;
+  focus: string;
+  zoom: number;
+  /** The photo is a same-day pick: its id, where its large copy flies from (scripts/motion/day.ts) */
+  pick?: string | undefined;
+}
+
+const { thumb, focus, zoom, pick } = Astro.props;
+---
+
+<picture class:list={['f', pick && 'pick']} data-pick={pick} style={`--p:${focus}${zoom > 1 ? `;--z:${zoom}` : ''}`}><source type="image/avif" srcset={thumb.srcset} sizes={thumb.sizes} /><img src={thumb.src} alt="" width={thumb.width} height={thumb.height} loading="lazy" decoding="async" /></picture>

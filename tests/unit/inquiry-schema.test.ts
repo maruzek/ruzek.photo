@@ -39,8 +39,11 @@ describe('inquirySchema', () => {
   it('rejects a landing path without a leading slash', () => {
     expect(inquirySchema.safeParse({ ...valid, source: { landingPath: 'en/' } }).success).toBe(false);
   });
-  it('rejects an unknown service', () => {
-    expect(inquirySchema.safeParse({ ...valid, service: 'wedding' }).success).toBe(false);
+  it.each(['sport', 'other'])('accepts an inquiry for %s without length or notes', (service) => {
+    expect(inquirySchema.safeParse({ ...valid, service, hours: undefined }).success).toBe(true);
+  });
+  it.each(['match', 'short', 'wedding'])('rejects an unsupported service (%s)', (service) => {
+    expect(inquirySchema.safeParse({ ...valid, service }).success).toBe(false);
   });
   it('rejects a note over 4000 characters', () => {
     expect(inquirySchema.safeParse({ ...valid, note: 'a'.repeat(4001) }).success).toBe(false);

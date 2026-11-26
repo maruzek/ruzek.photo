@@ -21,32 +21,34 @@ const [first = '', ...rest] = site.name.split(' ');
 ---
 
 <footer class="foot">
-  <div class="lead">
-    <p>{f.lead}</p>
-    <Button href={`${onHome ? '' : home}#${d.anchors.inquiry}`} magnetic>
-      {f.cta}
-    </Button>
-  </div>
+  {!onHome && (
+    <div class="lead">
+      <p>{f.lead}</p>
+      <Button href={`${home}#${d.anchors.inquiry}`} magnetic>
+        {f.cta}
+      </Button>
+    </div>
+  )}
   <div class="big" aria-hidden="true">
     <span>{first}</span> <span>{rest.join(' ')}</span>
   </div>
   <div class="cols">
     <div>
-      <span class="mono">{f.shoot.label}</span>
+      <span class="label">{f.shoot.label}</span>
       {f.shoot.value}
     </div>
     <div>
-      <span class="mono">{f.where.label}</span>
+      <span class="label">{f.where.label}</span>
       {f.where.value}
     </div>
     <div>
-      <span class="mono">{f.instagram.label}</span>
+      <span class="label">{f.instagram.label}</span>
       <a href={site.instagram} rel="me" data-umami-event="contact_click" data-umami-event-type="instagram">
         {site.handle}
       </a>
     </div>
     <div>
-      <span class="mono">{f.contact.label}</span>
+      <span class="label">{f.contact.label}</span>
       <a
         href={`mailto:${site.contact.email}`}
         data-copy-email

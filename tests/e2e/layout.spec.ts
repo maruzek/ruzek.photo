@@ -18,10 +18,11 @@ for (const path of ['/', '/en/']) {
     );
   });
 
-  // T3-09: one card for events, one for matches, one shared by the short shoot and the portrait
-  test(`services show three cards and two add-ons ${path}`, async ({ page }) => {
+  test(`services show event, sport and portrait with two add-ons ${path}`, async ({ page }) => {
     await page.goto(path);
-    await expect(page.locator('.services .svc')).toHaveCount(3);
+    await expect(page.locator('.services .svc h3')).toHaveText(
+      path === '/' ? ['Akce', 'Sport', 'Portrét'] : ['Events', 'Sport', 'Portrait'],
+    );
     await expect(page.locator('.addons .addon')).toHaveCount(2);
   });
 
@@ -42,12 +43,12 @@ for (const path of ['/', '/en/']) {
 test('the longest English estimate fits the estimate box at 360px', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await page.goto('/en/');
-  const out = page.locator('.est output');
+  const out = page.locator('.est:visible output');
   await out.evaluate((el) => {
     el.textContent = 'CZK 16,000–21,110';
   });
   const fits = await page
-    .locator('.est')
+    .locator('.est:visible')
     .evaluate(
       (box) =>
         box.scrollWidth <= box.clientWidth && document.documentElement.scrollWidth <= innerWidth,

@@ -3,13 +3,6 @@
 // until he signs the translation off (concept.md, kap. 5). See cs.ts for the string conventions.
 import type { Dictionary } from './cs';
 
-// Same shared card as in cs.ts: one card for the short shoot and the portrait.
-const shortAndPortraitCard = {
-  title: 'Portrait and short shoot',
-  text: 'Portraits for a profile, a team or speakers. A short shoot for smaller events.',
-  priceLabel: 'Portrait / short shoot',
-} as const;
-
 export const en = {
   meta: {
     title: 'Event and sports photographer Prague · Martin Růžek',
@@ -38,21 +31,16 @@ export const en = {
     work: 'Work',
     services: 'Services and prices',
     about: 'About',
-    inquiry: 'Request a shoot →',
+    inquiry: 'Request a shoot',
   },
   lang: {
     other: 'Čeština',
   },
   hero: {
     kicker: 'Event and sports photographer',
-    places: 'Prague · Karlovy Vary',
-    scrollHint: 'Down',
     lead: 'I photograph corporate events, conferences, balls and sport. You get a selection for your social media *the same day.*',
     cta: 'Request a shoot',
     ctaWork: 'See the work',
-    instagram: 'Instagram {handle}',
-    onPhoto: 'In the photo:',
-    onPhotoTodo: 'who is in the photo',
   },
   marquee: {
     label: 'What I shoot',
@@ -72,32 +60,22 @@ export const en = {
   },
   folds: {
     events: {
-      title: 'Events you will *want* to see again.',
-      chips: ['Corporate events', 'Conferences', 'Balls', 'Parties'],
+      title: 'Events you will want to see again.',
       text: 'I don’t look for poses. I photograph what actually happened: the speaker, the packed hall, the toast and the last dance.',
-      index: '01',
-      indexLabel: 'Events',
     },
     sport: {
-      title: 'Sport is my *passion.*',
-      chips: ['Football', 'Floorball', 'Tournaments', 'Races'],
-      text: 'On the pitch, no moment happens twice.',
-      index: '02',
-      indexLabel: 'Sport',
+      title: 'Nothing happens twice on the pitch.',
+      text: 'I photograph football, floorball, tournaments and races.',
     },
   },
   work: {
-    eyebrow: 'Selected work',
-    title: 'Moments from events and *matches.*',
-    foot: 'You get the whole event in a private online gallery.',
+    title: 'Events and matches as they happened.',
     footLink: 'I want photos like these',
-    captionTodo: 'place and date',
     categories: { event: 'Event', sport: 'Sport', portrait: 'Portrait' },
     sheetLabel: 'Contact sheet',
   },
   services: {
-    eyebrow: 'Services and prices',
-    title: 'What I shoot and *for how much.*',
+    title: 'What I shoot and for how much.',
     lead: 'Prices are indicative starting prices, I am not a VAT payer. You get an exact quote based on the length and type of the event.',
     calcLink: 'Calculate the price',
     cards: {
@@ -107,13 +85,16 @@ export const en = {
         priceLabel: 'First hour',
         priceNote: 'each additional hour {price}',
       },
-      match: {
+      sport: {
         title: 'Sport',
         text: 'Football, floorball, tournaments and races. For clubs, teams and organisers.',
         priceLabel: 'Match',
       },
-      short: shortAndPortraitCard,
-      portrait: shortAndPortraitCard,
+      portrait: {
+        title: 'Portrait',
+        text: 'Portraits for a profile, a team or speakers.',
+        priceLabel: 'Portrait',
+      },
     },
     deliverables: {
       photos: '{range}\u00A0photos',
@@ -121,8 +102,6 @@ export const en = {
       turnaroundDays: 'delivered in {range}\u00A0days',
       turnaroundHours: 'delivered within {range}\u00A0h',
       durationMin: '{range}\u00A0min',
-      durationMaxHours: 'shoot up to {n}\u00A0h',
-      durationMaxMinutes: 'shoot up to {n}\u00A0min',
     },
     addons: {
       sameDay: { label: 'Same-day selection for social media', note: 'Express' },
@@ -130,33 +109,30 @@ export const en = {
     },
   },
   day: {
-    eyebrow: 'How it works',
-    title: 'Your social media picks *the same* day.',
-    lead: 'While the guests are leaving, I am choosing photos. They are on your social media before the event cools down.',
-    steps: [
-      {
-        no: '01 · During the event',
-        title: 'I shoot what happens',
-        text: 'Speakers, guests, details.',
-      },
-      {
-        no: '02 · Right after the event',
-        title: 'I pick the strongest',
-        text: 'From the whole day I pick shots for social media. On request I add vertical videos.',
-      },
-      {
-        no: '03 · Same day',
-        title: 'I send the selection',
-        // Followed by <Todo>{galleryTodo}</Todo> and a full stop.
-        text: 'I will deliver the full gallery',
-      },
-    ],
-    galleryTodo: 'deadline',
+    title: 'Social picks *the\u00A0same\u00A0day*.',
+    lead: 'The strongest photos reach you the same day, the full gallery in {range}\u00A0days.',
+    event: {
+      when: 'During the event',
+      title: 'I photograph what happens',
+      text: 'Expect roughly {range}\u00A0photos per hour.',
+    },
+    sameDay: {
+      when: 'The same day',
+      title: 'Social media picks',
+      text: 'I send you the strongest shots right away, while people talk about the event.',
+      tag: 'Express, +{range} on top',
+    },
+    gallery: {
+      when: 'In\u00A0{range}\u00A0days',
+      title: 'The full gallery',
+      text: 'All the edited photos in an online gallery. Matches and tournaments within {range}\u00A0hours.',
+      tag: 'Included',
+    },
+    marks: { one: '{n}\u00A0day', few: '{n}\u00A0days', many: '{n}\u00A0days' },
+    cta: 'I want same-day photos',
   },
   about: {
-    eyebrow: 'About me',
-    title: 'I’m Martin. I photograph people in *motion.*',
-    lead: 'I photograph events and sport in Prague and Karlovy Vary.',
+    title: 'I’m Martin. I photograph *people in motion*.',
     storyTodo: 'Martin’s own story, how he got into photography',
     portraitAlt: 'Placeholder portrait, a spot for Martin’s photo',
     portraitTodo: 'Martin’s portrait',
@@ -166,12 +142,12 @@ export const en = {
     },
   },
   inquiry: {
-    eyebrow: 'Inquiry',
-    title: 'When is *your* event?',
+    title: 'When is your event?',
     lead: 'Send the date, place and type of event. I will reply with a price and confirm whether I am free.',
     estimate: {
       label: 'Estimate from',
       note: 'Based on the selected options.',
+      individual: 'Individually quoted',
     },
     direct: {
       label: 'Prefer to reach me directly',
@@ -196,9 +172,9 @@ export const en = {
         label: 'What are we shooting',
         options: {
           event: 'Event',
-          match: 'Match',
-          short: 'Short shoot',
+          sport: 'Sport',
           portrait: 'Portrait',
+          other: 'Other',
         },
       },
       hours: { label: 'Event length (hours)' },
@@ -206,12 +182,13 @@ export const en = {
       hoursLess: 'One hour less',
       hoursMore: 'One hour more',
       groups: { contact: 'Contact', event: 'Event', extras: 'Add-ons and notes' },
-      optional: '(optional)',
+      required: 'All you need to fill in is your name and e-mail.',
       date: { label: 'Date' },
       place: { label: 'Place', placeholder: 'Prague, Karlovy Vary…' },
       note: {
         label: 'What should I know',
         placeholder: 'Programme, what matters most to you',
+        otherHelp: 'You can briefly describe what you would like photographed.',
       },
       send: 'Send inquiry',
       sending: 'Sending…',
@@ -278,7 +255,7 @@ export const en = {
     lead: 'Have an event or a match? Tell me what you’d like photographed.',
     cta: 'Request a shoot',
     shoot: { label: 'I shoot', value: 'Events, sport, portraits' },
-    where: { label: 'Where', value: 'Prague · Karlovy Vary' },
+    where: { label: 'Where', value: 'Prague and Karlovy Vary' },
     instagram: { label: 'Instagram' },
     contact: { label: 'Contact', phoneTodo: 'phone' },
     legal: {
@@ -399,5 +376,7 @@ export const en = {
     prev: 'Previous photo',
     next: 'Next photo',
     counter: '{n} / {total}',
+    loading: 'Loading photo…',
+    unavailable: 'Could not load the photo.',
   },
 } as const satisfies Dictionary;

@@ -58,10 +58,9 @@ for (const path of ['/', '/en/']) {
     expect(hero?.height).toBeGreaterThanOrEqual(600);
     const bottom = (hero?.y ?? 0) + (hero?.height ?? 0);
     for (const sel of [
+      '.hero .row > p',
       '.hero .cta .btn',
       '.hero .cta .lnk',
-      '.hero .meta > span:nth-child(1)',
-      '.hero .meta > span:nth-child(2)',
       '.hero .ph-tag',
     ]) {
       if (sel.endsWith('.ph-tag') && (await page.locator(sel).count()) === 0) continue; // real photo, no tag
@@ -71,6 +70,36 @@ for (const path of ['/', '/en/']) {
     }
     const clipped = await page.locator('.hero').evaluate((el) => el.scrollHeight > el.clientHeight);
     expect(clipped).toBe(false);
+  });
+
+  test(`the home page uses its headings and subpages keep the footer inquiry link ${path}`, async ({
+    page,
+  }) => {
+    const english = path === '/en/';
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(path);
+    await expect(page.locator('main .eyebrow, .hero .scroll-hint, .hero .meta, .hero .kick')).toHaveCount(0);
+    await expect(page.locator('.fold .chips, .fold .idx, .svc .lbl')).toHaveCount(0);
+    await expect(page.getByRole('region', {
+      name: english ? 'Nothing happens twice on the pitch.' : 'Na hřišti se nic neopakuje.',
+    })).toBeVisible();
+    const gallery = page.getByRole('region', {
+      name: english ? 'Events and matches as they happened.' : 'Z akcí a zápasů, naostro.',
+    });
+    await expect(gallery.locator('.work-foot p')).toHaveCount(0);
+    await expect(gallery.locator('.work-foot .btn')).toHaveAttribute('href', english ? '#inquiry' : '#poptavka');
+    await expect(gallery.locator('.work-foot')).toHaveCSS('border-top-width', '0px');
+    await expect(page.locator('.day .stop')).toHaveCount(3);
+    await expect(page.locator('.day .ev .tag')).toHaveCount(0);
+    await expect(page.locator('#day-h em')).toHaveText(english ? 'the same day' : 'ještě ten den');
+    await expect(page.locator('#inq-h em')).toHaveCount(0);
+    await expect(page.locator('header nav li').last()).toHaveText(english ? 'Request a shoot' : 'Poptat focení');
+    await expect(page.locator('footer .lead')).toHaveCount(0);
+    await expect(page.locator('footer .cols > *')).toHaveCount(4);
+    await expect(page.locator('.about .facts a[rel="me"]')).toHaveCount(1);
+
+    await page.goto(english ? '/en/privacy/' : '/zasady-ochrany-osobnich-udaju/');
+    await expect(page.locator('footer .lead a')).toHaveAttribute('href', english ? '/en/#inquiry' : '/#poptavka');
   });
 
   test(`/en/ shows the translation check marker only in English ${path}`, async ({ page }) => {
@@ -99,7 +128,7 @@ test('folds with a placeholder photo carry the placeholder tag clear of the text
     const tag = fold.locator('.ph-tag');
     await expect(tag).toHaveText('Zástupná fotka');
     const tagBox = await tag.boundingBox();
-    for (const sel of ['h2', '.chips', '.note > p', '.idx']) {
+    for (const sel of ['h2', '.note > p']) {
       const box = await fold.locator(sel).boundingBox();
       const apart =
         (tagBox?.y ?? 0) + (tagBox?.height ?? 0) <= (box?.y ?? 0) ||
@@ -108,17 +137,6 @@ test('folds with a placeholder photo carry the placeholder tag clear of the text
       expect(apart, `fold ${i} tag overlaps ${sel}`).toBe(true);
     }
   }
-});
-
-test('the scroll hint stops after at most two passes (5 s)', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/');
-  const anim = await page.locator('.scroll-hint').evaluate((el) => {
-    const cs = getComputedStyle(el, '::after');
-    return { count: cs.animationIterationCount, duration: parseFloat(cs.animationDuration) };
-  });
-  expect(Number(anim.count)).toBeLessThanOrEqual(2);
-  expect(Number(anim.count) * anim.duration).toBeLessThanOrEqual(5);
 });
 
 // Keyboard focus ring must have 3:1 against what is really painted behind it, also over a mid-grey photo.
@@ -185,12 +203,39 @@ for (const blend of [false, true]) {
 
 test('hero photo is preloaded with the same AVIF srcset the picture uses', async ({ page }) => {
   await page.goto('/');
-  const preload = await page.locator('link[rel="preload"][as="image"]').getAttribute('imagesrcset');
-  const source = await page
-    .locator('.hero picture source[type="image/avif"]')
-    .getAttribute('srcset');
-  expect(preload).toBeTruthy();
-  expect(preload).toBe(source);
+  // with a phone crop there are two preloads, split by the media query of the matching <source>
+  const pairs = await page.evaluate(() => {
+    const sources = [
+      ...document.querySelectorAll<HTMLSourceElement>('.hero picture source[type="image/avif"]'),
+    ];
+    return [...document.querySelectorAll<HTMLLinkElement>('link[rel="preload"][as="image"]')].map(
+      (link) => {
+        // the crop's preload carries the crop's media query; the full photo's preload negates it or has none
+        const crop = link.media && !link.media.startsWith('not all and ');
+        const source = sources.find((s) => (crop ? s.media === link.media : !s.media));
+        return {
+          preload: link.getAttribute('imagesrcset'),
+          sizes: link.getAttribute('imagesizes'),
+          source: source?.srcset,
+          sourceSizes: source?.sizes,
+          active: link.media ? matchMedia(link.media).matches : true,
+        };
+      },
+    );
+  });
+  expect(pairs.length).toBeGreaterThan(0);
+  for (const pair of pairs) {
+    expect(pair.preload).toBeTruthy();
+    expect(pair.preload).toBe(pair.source);
+    expect(pair.sizes).toBe(pair.sourceSizes);
+  }
+  // exactly one preload applies, and it holds the file the picture shows (no second download)
+  const active = pairs.filter((p) => p.active);
+  expect(active).toHaveLength(1);
+  await page.waitForFunction(() => document.querySelector<HTMLImageElement>('.hero img')?.currentSrc);
+  const current = await page.locator('.hero img').evaluate((el: HTMLImageElement) => el.currentSrc);
+  expect(current.endsWith('.avif')).toBe(true);
+  expect(active[0]?.preload).toContain(new URL(current).pathname);
   const img = page.locator('.hero img');
   await expect(img).toHaveAttribute('fetchpriority', 'high');
   await expect(img).toHaveAttribute('loading', 'eager');
@@ -293,7 +338,12 @@ test('marquee keeps its height when the loop starts, and the band never runs und
   expect(new Set(heights).size).toBe(1);
   const toggle = await page.locator('.marquee-toggle').boundingBox();
   const clip = await page.locator('.marquee .viewport').boundingBox();
-  expect((clip?.x ?? 0) + (clip?.width ?? 0)).toBeLessThanOrEqual(toggle?.x ?? 0);
+  if ((page.viewportSize()?.width ?? 0) <= 900) {
+    expect(clip?.width).toBeCloseTo(page.viewportSize()?.width ?? 0);
+    await expect(page.locator('.marquee-toggle span')).toBeHidden();
+  } else {
+    expect((clip?.x ?? 0) + (clip?.width ?? 0)).toBeLessThanOrEqual(toggle?.x ?? 0);
+  }
 });
 
 test('reduced motion: marquee shows every item once, wrapped, with no button', async ({ page }) => {
@@ -401,13 +451,13 @@ test('no dead band between services and "same day", sections after a wipe start 
   page,
 }, info) => {
   test.skip(info.project.name !== 'desktop', 'measured at 1440 × 900');
-  await page.emulateMedia({ reducedMotion: 'reduce' }); // layout without the pin
+  await page.emulateMedia({ reducedMotion: 'reduce' }); // layout without the scroll run
   await page.goto('/');
   const m = await page.evaluate(() => {
     const top = (s: string): number => document.querySelector(s)!.getBoundingClientRect().top;
     const svc = document.querySelector('.svc-sec')!;
     return {
-      gap: top('.day .eyebrow') - svc.lastElementChild!.getBoundingClientRect().bottom,
+      gap: top('#day-h') - svc.lastElementChild!.getBoundingClientRect().bottom,
       aboutPad: parseFloat(getComputedStyle(document.querySelector('.about')!).paddingTop),
       secPad: parseFloat(getComputedStyle(svc).paddingBottom), // the full --sec (its top padding is 0)
     };

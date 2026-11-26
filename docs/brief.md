@@ -24,7 +24,6 @@ Zdroj: Martinovo zadání a odpovědi z brainstormu (2026-11-20). Texty o Martin
 | Služba | Cena | Co klient dostane |
 |---|---|---|
 | Akce | 1. hodina 1 500 Kč, každá další 1 000–1 200 Kč | úpravy a online galerie do 3–5 dnů, zhruba 30–50 fotek za hodinu |
-| Krátké focení (do 1 h) | 1 500 Kč | 15–25 fotek do 2–3 dnů |
 | Expres | +20–30 % | výběr na sítě týž den |
 | Klubový zápas nebo turnaj | 1 500–2 500 Kč za zápas | 30–50 fotek do 24 h, sezónní sleva |
 | Portrét | 1 500 Kč | 45–60 min, 8–10 fotek |
@@ -37,6 +36,7 @@ Zdroj: Martinovo zadání a odpovědi z brainstormu (2026-11-20). Texty o Martin
 
 ## Poptávkový formulář
 - **Pole:** typ akce, datum, čas od–do, místo, počet lidí, požadované výstupy, kontakt.
+- **Typy focení:** Akce, Sport, Portrét a Jiné. Volba „Jiné“ má individuální nacenění.
 - **Povinné:** ochrana proti spamu (Turnstile) a odkaz na zásady ochrany osobních údajů. Zaškrtávátko souhlasu nebude (rozhodnutí 2026-11-21).
 - **Po odeslání:** e-mail Martinovi na `foto@martinruzek.cz`, potvrzení klientovi a uložení do databáze (D1). Poptávky bez zakázky se po 12 měsících anonymizují.
 - Na webu bude vidět i telefon a WhatsApp.

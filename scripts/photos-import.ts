@@ -5,10 +5,15 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 /**
- * The longest edge of an imported photo. Smaller photos are never enlarged. 2400 px covers the largest rendered
- * width (full-bleed folds and the 2000 px lightbox file) and keeps the public repo small.
+ * The longest edge of an imported photo. Smaller photos are never enlarged. 2400 px covers the grid, the 2000 px
+ * lightbox file and a full-bleed photo on a common monitor, and keeps the public repo small.
  */
 export const MAX_EDGE = 2400;
+/**
+ * The limit of `--max-edge`, for the photos that fill the screen under text (hero, folds): 3840 px gives a
+ * retina laptop (2880 px) and a 4K monitor their full resolution.
+ */
+export const MAX_EDGE_LIMIT = 3840;
 export const JPEG_QUALITY = 90;
 
 export interface ImportOptions {
@@ -20,6 +25,8 @@ export interface ImportOptions {
   slug?: string;
   /** Trims each edge by a fraction of the (oriented) source, applied before the resize. */
   crop?: Crop;
+  /** Longest edge in px (default `MAX_EDGE`, at most `MAX_EDGE_LIMIT`). */
+  maxEdge?: number;
 }
 
 /** Fractions (0–1) cut off each edge, e.g. `{ left: 0.06 }` removes the left 6 %. */
@@ -112,7 +119,12 @@ export async function importPhoto(source: string, options: ImportOptions): Promi
     oriented = await sharp(oriented.data).extract(region).toBuffer({ resolveWithObject: true });
   }
   const jpeg = await sharp(oriented.data)
-    .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: 'inside', withoutEnlargement: true })
+    .resize({
+      width: options.maxEdge ?? MAX_EDGE,
+      height: options.maxEdge ?? MAX_EDGE,
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
     .jpeg({ quality: JPEG_QUALITY, mozjpeg: true })
     .toBuffer();
   await mkdir(options.outDir, { recursive: true });
@@ -131,16 +143,28 @@ export async function importPhoto(source: string, options: ImportOptions): Promi
 
 const USAGE =
   'Usage: pnpm photos:import <photo…>\n' +
-  '       pnpm photos:import <photo> --slug <name> [--crop left=0.06,top=0,right=0,bottom=0]\n' +
+  '       pnpm photos:import <photo> --slug <name> [--crop left=0.06,top=0,right=0,bottom=0] [--max-edge 3840]\n' +
   'Strips all metadata, scales to at most ' +
   MAX_EDGE +
-  ' px, writes src/assets/photos/<name>.jpg and a YAML skeleton in src/content/photos/.\n' +
-  '--slug and --crop apply to a single photo only.';
+  ' px (--max-edge: up to ' +
+  MAX_EDGE_LIMIT +
+  ' px for a full-screen photo), writes src/assets/photos/<name>.jpg and a YAML skeleton in src/content/photos/.\n' +
+  '--slug, --crop and --max-edge apply to a single photo only.';
 
 interface Cli {
   files: string[];
   slug?: string;
   crop?: Crop;
+  maxEdge?: number;
+}
+
+/** Parses the `--max-edge` value: whole px between `MAX_EDGE` and `MAX_EDGE_LIMIT`. */
+export function parseMaxEdge(value: string): number {
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < MAX_EDGE || n > MAX_EDGE_LIMIT) {
+    throw new Error(`Bad --max-edge ${value}: use whole px from ${MAX_EDGE} to ${MAX_EDGE_LIMIT}`);
+  }
+  return n;
 }
 
 export function parseArgs(argv: string[]): Cli {
@@ -148,19 +172,20 @@ export function parseArgs(argv: string[]): Cli {
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i] ?? '';
     const [flag, inline] = arg.split(/=(.*)/s, 2) as [string, string | undefined];
-    if (flag === '--slug' || flag === '--crop') {
+    if (flag === '--slug' || flag === '--crop' || flag === '--max-edge') {
       const value = inline ?? argv[++i];
       if (!value) throw new Error(`${flag} needs a value`);
       if (flag === '--slug') cli.slug = value;
-      else cli.crop = parseCrop(value);
+      else if (flag === '--crop') cli.crop = parseCrop(value);
+      else cli.maxEdge = parseMaxEdge(value);
     } else if (arg.startsWith('--')) {
       throw new Error(`Unknown option ${arg}`);
     } else {
       cli.files.push(arg);
     }
   }
-  if ((cli.slug || cli.crop) && cli.files.length !== 1) {
-    throw new Error('--slug and --crop need exactly one photo');
+  if ((cli.slug || cli.crop || cli.maxEdge) && cli.files.length !== 1) {
+    throw new Error('--slug, --crop and --max-edge need exactly one photo');
   }
   return cli;
 }
@@ -186,6 +211,7 @@ async function main(argv: string[]): Promise<void> {
       yamlDir: resolve(root, 'src/content/photos'),
       ...(cli.slug ? { slug: cli.slug } : {}),
       ...(cli.crop ? { crop: cli.crop } : {}),
+      ...(cli.maxEdge ? { maxEdge: cli.maxEdge } : {}),
     });
     console.log(`${result.imagePath} + ${result.yamlPath}`);
   }

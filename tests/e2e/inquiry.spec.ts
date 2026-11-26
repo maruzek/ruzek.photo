@@ -88,12 +88,11 @@ test.describe('inquiry form', () => {
       await expect(page.locator('#inq').getByRole('heading', { name, level: 3 })).toBeVisible();
   });
 
-  test('the service is a group of four tiles, no dropdown', async ({ page }) => {
+  test('the service tiles follow the public order', async ({ page }) => {
     await open(page);
     await toForm(page);
     const group = page.getByRole('group', { name: 'Co fotíme' });
-    await expect(group.getByRole('radio')).toHaveCount(4);
-    await expect(page.locator('#inq select')).toHaveCount(0);
+    await expect(group.locator('label')).toHaveText(['Akce', 'Sport', 'Portrét', 'Jiné']);
     await expect(group.getByRole('radio', { name: 'Akce' })).toBeChecked();
     await group.getByRole('radio', { name: 'Portrét' }).check();
     await expect(page.getByLabel('Délka akce (hodiny)')).toBeHidden();
@@ -102,14 +101,44 @@ test.describe('inquiry form', () => {
   test('estimate follows the type, hours and add-ons', async ({ page }) => {
     await open(page);
     await toForm(page);
-    const est = page.locator('.est output');
+    const est = page.locator('.est:visible output');
     await page.getByLabel('Délka akce (hodiny)').fill('3');
     await expect.poll(async () => plain(await est.textContent())).toBe('4 200–5 070 Kč');
-    await page.getByRole('radio', { name: 'Zápas' }).check();
+    await page.getByRole('radio', { name: 'Sport' }).check();
     await expect(page.getByLabel('Délka akce (hodiny)')).toBeHidden();
     await expect.poll(async () => plain(await est.textContent())).toBe('1 800–3 250 Kč');
     await page.getByRole('checkbox', { name: /Výběr na sítě ještě ten den/ }).uncheck();
     await expect.poll(async () => plain(await est.textContent())).toBe('1 500–2 500 Kč');
+  });
+
+  test('mobile estimate updates by the submit button and other can be sent without a price', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 780 });
+    let submitted: unknown;
+    await page.route('**/api/inquiry', (route) => {
+      submitted = route.request().postDataJSON();
+      return ok(route);
+    });
+    await open(page);
+    await toForm(page);
+    const estimate = page.locator('output:visible');
+    const submit = page.getByRole('button', { name: 'Odeslat poptávku' });
+    await expect(estimate).toHaveCount(1);
+    await expect(page.locator('#inq output:visible')).toHaveCount(1);
+    await expect.poll(async () => plain(await estimate.textContent())).toBe('4 200–5 070 Kč');
+    await page.getByRole('radio', { name: 'Jiné' }).check();
+    await expect(estimate).toHaveText('Cena individuálně');
+    await expect(page.getByLabel('Délka akce (hodiny)')).toBeHidden();
+    await expect(page.getByLabel('Co mám vědět')).toHaveAttribute('aria-describedby', 'inq-note-note');
+    const summary = await estimate.boundingBox();
+    const button = await submit.boundingBox();
+    expect(button!.y - summary!.y - summary!.height).toBeGreaterThan(0);
+    expect(button!.y - summary!.y - summary!.height).toBeLessThan(128);
+    await fillRequired(page);
+    await submit.click();
+    await expect(page.locator('.done')).toBeVisible();
+    expect(submitted).toMatchObject({ service: 'other' });
+    for (const key of ['hours', 'estimateFrom', 'estimateTo'])
+      expect(submitted).not.toHaveProperty(key);
   });
 
   test('empty submit focuses the name and links the error', async ({ page }) => {
@@ -159,6 +188,38 @@ test.describe('inquiry form', () => {
     const tick = page.locator('.tick').filter({ has: page.locator('input:focus-visible') });
     await expect(tick).toHaveCount(1);
     expect(await tick.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe('solid');
+  });
+
+  test('Tab marks only the current text field without shifting controls or retaining its marker', async ({ page }, info) => {
+    test.skip(info.project.name !== 'desktop', 'keyboard');
+    await open(page);
+    await toForm(page);
+    await page.evaluate(() => document.fonts.ready);
+    const fields = [page.getByLabel('Jméno'), page.getByLabel('E-mail'), page.getByLabel('Telefon')];
+    const state = () =>
+      Promise.all(fields.map((field) => field.evaluate((el) => {
+        const { x, y, width, height } = el.getBoundingClientRect();
+        const { borderBottomWidth, outlineStyle, outlineWidth } = getComputedStyle(el);
+        return { x, y: y + scrollY, width, height, borderBottomWidth, outlineStyle, outlineWidth };
+      })));
+    const link = page.locator('.direct a').last();
+    await link.focus();
+    const resting = await state();
+    for (const [i, field] of fields.entries()) {
+      await page.keyboard.press('Tab');
+      await expect(field).toBeFocused();
+      const current = await state();
+      for (const j of fields.keys()) {
+        const { outlineStyle, outlineWidth, ...geometry } = current[j]!;
+        const { outlineStyle: baseStyle, outlineWidth: baseWidth, ...baseGeometry } = resting[j]!;
+        expect(geometry).toEqual(baseGeometry);
+        if (j === i) expect([outlineStyle, outlineWidth]).toEqual(['solid', '2px']);
+        else expect([outlineStyle, outlineWidth]).toEqual([baseStyle, baseWidth]);
+      }
+    }
+    await page.keyboard.press('Tab');
+    expect(await state()).toEqual(resting);
+    await expect(page.locator('.field .msg')).toHaveCount(0);
   });
 
   test('text the browser cannot parse in a number field is an error (FM-09)', async ({ page }) => {
@@ -263,16 +324,16 @@ test.describe('inquiry form', () => {
     });
   }
 
-  test('"Spočítat cenu" at Sport preselects the match', async ({ page }) => {
+  test('"Spočítat cenu" at Sport preselects sport', async ({ page }) => {
     await open(page);
-    const link = page.locator('a[href*="sluzba=match"]').first();
+    const link = page.locator('a[href*="sluzba=sport"]').first();
     // the service cards rise in when scrolled to; a click during that entrance lands on the moving card
     await link.scrollIntoViewIfNeeded();
     const card = page.locator('.svc').filter({ has: link });
     await expect(card).toHaveCSS('opacity', '1');
     await expect(card).toHaveCSS('transform', /^(none|matrix\(1, 0, 0, 1, 0, 0\))$/); // GSAP ends on identity
     await link.click();
-    await expect(page.getByRole('radio', { name: 'Zápas' })).toBeChecked();
+    await expect(page.getByRole('radio', { name: 'Sport' })).toBeChecked();
   });
 
   test('Turnstile loads only near the form', async ({ page }) => {
@@ -338,16 +399,16 @@ test.describe('inquiry form', () => {
     await page.getByLabel('Event length (hours)').fill('12');
     await page.getByLabel(/Videos for social media/).check();
     await expect
-      .poll(async () => plain(await page.locator('.est output').textContent()))
+      .poll(async () => plain(await page.locator('.est:visible output').textContent()))
       .toBe('CZK 16,000–21,110');
     const [sw, cw] = await page.evaluate(() => [
       document.documentElement.scrollWidth,
       document.documentElement.clientWidth,
     ]);
     expect(sw).toBeLessThanOrEqual(cw);
-    const box = await page.locator('.est').boundingBox();
+    const box = await page.locator('.est:visible').boundingBox();
     const out = await page
-      .locator('.est output')
+      .locator('.est:visible output')
       .evaluate((el) => el.scrollWidth <= el.clientWidth);
     expect(box!.x + box!.width).toBeLessThanOrEqual(360);
     expect(out).toBe(true);

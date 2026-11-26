@@ -138,6 +138,25 @@ describe('handleInquiry', () => {
     expect(d.rows[0]).toMatchObject({ estimateFrom: 4200, estimateTo: 5070 });
   });
 
+  it('stores and mails an individually quoted inquiry without a price', async () => {
+    const d = fakeDeps();
+    const body = { ...valid, service: 'other', locale: 'en', estimateFrom: 1, estimateTo: 2 };
+    expect((await handleInquiry(req(body), d)).status).toBe(200);
+    await Promise.all(d.pending);
+    expect(d.rows[0]).toMatchObject({ service: 'other', estimateFrom: null, estimateTo: null });
+    const owner = d.sent.find((m) => m.to === d.ownerEmail);
+    const client = d.sent.find((m) => m.to === valid.email);
+    expect(owner?.text).toContain('Cena individuálně');
+    expect(client?.text).toContain('Individually quoted');
+    expect(owner?.text).not.toContain('Kč');
+    expect(client?.text).not.toContain('CZK');
+
+    expect((await handleInquiry(req({ ...body, turnstileToken: 'ok-retry' }), d)).status).toBe(200);
+    await Promise.all(d.pending);
+    expect(d.rows).toHaveLength(1);
+    expect(d.sent).toHaveLength(2);
+  });
+
   it('403 when Turnstile fails, nothing stored', async () => {
     const d = fakeDeps({ verifyTurnstile: async () => false });
     const res = await handleInquiry(req({ ...valid }), d);

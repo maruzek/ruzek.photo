@@ -107,7 +107,6 @@ async function worstContrast(
 // `fold-N` is the N-th photographic fold (numbered by the test)
 const cases = [
   { name: 'hero name', section: '.hero', text: '.hero #name', min: 3 },
-  { name: 'hero label', section: '.hero', text: '.hero .kick', min: 4.5 },
   { name: 'hero lead', section: '.hero', text: '.hero .row p', min: 4.5 },
   { name: 'fold 1 heading', section: 'fold-0', text: 'fold-0 h2', min: 3 },
   { name: 'fold 1 text', section: 'fold-0', text: 'fold-0 .note > p', min: 4.5 },

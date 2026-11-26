@@ -38,6 +38,7 @@ pnpm check:launch   # poslední kontrola před spuštěním (viz níže)
 ```
 
 - **Port e2e:** `pnpm test:e2e` a `pnpm test:perf` spouštějí vlastní preview na portu 8787. Běžící `pnpm preview` na tomto portu před nimi zastavte. Druhý checkout může použít jiný port: `E2E_PORT=8788 pnpm test:e2e`.
+- **Čistá testovací D1:** `E2E_PERSIST_TO="$(mktemp -d)" pnpm test:e2e` použije nový lokální stav a ponechá vývojovou databázi v `.wrangler/state`.
 - **Hotovo** znamená: `pnpm check` i `pnpm test:e2e` projdou.
 - Žádné cookies a žádné zápisy do `localStorage` kvůli měření. Při `prefers-reduced-motion: reduce` se GSAP ani Lenis nestáhnou.
 
@@ -68,7 +69,16 @@ Fotky jsou v repozitáři: soubor v `src/assets/photos/`, popis v `src/content/p
    Skript otočí fotku podle orientace, zmenší ji nejvýš na 2400 px na delší straně, uloží jako JPEG bez EXIF (tedy i bez GPS) do `src/assets/photos/` a vytvoří YAML se zástupnými hodnotami. Existující soubor nikdy nepřepíše. Podporované jsou běžné formáty včetně PNG a WebP. HEIC/HEIF se nepoužívá.
    - `--slug` dá souboru anglický název podle obsahu (`football-duel`, ne `IMG_1234`). Bez něj se název odvodí ze jména souboru.
    - `--crop` před zmenšením uřízne okraje: podíl strany od 0 do 1 pro `left`, `top`, `right` a `bottom`. Hodí se, když do záběru zasahuje rušivý prvek nebo když ořez na webu schová to podstatné.
-   - `--slug` a `--crop` platí jen pro jednu fotku najednou.
+   - `--max-edge 3840` nechá fotce delší stranu až 3840 px místo 2400. Patří jen fotkám přes celou obrazovku pod textem (úvod a velké fotky mezi sekcemi, `PLACEMENT` v `src/config/placement.ts`): retina notebook a 4K monitor je pak ukážou v plném rozlišení. Ostatní fotky nechte na 2400 px, repozitář zůstane menší.
+   - `--slug`, `--crop` a `--max-edge` platí jen pro jednu fotku najednou.
+   - **Nový export existující fotky:** import nikdy nepřepisuje, takže starý JPEG nejdřív smažte a YAML si odložte stranou, jinak import skončí chybou. Po importu YAML vraťte zpátky, popisky i souhlasy v něm zůstanou:
+     ```sh
+     mv src/content/photos/ball-dance-red.yaml /tmp/ && rm src/assets/photos/ball-dance-red.jpg
+     pnpm photos:import private/photos-inbox/IMG_5436-large.jpg --slug ball-dance-red --max-edge 3840
+     mv /tmp/ball-dance-red.yaml src/content/photos/
+     ```
+
+   Fotky přes celou obrazovku dostanou při buildu i výřez na výšku pro telefony (`src/lib/photos/mobile-crop.ts`). Výřez se řídí pozicí v `MOBILE_PHOTO_POSITION`, takže telefon ukáže stejný záběr, ale nestahuje celou fotku na šířku. Výřezy jsou výstup buildu v `node_modules/.cache/mobile-crops/`, do gitu nepatří.
 
    Originály (exporty z úprav) patří do `private/photos-inbox/`, do gitu nikdy. Do repozitáře jdou jen zmenšené fotky bez metadat. Složka `public/` se pro fotky nepoužívá: Astro by ji zkopírovalo na web tak, jak je, i s EXIF.
 3. **Doplňte YAML.** Pole:
@@ -86,7 +96,7 @@ Fotky jsou v repozitáři: soubor v `src/assets/photos/`, popis v `src/content/p
    | `placeholder`, `credit` | jen pro zástupné fotky. Zástupná fotka nikdy nepatří na veřejný web |
 
    Build selže, když zveřejněná fotka nemá `minors` nebo skutečný `alt`, nebo když má `minors: true` bez `parentalConsent: true`.
-4. **Umístění.** Která fotka je v úvodu, v sekcích a v kontaktním archu prací (pořadí políček `work.sheet`, zvětšené fotky `work.picks`), říká `src/config/placement.ts`. Přehled současného výběru a náhradníků je v [`docs/photos.md`](docs/photos.md). Mění-li se fotka pod textem, spusťte `pnpm check:contrast` (ověří čitelnost) a případně upravte `TEXT_OVER_PHOTOS` a `SHADE_OPACITY` ve `scripts/check-contrast.ts`.
+4. **Umístění.** Která fotka je v úvodu, v sekcích a v kontaktním archu prací (pořadí políček `work.sheet`, zvětšené fotky `work.picks`) a na časové ose „Ještě ten den“ (`sameDay`), říká `src/config/placement.ts`. Přehled současného výběru a náhradníků je v [`docs/photos.md`](docs/photos.md). Mění-li se fotka pod textem, spusťte `pnpm check:contrast` (ověří čitelnost) a případně upravte `TEXT_OVER_PHOTOS` a `SHADE_OPACITY` ve `scripts/check-contrast.ts`.
 5. `pnpm check` a nasaďte.
 
 Pro případovou studii je vzor v `src/content/case-studies/example.md`. Koncept (`draft: true`) nemá stránku ani záznam v sitemapě.
@@ -199,7 +209,7 @@ Všechny názvy s komentářem jsou v [`.env.example`](.env.example). Soubor `.e
 **TODO (Martin):** zkušební zařízení v automatickém testu nemáme. Před spuštěním projděte web na skutečném levném telefonu s Androidem a zapište výsledek sem:
 - plynulost úvodu (ASCII, jméno, přechod do prvního řezu);
 - lupa v sekci s fotkou;
-- pin a linka průběhu v sekci „Týž den“ (na telefonu je bez pinu, ověřit, že obsah je celý);
+- časová osa „Ještě ten den“: na počítači stojí na místě a hraje podle scrollu (fotky přibývají, výběr vyletí z grafu, zaplní se galerie), v nízkém okně a na telefonu jen plyne; po přepnutí na omezený pohyb musí být celá;
 - lightbox (otevření, listování, zavření, návrat fokusu).
 
 Automaticky hlídá snímkovou frekvenci jen `pnpm test:perf` (zpomalený procesor v Chromiu, ne skutečné zařízení).

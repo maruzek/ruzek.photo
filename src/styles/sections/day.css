@@ -1,87 +1,594 @@
-/* Same day. Source: index.html "SAME DAY". Every step is active until the motion layer takes over (task 8). */
+/* Same day: one true time axis. Photos stand on it at the moment they exist.
+   Grey = taken, colour = in the client's hands, coral = the same day. The static page is the finished timeline; the
+   motion layer (scripts/motion/day.ts, .day.is-live) plays it from the start. */
 .day {
-  display: grid;
-  /* the section after the services: half the top spacing, the services' bottom padding already separates them */
-  padding: calc(var(--sec) * 0.5) var(--m) var(--sec);
+  --band: clamp(34px, 2.3vw, 46px);
+  --g: 2px;
+  padding: clamp(56px, 6vw, 104px) var(--m);
 }
-.progress {
-  height: 2px;
-  background: var(--rule-l);
-  margin: 0 0 40px;
+.day-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px var(--gap);
+  align-items: end;
+}
+.day-head p {
+  max-width: 34ch;
+  font-size: var(--t-m);
+  line-height: 1.5;
+  color: var(--light-muted);
+  text-wrap: pretty;
+}
+.day .f,
+.day .pics figure {
+  display: block;
+  overflow: hidden;
+}
+.day .pics figure {
+  position: relative;
+  height: 100%;
+}
+.day .pics picture {
+  display: contents;
+}
+.day .tl img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--p, 50% 50%);
+  scale: var(--z, 1);
+  transform-origin: var(--p, 50% 50%);
+}
+/* taken, not delivered yet */
+.day .hist .f:not(.pick) img {
+  filter: grayscale(1) contrast(0.92);
+}
+.day .hist .pick {
   position: relative;
 }
-.progress i {
+.day .hist .pick::after {
+  content: '';
   position: absolute;
   inset: 0;
-  background: var(--light-ink);
-  transform-origin: left;
-  transform: scaleX(1);
+  border: 3px solid var(--accent);
+  opacity: var(--k, 1);
 }
-.steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--gap);
+/* empty slots wait for their moment */
+.day .f,
+.day .slot {
+  background: var(--light-2);
 }
-.step {
-  display: grid;
-  gap: 14px;
-  align-content: start;
-}
-/* With motion the steps light up one by one as the section scrolls (choreo.ts): the progress line fills and the
-   step marker turns coral. The text itself is never dimmed, it keeps its full contrast (HM-05). */
-.step .no {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-/* the diamond is a square turned by 45°: a clip-path diamond cut its own border down to four corner dots.
-   7 px plus 1.5 px each side keep the 10 px footprint of the band's diamonds */
-.step .no::before {
-  content: '';
-  flex: none;
-  width: 7px;
-  height: 7px;
-  margin-inline: 1.5px;
-  border: 1px solid var(--light-ink);
-  transform: rotate(45deg);
-  background: transparent;
-  transition:
-    background 0.3s,
-    border-color 0.3s;
-}
-.step.is-on .no::before {
-  background: var(--accent);
-  border-color: var(--accent);
-}
-.step h3 {
+.day .txt h3 {
   font-weight: 600;
-  font-size: clamp(24px, 2vw, 32px);
-  letter-spacing: -0.025em;
-  line-height: 1.15;
+  font-size: clamp(18px, 1.2vw, 23px);
+  line-height: 1.3;
+  letter-spacing: -0.015em;
 }
-.step p {
+.day .txt .when {
+  display: block;
+  margin-bottom: 8px;
+  font-size: clamp(26px, 2.3vw, 42px);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+.day .txt p {
+  margin-top: 6px;
+  max-width: 36ch;
+  font-size: clamp(16px, 1vw, 19px);
+  line-height: 1.5;
   color: var(--light-muted);
-  max-width: 34ch;
+  text-wrap: pretty;
 }
-.step .dph {
-  width: min(168px, 52%);
-  aspect-ratio: 9 / 16;
-  margin-top: 8px;
+.day .tl .tag {
+  color: var(--accent-ink);
+  background: var(--accent);
+  white-space: nowrap;
+  font-size: clamp(13px, 0.92vw, 17px);
+  letter-spacing: 0.04em;
 }
-@media (max-width: 900px) {
-  .steps {
+.day .all .tag {
+  color: var(--light);
+  background: var(--light-ink);
+}
+/* the coral of the tag as it grows (is-live), otherwise the tag itself is coral */
+.day .fill {
+  display: none;
+}
+/* days dissolve into the gallery; whole cells only, so no diamond is cut */
+.day .dust {
+  container-type: size;
+  display: grid;
+  align-items: end;
+}
+.day .dust::before {
+  content: '';
+  height: 100%;
+  background: var(--light-ink);
+}
+.day .btn:focus-visible {
+  outline-offset: 4px;
+}
+
+/* ---------- horizontal axis ---------- */
+@media (min-width: 961px) {
+  .day .stage {
+    --h: clamp(250px, 100vh - 480px, 640px);
+  }
+  .day .axis {
+    position: relative;
+    margin-top: clamp(28px, 3.4vw, 56px);
+  }
+  .day .tl {
+    display: grid;
+    grid-template-columns: minmax(0, 25fr) minmax(10px, 1.4fr) minmax(234px, 22fr) minmax(0, 28fr) minmax(0, 24fr);
+    grid-template-rows: var(--h) var(--band) auto;
+  }
+  /* the axis itself: before the event, through the days, out of the page */
+  .day .axis::before,
+  .day .run {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    top: var(--h);
+    left: calc(-1 * var(--m));
+    right: calc(-1 * var(--m));
+    height: 2px;
+    background: var(--light-ink);
+    transform-origin: left;
+  }
+  .day .axis::before {
+    background: var(--rule-l);
+  }
+  .day .stop {
+    display: grid;
+    grid-row: 1 / -1;
+    grid-template-rows: subgrid;
+    min-width: 0;
+  }
+  .day .ev {
+    grid-column: 1;
+  }
+  .day .same {
+    grid-column: 3 / 5;
+    grid-template-columns: subgrid;
+  }
+  .day .all {
+    grid-column: 5;
+  }
+  .day .txt {
+    grid-row: 3;
+    grid-column: 1;
+    padding: 22px 20px 0 0;
+  }
+  .day .all .txt {
+    padding-right: 0;
+  }
+  .day .hist,
+  .day .pics,
+  .day .wall {
+    grid-row: 1;
+    grid-column: 1;
+    min-height: 0;
+  }
+  .day .band {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  /* event: a unit chart of frames, one column = one moment */
+  .day .hist {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--g);
+    padding-bottom: var(--g);
+  }
+  .day .hist .col {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--g);
+    min-height: 0;
+  }
+  .day .hist .f {
+    height: calc((var(--h) - 9 * var(--g)) / 9);
+    flex: none;
+  }
+  .day .hours {
+    background: linear-gradient(90deg, var(--light-ink) 1px, transparent 1px) 0 0 / calc((100% - 1px) / 24) 9px repeat-x,
+      linear-gradient(90deg, var(--light-ink) 1px, transparent 1px) 0 0 / calc((100% - 1px) / 6) 18px repeat-x;
+  }
+
+  .day .pics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: minmax(0, 1.62fr) minmax(0, 1fr);
+    gap: 4px;
+    padding-bottom: 4px;
+  }
+  .day .wide,
+  .day .half,
+  .day .only {
+    grid-column: 1 / -1;
+  }
+  .day .pics:has(.half) {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+  .day .pics:has(.only) {
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .day .slot {
+    min-height: 0;
+  }
+  .day .tag {
+    display: flex;
+    align-items: center;
+    padding-inline: 12px;
+    z-index: 2;
+  }
+
+  /* the wait: three days, true to each other */
+  .day .gap {
+    display: grid;
+    grid-column: 2;
+    grid-row: 1 / -1;
+    grid-template-rows: subgrid;
+  }
+  .day .gap .band {
+    position: relative;
+  }
+  .day .days i {
+    position: absolute;
+    top: 0;
+    left: calc(100% / 3);
+    height: 100%;
+    padding: calc(var(--band) / 2 - 9px) 0 0 12px;
+    border-left: 1px solid var(--light-ink);
+    font: 400 clamp(13px, 0.92vw, 17px) / 22px var(--f-mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--light-muted);
+  }
+  .day .days i + i {
+    left: calc(200% / 3);
+  }
+  .day .days i::before,
+  .day .marks i::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: -7.5px;
+    width: 14px;
+    height: 14px;
+    background: var(--light-ink);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    z-index: 2;
+  }
+  .day .dust {
+    grid-row: 1;
+  }
+  .day .dust::before {
+    height: round(down, 100cqh, 2.5cqw);
+    -webkit-mask: var(--dust-x) left bottom / 100% auto repeat-y;
+    mask: var(--dust-x) left bottom / 100% auto repeat-y;
+  }
+  .day .gap .btn {
+    grid-row: 3;
+    align-self: start;
+    justify-self: start;
+    margin-top: 22px;
+    white-space: nowrap;
+  }
+
+  .day .wall {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: repeat(8, minmax(0, 1fr));
+    gap: var(--g);
+    padding-bottom: var(--g);
+    margin-right: calc(-1 * var(--m));
+  }
+  .day .all .tag {
+    position: relative;
+    margin-right: calc(-1 * var(--m));
+  }
+  /* days 4 and 5, at the same distance as the days before */
+  .day .marks i {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc((100% - var(--m)) * 0.3889);
+  }
+  .day .marks i + i {
+    left: calc((100% - var(--m)) * 0.7778);
+  }
+  .day .marks i::before {
+    top: calc(var(--band) / 2 - 7px);
+    left: -7px;
+    background: var(--light);
+  }
+  .day .marks b {
+    position: absolute;
+    left: 18px;
+    font: inherit;
+    font-style: normal;
+    line-height: var(--band);
+  }
+}
+@media (min-width: 961px) and (max-width: 1240px) {
+  .day .gap .btn {
+    padding: 0 16px 0 18px;
+    gap: 12px;
+    font-size: 15px;
+  }
+}
+@media (min-width: 961px) and (max-width: 1120px) {
+  .day .gap .btn {
+    padding: 0 12px;
+    gap: 8px;
+    font-size: 14px;
+  }
+  /* room for the mark of day 4 */
+  .day .tl .all .tag {
+    padding-inline: 5px;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Sticky stage: the page waits while the days pass, no pin. The 70vh run is reserved from the first paint whenever the
+   motion layer is expected, and .is-live keeps it once the layer runs (html.reveal-fallback comes after 3 s in any
+   case). Without motion, or when the layer comes after the safety net, there is no stage and no run. */
+@media (min-width: 961px) and (min-height: 760px) and (prefers-reduced-motion: no-preference) {
+  html.motion:not(.reveal-fallback) .day,
+  .day.is-live {
+    padding-block: 0;
+    height: 170vh;
+  }
+  html.motion:not(.reveal-fallback) .day .stage,
+  .day.is-live .stage {
+    position: sticky;
+    top: 0;
+    min-height: 100vh;
+    display: grid;
+    align-content: center;
+    padding-block: 84px 28px;
+  }
+}
+
+/* ---------- vertical axis ---------- */
+@media (max-width: 960px) {
+  .day-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .day .axis {
+    position: relative;
+    margin-top: 40px;
+  }
+  .day .axis::before,
+  .day .run {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    top: -16px;
+    bottom: 0;
+    width: 2px;
+    background: var(--light-ink);
+    transform-origin: top;
+  }
+  .day .axis::before {
+    background: var(--rule-l);
+  }
+  .day .stop {
+    position: relative;
+    padding-left: 44px;
+  }
+  .day .band {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 28px;
+  }
+  .day .ev {
+    padding-bottom: 22px;
+  }
+  .day .hours {
+    bottom: 22px;
+    background: linear-gradient(var(--light-ink) 1px, transparent 1px) 0 0 / 8px calc((100% - 1px) / 24) repeat-y,
+      linear-gradient(var(--light-ink) 1px, transparent 1px) 0 0 / 16px calc((100% - 1px) / 6) repeat-y;
+  }
+  .day .txt {
+    margin-bottom: 18px;
+  }
+  .day .hist {
+    display: grid;
+    gap: var(--g);
+    margin-right: calc(-1 * var(--m));
+  }
+  .day .hist .col {
+    display: flex;
+    gap: var(--g);
+  }
+  .day .hist .f {
+    flex: none;
+    width: calc((100% - 8 * var(--g)) / 9);
+    aspect-ratio: 3 / 2;
+  }
+  .day .stop .tag {
+    position: relative;
+    z-index: 2;
+    width: max-content;
+    height: 40px;
+    margin: 0 0 16px -44px;
+    padding: 0 14px 0 44px;
+    display: flex;
+    align-items: center;
+  }
+  .day .same,
+  .day .all {
+    display: flex;
+    flex-direction: column;
+  }
+  .day .same .tag,
+  .day .all .tag {
+    order: -1;
+  }
+  .day .same .tag {
+    margin-bottom: 18px;
+  }
+  /* the moment and the delivery as lengths on the axis */
+  .day .same::before,
+  .day .all::before {
+    content: '';
+    position: absolute;
+    z-index: 2;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 28px;
+    background: var(--light-ink);
+    transform-origin: top;
+  }
+  .day .same::before {
+    bottom: 330px;
+    background: var(--accent);
+  }
+  .day .pics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin-right: calc(-1 * var(--m));
+  }
+  .day .slot {
+    grid-column: 1 / -1;
+    aspect-ratio: 16 / 9;
+  }
+  .day .tall {
+    grid-column: auto;
+    aspect-ratio: 9 / 14;
+  }
+  .day .only {
+    aspect-ratio: 4 / 5;
+  }
+  .day .gap {
+    position: relative;
+    height: 330px;
+    margin-left: -44px;
+    padding: 24px 0 0 44px;
+  }
+  .day .days {
+    width: 100%;
+  }
+  .day .days i {
+    position: absolute;
+    left: 0;
+    top: 33.33%;
+    padding: 10px 0 0 44px;
+    border-top: 1px solid var(--light-ink);
+    font: 400 13px/1 var(--f-mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--light-muted);
+  }
+  .day .days i + i {
+    top: 66.66%;
+  }
+  .day .days i::before,
+  .day .marks i::before {
+    content: '';
+    position: absolute;
+    top: -7.5px;
+    left: -6px;
+    width: 14px;
+    height: 14px;
+    background: var(--light-ink);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    z-index: 2;
+  }
+  .day .dust {
+    position: absolute;
+    inset: 0 calc(-1 * var(--m)) 0 116px;
+  }
+  .day .dust::before {
+    -webkit-mask: var(--dust-y) left bottom / auto 100% repeat-x;
+    mask: var(--dust-y) left bottom / auto 100% repeat-x;
+  }
+  .day .gap .btn {
+    z-index: 1;
+  }
+  .day .marks b {
+    display: none;
+  }
+  .day .marks i {
+    position: absolute;
+    top: 110px;
+    left: 0;
+  }
+  .day .marks i::before {
+    left: 7px;
+    background: var(--light);
+  }
+  .day .marks i + i {
+    top: 220px;
+  }
+  .day .all .tag {
+    margin-bottom: 18px;
+  }
+  .day .wall {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--g);
+    margin-right: calc(-1 * var(--m));
+  }
+  .day .wall .f {
+    aspect-ratio: 3 / 2;
+  }
+}
+
+/* ---------- time passing (day.ts) ---------- */
+@media (min-width: 961px) {
+  .day.is-live .same .tag {
+    position: relative;
+    isolation: isolate;
+    background: var(--rule-l);
+  }
+  .day.is-live .fill {
+    display: block;
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: var(--accent);
+    transform-origin: left;
+  }
+  /* the picks fly over the chart and the axis */
+  .day.is-live .pics {
+    position: relative;
+    z-index: 3;
+  }
+}
+/* tablet: same vertical axis, the delivery in one row */
+@media (min-width: 600px) and (max-width: 960px) {
+  .day .pics:has(.tall) {
+    grid-template-columns: 1fr 1fr 2.4fr;
+  }
+  .day .pics:has(.only) {
     grid-template-columns: 1fr;
   }
-}
-/* The scroll run of the pinned steps (choreo.ts sameDay: 1.1 viewport heights, start.ts DAY_PIN), reserved from the
-   first paint whenever the motion layer is expected, so nothing below moves when the pin starts and links to the
-   sections below land where they should. Once the motion layer runs, html.day-pin holds it while the pin exists.
-   Without motion, or after the safety net when the motion layer starts later, there is no pin and no run.
-   On the light wrapper rather than as a margin of .day: a margin would collapse through the wrapper and show the
-   night background under the pinned steps. `:has(.day)`, not `> .day`: the pin moves .day into a spacer. */
-@media (min-width: 901px) and (min-height: 840px) and (prefers-reduced-motion: no-preference) {
-  html.motion:not(.reveal-fallback) .light:has(.day),
-  html.day-pin .light:has(.day) {
-    padding-bottom: 110vh;
+  .day .slot:nth-child(n) {
+    grid-column: auto;
+    aspect-ratio: auto;
+    height: clamp(230px, 40vw, 360px);
   }
+  .day .wall {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+  .day .hist {
+    max-width: 560px;
+  }
+}
+
+/* The days dissolve into the gallery: ordered (Bayer) density, whole diamonds on a grid of 10, as masks. */
+.day {
+  --dust-x:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 80'%3E%3Cpath d='M205 0l5 5-5 5-5-5zM205 40l5 5-5 5-5-5zM225 20l5 5-5 5-5-5zM225 60l5 5-5 5-5-5zM245 0l5 5-5 5-5-5zM245 40l5 5-5 5-5-5zM265 0l5 5-5 5-5-5zM265 20l5 5-5 5-5-5zM265 40l5 5-5 5-5-5zM265 60l5 5-5 5-5-5zM285 0l5 5-5 5-5-5zM285 20l5 5-5 5-5-5zM285 40l5 5-5 5-5-5zM285 60l5 5-5 5-5-5zM295 10l5 5-5 5-5-5zM295 50l5 5-5 5-5-5zM305 0l5 5-5 5-5-5zM305 20l5 5-5 5-5-5zM305 40l5 5-5 5-5-5zM305 60l5 5-5 5-5-5zM315 10l5 5-5 5-5-5zM315 30l5 5-5 5-5-5zM315 50l5 5-5 5-5-5zM315 70l5 5-5 5-5-5zM325 0l5 5-5 5-5-5zM325 20l5 5-5 5-5-5zM325 40l5 5-5 5-5-5zM325 60l5 5-5 5-5-5zM335 0l5 5-5 5-5-5zM335 10l5 5-5 5-5-5zM335 30l5 5-5 5-5-5zM335 40l5 5-5 5-5-5zM335 50l5 5-5 5-5-5zM335 70l5 5-5 5-5-5zM345 0l5 5-5 5-5-5zM345 20l5 5-5 5-5-5zM345 40l5 5-5 5-5-5zM345 60l5 5-5 5-5-5zM355 0l5 5-5 5-5-5zM355 10l5 5-5 5-5-5zM355 20l5 5-5 5-5-5zM355 30l5 5-5 5-5-5zM355 40l5 5-5 5-5-5zM355 50l5 5-5 5-5-5zM355 60l5 5-5 5-5-5zM355 70l5 5-5 5-5-5zM365 0l5 5-5 5-5-5zM365 10l5 5-5 5-5-5zM365 20l5 5-5 5-5-5zM365 40l5 5-5 5-5-5zM365 50l5 5-5 5-5-5zM365 60l5 5-5 5-5-5zM375 0l5 5-5 5-5-5zM375 10l5 5-5 5-5-5zM375 20l5 5-5 5-5-5zM375 30l5 5-5 5-5-5zM375 40l5 5-5 5-5-5zM375 50l5 5-5 5-5-5zM375 60l5 5-5 5-5-5zM375 70l5 5-5 5-5-5zM385 0l5 5-5 5-5-5zM385 10l5 5-5 5-5-5zM385 20l5 5-5 5-5-5zM385 30l5 5-5 5-5-5zM385 40l5 5-5 5-5-5zM385 50l5 5-5 5-5-5zM385 60l5 5-5 5-5-5zM385 70l5 5-5 5-5-5zM395 0l5 5-5 5-5-5zM395 10l5 5-5 5-5-5zM395 20l5 5-5 5-5-5zM395 30l5 5-5 5-5-5zM395 40l5 5-5 5-5-5zM395 50l5 5-5 5-5-5zM395 60l5 5-5 5-5-5zM395 70l5 5-5 5-5-5z'/%3E%3C/svg%3E");
+  --dust-y:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 400'%3E%3Cpath d='M5 200l5 5-5 5-5-5zM45 200l5 5-5 5-5-5zM25 220l5 5-5 5-5-5zM65 220l5 5-5 5-5-5zM5 240l5 5-5 5-5-5zM45 240l5 5-5 5-5-5zM5 260l5 5-5 5-5-5zM25 260l5 5-5 5-5-5zM45 260l5 5-5 5-5-5zM65 260l5 5-5 5-5-5zM5 280l5 5-5 5-5-5zM25 280l5 5-5 5-5-5zM45 280l5 5-5 5-5-5zM65 280l5 5-5 5-5-5zM15 290l5 5-5 5-5-5zM55 290l5 5-5 5-5-5zM5 300l5 5-5 5-5-5zM25 300l5 5-5 5-5-5zM45 300l5 5-5 5-5-5zM65 300l5 5-5 5-5-5zM15 310l5 5-5 5-5-5zM35 310l5 5-5 5-5-5zM55 310l5 5-5 5-5-5zM75 310l5 5-5 5-5-5zM5 320l5 5-5 5-5-5zM25 320l5 5-5 5-5-5zM45 320l5 5-5 5-5-5zM65 320l5 5-5 5-5-5zM5 330l5 5-5 5-5-5zM15 330l5 5-5 5-5-5zM35 330l5 5-5 5-5-5zM45 330l5 5-5 5-5-5zM55 330l5 5-5 5-5-5zM75 330l5 5-5 5-5-5zM5 340l5 5-5 5-5-5zM25 340l5 5-5 5-5-5zM45 340l5 5-5 5-5-5zM65 340l5 5-5 5-5-5zM5 350l5 5-5 5-5-5zM15 350l5 5-5 5-5-5zM25 350l5 5-5 5-5-5zM35 350l5 5-5 5-5-5zM45 350l5 5-5 5-5-5zM55 350l5 5-5 5-5-5zM65 350l5 5-5 5-5-5zM75 350l5 5-5 5-5-5zM5 360l5 5-5 5-5-5zM15 360l5 5-5 5-5-5zM25 360l5 5-5 5-5-5zM45 360l5 5-5 5-5-5zM55 360l5 5-5 5-5-5zM65 360l5 5-5 5-5-5zM5 370l5 5-5 5-5-5zM15 370l5 5-5 5-5-5zM25 370l5 5-5 5-5-5zM35 370l5 5-5 5-5-5zM45 370l5 5-5 5-5-5zM55 370l5 5-5 5-5-5zM65 370l5 5-5 5-5-5zM75 370l5 5-5 5-5-5zM5 380l5 5-5 5-5-5zM15 380l5 5-5 5-5-5zM25 380l5 5-5 5-5-5zM35 380l5 5-5 5-5-5zM45 380l5 5-5 5-5-5zM55 380l5 5-5 5-5-5zM65 380l5 5-5 5-5-5zM75 380l5 5-5 5-5-5zM5 390l5 5-5 5-5-5zM15 390l5 5-5 5-5-5zM25 390l5 5-5 5-5-5zM35 390l5 5-5 5-5-5zM45 390l5 5-5 5-5-5zM55 390l5 5-5 5-5-5zM65 390l5 5-5 5-5-5zM75 390l5 5-5 5-5-5z'/%3E%3C/svg%3E");
 }

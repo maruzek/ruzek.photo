@@ -37,11 +37,15 @@ describe('buildJsonLd', () => {
     });
   }
 
-  it('event and match start at 1 500 CZK', () => {
+  it('only event, sport and portrait have price offers', () => {
+    expect(offers('cs').map((o) => o['sku'])).toEqual(['event', 'sport', 'portrait']);
+  });
+
+  it('event and sport start at 1 500 CZK', () => {
     const min = (id: string): unknown =>
       (offers('cs').find((o) => o['sku'] === id)?.['priceSpecification'] as Node)['minPrice'];
     expect(min('event')).toBe(1500);
-    expect(min('match')).toBe(1500);
+    expect(min('sport')).toBe(1500);
   });
 
   it('leaves out the address while the seat is unknown', () => {

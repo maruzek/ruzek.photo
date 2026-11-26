@@ -18,19 +18,11 @@
   gap: 24px;
   max-width: 58ch;
 }
-.about .txt .eyebrow {
-  margin: 0;
-  color: var(--muted);
-}
 .about .txt p {
   color: var(--muted);
   font-size: var(--t-m);
   line-height: 1.6;
   text-wrap: pretty;
-}
-.about .txt p strong {
-  color: var(--ink);
-  font-weight: 500;
 }
 .facts {
   display: grid;

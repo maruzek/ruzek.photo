@@ -19,6 +19,85 @@ test('the hero photo loads first and is not held back by the ASCII canvas', asyn
   await expect(img).toBeVisible();
 });
 
+test('the hero ASCII canvas samples the same horizontal crop as the photo', async ({
+  page,
+}, testInfo) => {
+  await page.addInitScript(() => {
+    const draw = CanvasRenderingContext2D.prototype.drawImage;
+    CanvasRenderingContext2D.prototype.drawImage = new Proxy(draw, {
+      apply(target, receiver: CanvasRenderingContext2D, args: unknown[]) {
+        // the sampler draws a small copy of the photo (an ImageBitmap), so the crop is compared as a fraction
+        const [source, cropX] = args;
+        const width =
+          source instanceof ImageBitmap
+            ? source.width
+            : source instanceof HTMLImageElement && source.closest('.hero')
+              ? source.naturalWidth
+              : 0;
+        const photo = document.querySelector<HTMLImageElement>('.hero .media img');
+        if (args.length === 9 && width && photo)
+          photo.dataset['sampledCropX'] = String((Number(cropX) / width) * photo.naturalWidth);
+        Reflect.apply(target, receiver, args);
+      },
+    });
+  });
+  await page.goto('/');
+  const photo = page.locator('.hero .media img');
+  await expect(photo).toHaveAttribute('data-sampled-crop-x', /\d/);
+  const { sampled, rendered, faceInCrop } = await photo.evaluate((img: HTMLImageElement) => {
+    const { width, height } = img.getBoundingClientRect();
+    const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
+    const position = parseFloat(getComputedStyle(img).objectPosition) / 100;
+    return {
+      sampled: Number(img.dataset['sampledCropX']),
+      rendered: (img.naturalWidth - width / scale) * position,
+      faceInCrop: ((img.naturalWidth * 0.69 - Number(img.dataset['sampledCropX'])) * scale) / width,
+    };
+  });
+  expect(sampled).toBeCloseTo(rendered, 0); // within half a photo pixel: the small copy rounds its own size
+  if (testInfo.project.name === 'mobile-360') {
+    expect(faceInCrop).toBeGreaterThan(0.68);
+    expect(faceInCrop).toBeLessThan(0.88);
+  }
+});
+
+test('mobile crops show the dancer beside the title and centre the speaker, with the desktop crop unchanged', async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const mobile = testInfo.project.name === 'mobile-360';
+  await page.goto('/');
+  for (const width of mobile ? [360, 390] : [1440]) {
+    await page.setViewportSize({ width, height: mobile ? 780 : 900 });
+    // The approximate horizontal centre of each face, measured on the source photos.
+    for (const [selector, face, min, max] of [
+      ['.hero .media img', 0.69, 0.68, 0.88],
+      ['.fold img', 0.38, 0.32, 0.68],
+    ] as const) {
+      const photo = page.locator(selector).first();
+      await photo.scrollIntoViewIfNeeded();
+      await expect
+        .poll(() => photo.evaluate((img: HTMLImageElement) => img.naturalWidth))
+        .toBeGreaterThan(0);
+      const { position, faceInCrop } = await photo.evaluate((img: HTMLImageElement, faceX) => {
+        const { width, height } = img.getBoundingClientRect();
+        const coverWidth = Math.max(width, (height * img.naturalWidth) / img.naturalHeight);
+        const position = parseFloat(getComputedStyle(img).objectPosition) / 100;
+        return {
+          position,
+          faceInCrop: (coverWidth * faceX - (coverWidth - width) * position) / width,
+        };
+      }, face);
+      if (mobile) {
+        expect(faceInCrop).toBeGreaterThan(min);
+        expect(faceInCrop).toBeLessThan(max);
+      } else {
+        expect(position).toBe(0.5);
+      }
+    }
+  }
+});
+
 test('reduced motion: dither and ASCII canvases hidden, wipes painted statically', async ({
   page,
 }) => {
@@ -68,6 +147,38 @@ test('motion: dither canvases draw while in view', async ({ page }) => {
     document.querySelector('canvas.dwipe')?.scrollIntoView({ block: 'center' }),
   );
   await expect(page.locator('canvas.dwipe').first()).toHaveAttribute('data-painted', 'live');
+});
+
+test('the final transition finishes at the end of a tall desktop page', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'the short footer leaves the trigger out of reach on tall desktop viewports');
+  await page.setViewportSize({ width: 2560, height: 1440 });
+  await page.goto('/');
+  await page.waitForFunction(() => document.documentElement.dataset['motion'] === 'on');
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  const wipe = page.locator('canvas.dwipe').last();
+  await expect(wipe).toHaveAttribute('data-painted', 'live');
+  await expect
+    .poll(() =>
+      wipe.evaluate((canvas: HTMLCanvasElement) => {
+        const pixels = canvas
+          .getContext('2d')!
+          .getImageData(0, 0, canvas.width, canvas.height).data;
+        for (let i = 0; i < pixels.length; i += 4) {
+          if (
+            pixels[i] !== 7 ||
+            pixels[i + 1] !== 8 ||
+            pixels[i + 2] !== 11 ||
+            pixels[i + 3] !== 255
+          )
+            return false;
+        }
+        return true;
+      }),
+    )
+    .toBe(true);
 });
 
 test('on touch the lens drifts for 5 s and then stops', async ({ page }, testInfo) => {

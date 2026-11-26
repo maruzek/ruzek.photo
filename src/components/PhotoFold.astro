@@ -1,10 +1,11 @@
 ---
 import type { PublishedPhoto } from '../lib/photos/get';
 import '../styles/sections/fold.css';
+import { MOBILE_PHOTO_POSITION } from '../config/placement';
 import type { Locale } from '../i18n';
+import { coverSizes } from '../lib/photos/image';
 import DitherImage from './DitherImage.astro';
 import PlaceholderTag from './PlaceholderTag.astro';
-import Rich from './Rich.astro';
 
 interface Props {
   locale: Locale;
@@ -12,38 +13,32 @@ interface Props {
   photo: PublishedPhoto | undefined;
   /** Id of the heading; the section is labelled by it */
   id: string;
-  /** Title with `*emphasised*` words */
   title: string;
-  chips: readonly string[];
   text: string;
-  index: string;
-  indexLabel: string;
 }
 
-const { locale, photo, id, title, chips, text, index, indexLabel } = Astro.props;
+const { locale, photo, id, title, text } = Astro.props;
+// fold.css: the fold is one screen high, at least 600 px
+const FOLD_MIN_HEIGHT = 600;
 ---
 
 <section class="fold" aria-labelledby={id}>
-  {photo && <DitherImage photo={photo} locale={locale} sizes="100vw" cover="night" />}
+  {photo && (
+    <DitherImage
+      photo={photo}
+      locale={locale}
+      sizes={coverSizes(photo.data.image, FOLD_MIN_HEIGHT)}
+      mobileSizes={photo.mobile && coverSizes(photo.mobile, FOLD_MIN_HEIGHT)}
+      cover="night"
+      mobilePosition={MOBILE_PHOTO_POSITION[photo.id]}
+    />
+  )}
   {photo && (
     <div class:list={['shade', photo.data.shade === 'strong' && 'strong']} aria-hidden="true" />
   )}
   {photo?.data.placeholder && <PlaceholderTag locale={locale} />}
   <div class="note">
-    <div>
-      <h2 class="h" id={id} data-split>
-        <Rich text={title} />
-      </h2>
-      <ul class="chips">
-        {chips.map((chip) => (
-          <li>{chip}</li>
-        ))}
-      </ul>
-    </div>
+    <h2 class="h" id={id} data-split>{title}</h2>
     <p>{text}</p>
-    <div class="idx mono" aria-hidden="true">
-      <b>{index}</b>
-      {indexLabel}
-    </div>
   </div>
 </section>

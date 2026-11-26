@@ -70,8 +70,8 @@ select {
   left: 16px;
   top: -64px;
   padding: 8px 16px;
-  background: #000;
-  color: #fff;
+  background: var(--black);
+  color: var(--white);
   z-index: 100;
   text-decoration: none;
 }
@@ -119,8 +119,8 @@ select {
   top: 8px;
   left: 8px;
   font: 500 12px / 1.4 ui-monospace, SFMono-Regular, menlo, monospace;
-  background: rgb(0 0 0 / 72%);
-  color: #fff;
+  background: color-mix(in srgb, var(--black) 72%, transparent);
+  color: var(--white);
   padding: 2px 8px;
   border-radius: 4px;
   pointer-events: none;
@@ -136,7 +136,11 @@ em.s {
   font-style: italic;
   font-weight: 400;
   letter-spacing: -0.005em;
-  font-size: 1.04em;
+  font-size: 1.12em;
+}
+.label {
+  font-family: var(--f-text);
+  font-size: var(--t-xs);
 }
 .mono {
   font-family: var(--f-mono);
@@ -216,16 +220,17 @@ em.s {
 .btn:hover .tile {
   transform: translateX(4px) rotate(90deg);
 }
-.btn:active {
-  transform: translateY(1px);
+.btn:active:not(:disabled) {
+  /* The magnetic pull owns transform. The press uses an independent translate. */
+  translate: 0 2px;
 }
 .btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
 .btn:disabled {
-  background: #5a5d64;
-  color: #d3d5da;
+  background: var(--disabled-bg);
+  color: var(--disabled-ink);
   cursor: not-allowed;
 }
 .btn:disabled::before {
@@ -305,7 +310,7 @@ em.s {
    .reveal-fallback after 3 s (counted from navigation) and everything shows. The motion layer (task 8) skips
    entrance animations when it finds .reveal-fallback already set. */
 html.motion:not(.motion-ready, .reveal-fallback)
-  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .kick > *, .hero .row > :not(p)) {
+  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .row > :not(p)) {
   opacity: 0;
   /* second safety net (issue E-04): should the inline timer never run, the stylesheet itself reveals at 4 s */
   animation: reveal-safety 0.01s 4s forwards;
@@ -313,7 +318,7 @@ html.motion:not(.motion-ready, .reveal-fallback)
 /* Behind the entry loader the stylesheet's own net starts counting only once the curtain is gone, so it never
    reveals a heading that the motion layer, starting at the hand-over, hides again for its entrance */
 html.motion.ldr-on:not(.motion-ready, .reveal-fallback)
-  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .kick > *, .hero .row > :not(p)) {
+  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .row > :not(p)) {
   animation: none;
 }
 @keyframes reveal-safety {
@@ -323,7 +328,7 @@ html.motion.ldr-on:not(.motion-ready, .reveal-fallback)
 }
 /* Keyboard users must never land on an invisible element: anything focused (or holding focus) shows at once */
 html.motion:not(.motion-ready, .reveal-fallback)
-  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .kick > *, .hero .row > :not(p)):is(
+  :is([data-split], [data-rise], [data-stagger] > *, .hero h1, .hero .row > :not(p)):is(
     :focus-within,
     :focus-visible
   ) {
@@ -356,7 +361,7 @@ html.motion:not(.motion-ready, .reveal-fallback)
   background: var(--light);
   color: var(--light-ink);
 }
-.light .mono {
+.light :is(.label, .mono) {
   color: var(--light-muted);
 }
 .sec {

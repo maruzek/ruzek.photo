@@ -1,5 +1,5 @@
 import { z } from 'astro/zod';
-import { ADDON_IDS, SERVICE_IDS } from '../../config/pricing';
+import { ADDON_IDS, INQUIRY_TYPES } from '../../config/pricing';
 
 // Zod probes `Function('')` to decide whether it may compile validators; the CSP forbids eval, so in the browser the
 // probe only produced a securitypolicyviolation report. The interpreted validators are fast enough for one form.
@@ -27,7 +27,7 @@ export const inquirySchema = z.object({
   // trim first: z.email() alone would reject the spaces a phone keyboard adds after the address
   email: z.string().trim().max(254).pipe(z.email()),
   phone: z.string().trim().max(40).optional(),
-  service: z.enum(SERVICE_IDS),
+  service: z.enum(INQUIRY_TYPES),
   hours: z.number().int().min(1).max(12).optional(),
   date: z
     .string()

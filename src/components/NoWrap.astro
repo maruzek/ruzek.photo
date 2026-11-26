@@ -1,0 +1,19 @@
+---
+// A dictionary text with its `{range}` filled in and kept on one line: a range may otherwise break after its dash
+// ("3–|5 dnů"). The words tied to it by no-break spaces stay with it.
+import { fill } from '../i18n';
+
+interface Props {
+  text: string;
+  range: string;
+}
+
+const { text, range } = Astro.props;
+const filled = fill(text, { range });
+const at = filled.indexOf(range);
+const start = filled.lastIndexOf(' ', at) + 1;
+const space = filled.indexOf(' ', at + range.length);
+const end = space < 0 ? filled.length : space;
+---
+
+{filled.slice(0, start)}<span class="nw">{filled.slice(start, end)}</span>{filled.slice(end)}

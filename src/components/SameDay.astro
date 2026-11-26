@@ -1,58 +1,129 @@
 ---
-// "Same day": three steps. Without the motion layer every step is active; the pin and the progress line are
-// motion only (desktop).
+// "Same day" as a time axis: many photos while the event runs, a few of them the same day, then days of waiting, then
+// the whole gallery. The server render is the finished timeline, which is also the page without JavaScript and with
+// reduced motion; scripts/motion/day.ts only plays it from the start as the page scrolls. The photos come from
+// PLACEMENT.sameDay, every number from pricing.ts.
 import '../styles/sections/day.css';
 import { PLACEMENT } from '../config/placement';
-import { t, type Locale } from '../i18n';
-import { getPhoto } from '../lib/photos/get';
-import DitherImage from './DitherImage.astro';
+import { addons, services, type ServiceId } from '../config/pricing';
+import { fill, t, type Locale } from '../i18n';
+import { buildDay } from '../lib/photos/day';
+import { getPhoto, type PublishedPhoto } from '../lib/photos/get';
+import { daySizes, dayThumb, type DaySlot, type DayThumb } from '../lib/photos/image';
+import { formatCount, formatPercentRange } from '../lib/pricing/format';
+import Button from './Button.astro';
+import DayCell from './DayCell.astro';
+import NoWrap from './NoWrap.astro';
+import PhotoPicture from './PhotoPicture.astro';
 import PlaceholderTag from './PlaceholderTag.astro';
 import Rich from './Rich.astro';
-import Todo from './Todo.astro';
 
 interface Props {
   locale: Locale;
 }
 
 const { locale } = Astro.props;
-const d = t(locale).day;
-const vertical = await getPhoto(PLACEMENT.sameDay);
-const last = d.steps.length - 1;
+const { anchors, day: d } = t(locale);
+
+const delivery = (id: ServiceId) => {
+  const { photos, turnaround } = services.find((s) => s.id === id)?.deliverables ?? {};
+  if (!photos || !turnaround) throw new Error(`SameDay: pricing.ts has no delivery time for "${id}"`);
+  return { photos: formatCount(photos, locale), time: formatCount(turnaround.value, locale), last: turnaround.value.to };
+};
+const event = delivery('event');
+const sport = delivery('sport');
+const express = addons.find((a) => a.id === 'sameDay');
+const surcharge = express ? formatPercentRange(express.value, locale) : '';
+const mark = (n: number): string =>
+  fill(n === 1 ? d.marks.one : n < 5 ? d.marks.few : d.marks.many, { n });
+
+const { frames, picks } = PLACEMENT.sameDay;
+const photos = new Map<string, PublishedPhoto>();
+const thumbs = new Map<string, DayThumb>();
+for (const id of new Set([...frames.flat(), ...picks].map((f) => f.photo))) {
+  const photo = await getPhoto(id);
+  if (!photo) continue;
+  photos.set(id, photo);
+  thumbs.set(id, await dayThumb(photo.data.image));
+}
+const layout = buildDay(frames, picks, (id) => photos.get(id));
+const thumbOf = (id: string): DayThumb => thumbs.get(id) as DayThumb;
+/** Two upright photos over a wide one; with a pick withdrawn the rest are wide photos on top of each other */
+const slotOf = (i: number): DaySlot =>
+  layout.picks.length === 3 ? (i < 2 ? 'tall' : 'wide') : layout.picks.length === 2 ? 'half' : 'only';
+
+const [service, extras] = locale === 'cs' ? ['sluzba', 'doplnky'] : ['service', 'addons'];
+const href = `#${anchors.inquiry}?${service}=event&${extras}=sameDay`;
 ---
 
 <section class="day" aria-labelledby="day-h">
-  <div class="sec-head">
-    <div>
-      <span class="eyebrow mono">{d.eyebrow}</span>
-      <h2 class="h" id="day-h" data-split>
-        <Rich text={d.title} />
-      </h2>
+  <div class="stage">
+    <div class="day-head">
+      <h2 class="h" id="day-h" data-split><Rich text={d.title} /></h2>
+      <p data-rise><NoWrap text={d.lead} range={event.time} /></p>
     </div>
-    <p data-rise>{d.lead}</p>
+    <div class="axis">
+      <i class="run" aria-hidden="true"></i>
+      <ol class="tl">
+        <li class="stop ev">
+          <div class="txt">
+            <h3><span class="when">{d.event.when}</span> {d.event.title}</h3>
+            <p><NoWrap text={d.event.text} range={event.photos} /></p>
+          </div>
+          <div class="hist" aria-hidden="true">
+            {layout.columns.map((column) => (
+              <span class="col">
+                {column.map(({ id, focus, zoom, pick }) => (
+                  <DayCell thumb={thumbOf(id)} focus={focus} zoom={zoom} pick={pick ? id : undefined} />
+                ))}
+              </span>
+            ))}
+          </div>
+          <span class="band hours" aria-hidden="true"></span>
+        </li>
+        <li class="stop same">
+          <div class="txt">
+            <h3><span class="when">{d.sameDay.when}</span> {d.sameDay.title}</h3>
+            <p>{d.sameDay.text}</p>
+          </div>
+          <div class="pics">
+            {layout.picks.map(({ id, photo, focus, zoom }, i) => (
+              <div class={`slot ${slotOf(i)}`} data-pick={id}>
+                <figure style={`--p:${focus}${zoom > 1 ? `;--z:${zoom}` : ''}`}>
+                  <PhotoPicture
+                    image={photo.data.image}
+                    alt={photo.data.alt[locale]}
+                    sizes={daySizes(photo.data.image, slotOf(i), zoom)}
+                    loading="lazy"
+                  />
+                  {photo.data.placeholder && <PlaceholderTag locale={locale} />}
+                </figure>
+              </div>
+            ))}
+          </div>
+          <p class="band tag mono"><i class="fill" aria-hidden="true"></i><span>{fill(d.sameDay.tag, { range: surcharge })}</span></p>
+          <div class="gap">
+            <span class="dust" aria-hidden="true"></span>
+            {/* The layout of the days is made for a delivery in 3–5 days (pricing.ts): marks for day 1 and 2, the gallery
+                starts at day 3, its band marks 4 and 5. Another range needs new distances in day.css. */}
+            <span class="band days" aria-hidden="true"><i>{mark(1)}</i><i>{mark(2)}</i></span>
+            <Button href={href} variant="dark">{d.cta}</Button>
+          </div>
+        </li>
+        <li class="stop all">
+          <div class="txt">
+            <h3><span class="when">{fill(d.gallery.when, { range: event.time })}</span> {d.gallery.title}</h3>
+            <p><NoWrap text={d.gallery.text} range={sport.time} /></p>
+          </div>
+          <div class="wall" aria-hidden="true">
+            {layout.wall.map(({ id, focus, zoom }) => <DayCell thumb={thumbOf(id)} focus={focus} zoom={zoom} />)}
+          </div>
+          <p class="band tag mono">
+            {d.gallery.tag}
+            <span class="marks" aria-hidden="true"><i></i><i><b>{mark(event.last)}</b></i></span>
+          </p>
+        </li>
+      </ol>
+    </div>
   </div>
-  <div class="progress" aria-hidden="true">
-    <i></i>
-  </div>
-  <ol class="steps">
-    {d.steps.map((step, i) => (
-      <li class="step is-on">
-        <span class="no mono">{step.no}</span>
-        <h3>{step.title}</h3>
-        <p>
-          {step.text}
-          {i === last && (
-            <>
-              {' '}
-              <Todo>{d.galleryTodo}</Todo>.
-            </>
-          )}
-        </p>
-        {i === 1 && vertical && (
-          <DitherImage photo={vertical} locale={locale} sizes="168px" mode="stay" cover="light">
-            {vertical.data.placeholder && <PlaceholderTag locale={locale} />}
-          </DitherImage>
-        )}
-      </li>
-    ))}
-  </ol>
 </section>

@@ -13,13 +13,6 @@
 /** Widens string literals to `string` but keeps object keys and tuple lengths, so `en` must have the same shape. */
 type Widen<T> = T extends string ? string : { readonly [K in keyof T]: Widen<T[K]> };
 
-// The prototype shows one card for the short shoot and the portrait; both pricing ids point to it.
-const shortAndPortraitCard = {
-  title: 'Portrét a\u00A0krátké focení',
-  text: 'Portréty na profil, pro tým nebo řečníky. Krátké focení menší akce.',
-  priceLabel: 'Portrét / krátké focení',
-} as const;
-
 export const cs = {
   meta: {
     title: 'Fotograf akcí a sportu Praha · Martin Růžek',
@@ -49,7 +42,7 @@ export const cs = {
     work: 'Práce',
     services: 'Služby a\u00A0ceny',
     about: 'O\u00A0mně',
-    inquiry: 'Poptat focení →',
+    inquiry: 'Poptat focení',
   },
   lang: {
     // Name of the other language, written in that language (the link carries its `lang`).
@@ -57,14 +50,9 @@ export const cs = {
   },
   hero: {
     kicker: 'Fotograf akcí a\u00A0sportu',
-    places: 'Praha · Karlovy Vary',
-    scrollHint: 'Dolů',
     lead: 'Fotím firemní akce, konference, plesy a\u00A0sport. Výběr na vaše sítě máte *ještě ten den.*',
     cta: 'Poptat focení',
     ctaWork: 'Prohlédnout práci',
-    instagram: 'Instagram {handle}',
-    onPhoto: 'Na fotce:',
-    onPhotoTodo: 'kdo je na fotce',
   },
   marquee: {
     label: 'Co fotím',
@@ -84,35 +72,24 @@ export const cs = {
   },
   folds: {
     events: {
-      title: 'Akce, které *chcete* vidět znovu.',
-      chips: ['Firemní akce', 'Konference', 'Plesy', 'Večírky'],
+      title: 'Akce, které chcete vidět znovu.',
       text: 'Nehledám pózy. Fotím, co se opravdu stalo: řečníka, plný sál, přípitek i\u00A0poslední tanec.',
-      index: '01',
-      indexLabel: 'Akce',
     },
     sport: {
-      title: 'Sport je moje *vášeň.*',
-      chips: ['Fotbal', 'Florbal', 'Turnaje', 'Závody'],
-      text: 'Na hřišti se moment neopakuje.',
-      index: '02',
-      indexLabel: 'Sport',
+      title: 'Na hřišti se nic neopakuje.',
+      text: 'Fotím fotbal, florbal, turnaje a\u00A0závody.',
     },
   },
   work: {
-    eyebrow: 'Vybraná práce',
-    title: 'Okamžiky z\u00A0akcí a\u00A0*zápasů.*',
-    foot: 'Celou akci dostanete v\u00A0soukromé online galerii.',
+    title: 'Z\u00A0akcí a\u00A0zápasů, naostro.',
     footLink: 'Chci podobné fotky',
-    // A photo caption names the event; the place and date are not known yet
-    captionTodo: 'místo a\u00A0datum',
     // The category of a photo, shown with its caption in the lightbox (the sheet itself shows only the number)
     categories: { event: 'Akce', sport: 'Sport', portrait: 'Portrét' },
     /** Accessible name of the sheet of all frames, before the enlarged picks */
     sheetLabel: 'Kontaktní arch',
   },
   services: {
-    eyebrow: 'Služby a\u00A0ceny',
-    title: 'Co fotím a\u00A0*za kolik.*',
+    title: 'Co fotím a\u00A0za kolik.',
     lead: 'Ceny jsou orientační („od“), nejsem plátce DPH. Přesnou nabídku dostanete podle délky a\u00A0typu akce.',
     calcLink: 'Spočítat cenu',
     cards: {
@@ -122,23 +99,24 @@ export const cs = {
         priceLabel: 'První hodina',
         priceNote: 'každá další {price}',
       },
-      match: {
+      sport: {
         title: 'Sport',
         text: 'Fotbal, florbal, turnaje a\u00A0závody. Pro kluby, týmy i\u00A0pořadatele.',
         priceLabel: 'Zápas',
       },
-      short: shortAndPortraitCard,
-      portrait: shortAndPortraitCard,
+      portrait: {
+        title: 'Portrét',
+        text: 'Portréty na profil, pro tým nebo řečníky.',
+        priceLabel: 'Portrét',
+      },
     },
-    // What a shoot delivers, from pricing.ts (numbers come in as `{range}` / `{n}`); joined with ' · '
+    // What a shoot delivers, from pricing.ts (numbers come in as `{range}`); joined with ' · '
     deliverables: {
       photos: '{range}\u00A0fotek',
       photosPerHour: '{range}\u00A0fotek za hodinu',
       turnaroundDays: 'dodání za\u00A0{range}\u00A0dnů',
       turnaroundHours: 'dodání do\u00A0{range}\u00A0h',
       durationMin: '{range}\u00A0min',
-      durationMaxHours: 'focení do\u00A0{n}\u00A0h',
-      durationMaxMinutes: 'focení do\u00A0{n}\u00A0min',
     },
     addons: {
       sameDay: { label: 'Výběr na sítě ještě ten den', note: 'Expres' },
@@ -146,33 +124,32 @@ export const cs = {
     },
   },
   day: {
-    eyebrow: 'Postup',
-    title: 'Výběr na sítě *ještě* ten den.',
-    lead: 'Zatímco hosté odcházejí, vybírám fotky. Na sítích jsou dřív, než akce vychladne.',
-    steps: [
-      {
-        no: '01 · Během akce',
-        title: 'Fotím, co se děje',
-        text: 'Řečníci, hosté, detaily.',
-      },
-      {
-        no: '02 · Hned po akci',
-        title: 'Vybírám to nejsilnější',
-        text: 'Z\u00A0celého dne vyberu snímky pro sítě. Na přání přidám videa na výšku.',
-      },
-      {
-        no: '03 · Ještě ten den',
-        title: 'Posílám výběr',
-        // Followed by <Todo>{galleryTodo}</Todo> and a full stop.
-        text: 'Celou galerii dodám',
-      },
-    ],
-    galleryTodo: 'termín',
+    title: 'Výběr na\u00A0sítě *ještě\u00A0ten\u00A0den*.',
+    lead: 'Nejsilnější fotky dostanete ještě ten den, celou galerii za\u00A0{range}\u00A0dnů.',
+    // The stops of the time axis. Every number comes in from pricing.ts as `{range}`.
+    event: {
+      when: 'Během akce',
+      title: 'Fotím, co\u00A0se\u00A0děje',
+      text: 'Počítejte zhruba s\u00A0{range}\u00A0fotkami za\u00A0hodinu.',
+    },
+    sameDay: {
+      when: 'Ještě ten den',
+      title: 'Výběr na\u00A0sítě',
+      text: 'Hned po\u00A0akci vyberu nejsilnější snímky a\u00A0pošlu vám je, dokud se o\u00A0akci mluví.',
+      tag: 'Expres, +{range} k\u00A0ceně',
+    },
+    gallery: {
+      when: 'Za\u00A0{range}\u00A0dnů',
+      title: 'Celá galerie',
+      text: 'Všechny upravené fotky v\u00A0online galerii. Zápasy a\u00A0turnaje do\u00A0{range}\u00A0hodin.',
+      tag: 'V\u00A0ceně',
+    },
+    // Day marks on the axis: the plural of 1, of 2–4 and of 5 and more
+    marks: { one: '{n}\u00A0den', few: '{n}\u00A0dny', many: '{n}\u00A0dnů' },
+    cta: 'Chci výběr ještě ten den',
   },
   about: {
-    eyebrow: 'O\u00A0mně',
-    title: 'Jsem Martin. Fotím lidi v\u00A0*pohybu.*',
-    lead: 'Fotím akce a\u00A0sport v\u00A0Praze a\u00A0Karlových Varech.',
+    title: 'Jsem Martin. Fotím *lidi v\u00A0pohybu*.',
     storyTodo: 'Martinův vlastní příběh, jak se k\u00A0focení dostal',
     portraitAlt: 'Zástupný portrét, místo pro Martinovu fotku',
     portraitTodo: 'Martinův portrét',
@@ -182,12 +159,12 @@ export const cs = {
     },
   },
   inquiry: {
-    eyebrow: 'Poptávka',
-    title: 'Kdy je *vaše* akce?',
+    title: 'Kdy je vaše akce?',
     lead: 'Napište datum, místo a\u00A0typ akce. Odpovím s\u00A0cenou a\u00A0potvrdím, jestli mám volno.',
     estimate: {
       label: 'Orientačně od',
       note: 'Podle vybraných možností.',
+      individual: 'Cena individuálně',
     },
     direct: {
       label: 'Radši napřímo',
@@ -212,9 +189,9 @@ export const cs = {
         label: 'Co fotíme',
         options: {
           event: 'Akce',
-          match: 'Zápas',
-          short: 'Krátké focení',
+          sport: 'Sport',
           portrait: 'Portrét',
+          other: 'Jiné',
         },
       },
       hours: { label: 'Délka akce (hodiny)' },
@@ -222,12 +199,13 @@ export const cs = {
       hoursLess: 'Ubrat hodinu',
       hoursMore: 'Přidat hodinu',
       groups: { contact: 'Kontakt', event: 'Akce', extras: 'Doplňky a\u00A0poznámka' },
-      optional: '(nepovinné)',
+      required: 'Stačí vyplnit jméno a\u00A0e-mail.',
       date: { label: 'Datum' },
       place: { label: 'Místo', placeholder: 'Praha, Karlovy Vary…' },
       note: {
         label: 'Co mám vědět',
         placeholder: 'Program, na čem vám nejvíc záleží',
+        otherHelp: 'Můžete stručně popsat, co potřebujete nafotit.',
       },
       send: 'Odeslat poptávku',
       sending: 'Odesílám…',
@@ -294,7 +272,7 @@ export const cs = {
     lead: 'Máte akci nebo zápas? Napište mi, co chcete nafotit.',
     cta: 'Poptat focení',
     shoot: { label: 'Fotím', value: 'Akce, sport, portréty' },
-    where: { label: 'Kde', value: 'Praha · Karlovy Vary' },
+    where: { label: 'Kde', value: 'Praha a\u00A0Karlovy Vary' },
     instagram: { label: 'Instagram' },
     contact: { label: 'Kontakt', phoneTodo: 'telefon' },
     legal: {
@@ -418,6 +396,8 @@ export const cs = {
     prev: 'Předchozí fotka',
     next: 'Další fotka',
     counter: '{n} / {total}',
+    loading: 'Načítám fotku…',
+    unavailable: 'Fotku se nepodařilo načíst.',
   },
 } as const;
 

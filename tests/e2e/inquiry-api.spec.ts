@@ -6,12 +6,19 @@ import { test, expect } from './fixtures';
 // Desktop project only (mobile-360 sets isMobile): the endpoint is rate limited to 5 requests per IP and minute (wrangler.jsonc).
 test.skip(({ isMobile }) => isMobile, 'runs once (desktop), not per viewport');
 
-// unique per run, so the rows of this run can be counted in the persisted local D1
+// unique per run, so this run can find its rows in the persisted local D1
 const run = randomUUID().slice(0, 8);
 const email = (tag: string): string => `test-${run}-${tag}@example.com`;
 
-/** Rows in the preview's local D1 (the same .wrangler/state as wrangler dev) with this e-mail. */
-function stored(address: string): number {
+interface StoredInquiry {
+  service: string;
+  estimate_from: number | null;
+  estimate_to: number | null;
+}
+
+/** Rows with this e-mail in the same local D1 as the preview. */
+function stored(address: string): StoredInquiry[] {
+  const persistence = process.env['E2E_PERSIST_TO'];
   const out = execFileSync(
     'pnpm',
     [
@@ -21,15 +28,16 @@ function stored(address: string): number {
       'execute',
       'ruzek-inquiries',
       '--local',
+      ...(persistence ? ['--persist-to', persistence] : []),
       '-c',
       'wrangler.jsonc',
       '--json',
       '--command',
-      `SELECT count(*) AS n FROM inquiries WHERE email = '${address}'`,
+      `SELECT service, estimate_from, estimate_to FROM inquiries WHERE email = '${address}'`,
     ],
     { encoding: 'utf8' },
   );
-  return (JSON.parse(out) as { results: { n: number }[] }[])[0]!.results[0]!.n;
+  return (JSON.parse(out) as { results: StoredInquiry[] }[])[0]!.results;
 }
 
 const valid = {
@@ -64,7 +72,7 @@ test('a foreign origin is refused', async ({ request }) => {
   });
   expect(res.status()).toBe(403);
   expect(await res.json()).toEqual({ ok: false, errors: { form: 'origin' } });
-  expect(stored(data.email)).toBe(0);
+  expect(stored(data.email)).toHaveLength(0);
 });
 
 test('an invalid e-mail comes back as a field error', async ({ request, baseURL }) => {
@@ -74,18 +82,18 @@ test('an invalid e-mail comes back as a field error', async ({ request, baseURL 
   });
   expect(res.status()).toBe(400);
   expect((await res.json()).errors.email).toBe('invalid');
-  expect(stored('test@')).toBe(0);
+  expect(stored('test@')).toHaveLength(0);
 });
 
-test('a valid inquiry is stored', async ({ request, baseURL }) => {
+test('an other inquiry is stored without an estimate', async ({ request, baseURL }) => {
   const res = await request.post('/api/inquiry', {
-    data: valid,
+    data: { ...valid, service: 'other', hours: undefined },
     headers: { origin: new URL(baseURL!).origin },
   });
   expect(res.status()).toBe(200);
   expect(await res.json()).toEqual({ ok: true });
   expect(res.headers()['set-cookie']).toBeUndefined();
-  expect(stored(valid.email)).toBe(1);
+  expect(stored(valid.email)).toEqual([{ service: 'other', estimate_from: null, estimate_to: null }]);
 });
 
 test('the same submission again (the response got lost) adds no row', async ({ request, baseURL }) => {
@@ -99,7 +107,7 @@ test('the same submission again (the response got lost) adds no row', async ({ r
     expect(res.status()).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
   }
-  expect(stored(data.email)).toBe(1);
+  expect(stored(data.email)).toEqual([{ service: 'event', estimate_from: 4200, estimate_to: 5070 }]);
 });
 
 test('a filled honeypot looks like a success', async ({ request, baseURL }) => {
@@ -114,5 +122,5 @@ test('a filled honeypot looks like a success', async ({ request, baseURL }) => {
   });
   expect(res.status()).toBe(200);
   expect(await res.json()).toEqual({ ok: true });
-  expect(stored(email('honeypot'))).toBe(0);
+  expect(stored(email('honeypot'))).toHaveLength(0);
 });

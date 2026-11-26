@@ -19,6 +19,10 @@
     grid-row: span 6;
     grid-template-rows: subgrid;
   }
+  /* Keep the shared photo row when an image has been withdrawn. */
+  .svc:not(:has(> .dph))::before {
+    content: '';
+  }
 }
 /* the link's dashed underline is as wide as its text, not the card */
 .svc .lnk {
@@ -26,17 +30,6 @@
 }
 .svc .dph {
   aspect-ratio: 4 / 3;
-}
-.svc .lbl {
-  position: absolute;
-  left: 0;
-  top: 0;
-  background: var(--light);
-  padding: 8px 12px 8px 0;
-  z-index: 1;
-}
-.svc .lbl-plain {
-  position: static;
 }
 .svc .ph-tag {
   left: auto;
@@ -55,6 +48,7 @@
 }
 .svc p {
   color: var(--light-muted);
+  text-wrap: pretty;
 }
 /* deliverables from pricing.ts (not in the prototype: brief.md states them per service) */
 .svc .dlv {
